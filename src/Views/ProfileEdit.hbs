@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile</title>
+  {{>Navigation}}
+</head>
+
+<body>
+  <h1>Edit Profile</h1>
+
+  <!--Present editable user information -->
+  <form action="post">
+    <label for="uname">Username:</label>
+    <input type="text" id="uname" value="{{userName}}"><br>
+    <label for="fname">First name:</label>
+    <input type="text" id="fname" value="{{firstName}}"><br>
+    <label for="lname">Last name:</label>
+    <input type="text" id="lname" value="{{lastName}}"><br>
+    <label for="bio">Bio:</label>
+    <input type="text" id="bio" value="{{bio}}"><br>
+    <input type="submit" value="Submit">
+  </form>
+</body>
+
+</html>

@@ -5,7 +5,8 @@ import IUser from './IUser';
 // Interface of basic C.R.U.D operations for the User database entity
 export default interface IUserRepository {
   findAll(): Promise<IUser[]>;
-  find(email: string): Promise<IUser>;
+  find(username: string): Promise<IUser>;
   create(user: IUser): Promise<Boolean>;
+  update(user: IUser): Promise<void>;
   delete(email: string): Promise<Boolean>;
 }

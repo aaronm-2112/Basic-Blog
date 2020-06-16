@@ -9,7 +9,7 @@ import { generateUserSalt, generateUserHash } from '../Common/salt';
 
 export default class UserSQLLiteRepo implements IRepository {
 
-  private dbPath = "C:\\Users\\Aaron\\Desktop\\Typescript-Starter\\dist\\blog.db";
+  private dbPath = "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db";
 
   async findAll(): Promise<IUser[]> {
     try {
@@ -108,6 +108,35 @@ export default class UserSQLLiteRepo implements IRepository {
       // TODO: Shows too much information about the database so change the error
       throw new Error(e);
     }
+  }
+
+  //Behind firewall -- assume all input is valid at this point but use prepared statements
+  //TODO: Allow password and email changes and make more robust
+  async update(user: IUser): Promise<void> {
+    try {
+      //connect to the database
+      const db: Database = await open({
+        filename: `${this.dbPath}`,
+        driver: sqlite3.Database
+      })
+
+      //Update all fields except for password, salt, or email 
+      let statement = await db.prepare(`UPDATE User SET username = ?, firstname = ?, lastname = ?, bio = ? WHERE username = ?`);
+
+      //TODO: Implement this in a more robust manner
+      await statement.run(user.getUsername(), user.getFirstname(), user.getLastname(), user.getBio(), user.getUsername());
+
+      let updatedUser: IUser = await this.find(user.getUsername());
+
+      console.log(updatedUser);
+
+      await statement.finalize();
+
+
+    } catch (e) {
+      throw new Error(e);
+    }
+
   }
 
   async delete(email: string): Promise<Boolean> {

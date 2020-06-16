@@ -6,18 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile</title>
 
-  <nav>
-    <ul>
-      <li><a href="{{root}}">Home </a></li>
-      <li><a href="{{search}}">Search</a></li>
-      <li><a href="{{profile}}">Profile</a></li>
-    </ul>
-  </nav>
+  <!--A handlebars partial that loads the nav bar -->
+  {{>Navigation}}
 
 </head>
 
 <body>
   <h1>Profile</h1>
+
+  <!-- Show Firstname, lastname, username, and bio  -->
+  <div>
+    <p>{{userName}}</p>
+    <p>{{firstName}}</p>
+    <p>{{lastName}}</p>
+    <p>{{bio}}</p>
+    <!--User can update: First name, last name, username, password, and bio with edit button  -->
+    <button><a href="ProfileEdit.hbs">Edit</a></button>
+  </div>
+
+
+  <h2>Your Blogs</h2>
+
 </body>
 
 </html>

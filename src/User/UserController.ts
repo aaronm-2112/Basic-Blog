@@ -6,6 +6,7 @@ import { Request, Response, Router } from 'express';
 import * as express from 'express';
 import IController from "../Controllers/IController";
 import { compareUserPassword } from '../Common/salt';
+import UserSQLLiteRepo from "./SqliteRepository";
 
 
 export default class UserController implements IController {
@@ -45,6 +46,8 @@ export default class UserController implements IController {
         user.setEmail(req.body.email);
         user.setPassword(req.body.password);
 
+        console.log(user);
+
         //insert the user into the database 
         let userInserted: Boolean = await this.userRepository.create(user);
 
@@ -56,6 +59,7 @@ export default class UserController implements IController {
           res.sendStatus(400);
         }
       } catch (e) {
+        console.log(e);
         res.sendStatus(400);
       }
     })
@@ -85,25 +89,105 @@ export default class UserController implements IController {
           return;
         }
 
+        console.log("wee");
         //create the bearer token for the user
         const jwtBearerToken: string = this.auth.createJWT(user);
 
-        //send back the bearer token to the user
+        //send back the bearer token to the user KEY: Too long to be secure. Usually other tactics as well are used. But this is practice. 
         res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }) //TODO: Make configurable but is fine for now.
       } catch (e) {
-        console.log(e);
+        console.log("Login post" + e);
         res.sendStatus(400);
       }
     })
 
     //GUARDED ROUTES------------------------------------------------------------------------------------------------------------------
 
+    //TODO:
+    //  2. Create a blog viewer partial that loads user blogs
+    //  3. Send user's blog PK to allow the partial to load up those blogs
     //TEST of Guarding -- remove when directory is setup
-    // this.guardedRouter.get("/profile", async (req: Request, res: Response) => {
-    //   res.sendStatus(200);
-    // })
+    this.guardedRouter.get("/profile", async (req: Request, res: Response) => {
+      try {
+        //grab username out of the url
+        let username: string = req.query.userId as string; //TODO: Add error checking
+
+        console.log(username);
+
+        //Get the user information 
+        let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
+
+        //  1. Send user profile info to profile partial
+        res.render('Profile', {
+          userName: user.getUsername(), firstName: user.getFirstname(),
+          lastName: user.getLastname(), bio: user.getBio()
+        })
+
+      } catch (e) {
+        console.log("profile get" + e);
+        res.sendStatus(400);
+      }
+    })
+
+    //TODO: Allow editing to happen on the Profile page instead of on a separate page
+    this.guardedRouter.get("/profile/edit", async (req: Request, res: Response) => {
+      try {
+        //grab username out of the url
+        let username: string = req.query.userId as string; //TODO: Add error checking
+
+        //Get the user information 
+        let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
+
+        //  1. Send user profile info to profile edit
+        res.render('ProfileEdit', {
+          userName: user.getUsername(), firstName: user.getFirstname(),
+          lastName: user.getLastname(), bio: user.getBio()
+        })
+
+      } catch (e) {
+        console.error("Profile edit get" + e);
+        res.sendStatus(400);
+      }
+    })
+
+    //TODO: Security checks
+    this.guardedRouter.post("/profile/edit", async (req: Request, res: Response) => {
+      try {
+        //Retrieve user profile edits
+        let userName: string = req.body.userName;
+        let firstName: string = req.body.firstName;
+        let lastName: string = req.body.lastName;
+        let bio: string = req.body.bio;
+
+        //Check if username still exists -- user cannot erase their username
+        if (userName === "" || !userName) {
+          //Send forbidden status code
+          res.sendStatus(403);
+          //stop execution
+          return;
+        }
+
+        //populate user information in the user object
+        let user: IUser = new User();
+        user.setUsername(userName);
+        user.setFirstname(firstName);
+        user.setLastname(lastName);
+        user.setBio(bio);
+
+        //update the user information in the database
+        await this.userRepository.update(user);
+
+        res.sendStatus(200);
+
+      } catch (e) {
+        console.error("Profile edit post" + e);
+        res.sendStatus(400);
+      }
+
+    })
+
     // register the routes
     app.use(this.unguardedRouter);
-    //app.use(this.guardedRouter);
+    app.use(this.guardedRouter);
   }
 }

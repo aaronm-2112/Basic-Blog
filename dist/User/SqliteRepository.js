@@ -45,7 +45,7 @@ var User_1 = __importDefault(require("../Models/User"));
 var salt_1 = require("../Common/salt");
 var UserSQLLiteRepo = /** @class */ (function () {
     function UserSQLLiteRepo() {
-        this.dbPath = "C:\\Users\\Aaron\\Desktop\\Typescript-Starter\\dist\\blog.db";
+        this.dbPath = "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db";
     }
     UserSQLLiteRepo.prototype.findAll = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -177,9 +177,50 @@ var UserSQLLiteRepo = /** @class */ (function () {
             });
         });
     };
+    //Behind firewall -- assume all input is valid at this point but use prepared statements
+    //TODO: Allow password and email changes and make more robust
+    UserSQLLiteRepo.prototype.update = function (user) {
+        return __awaiter(this, void 0, void 0, function () {
+            var db, statement, updatedUser, e_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 6, , 7]);
+                        return [4 /*yield*/, sqlite_1.open({
+                                filename: "" + this.dbPath,
+                                driver: sqlite3_1.default.Database
+                            })
+                            //Update all fields except for password, salt, or email 
+                        ];
+                    case 1:
+                        db = _a.sent();
+                        return [4 /*yield*/, db.prepare("UPDATE User SET username = ?, firstname = ?, lastname = ?, bio = ? WHERE username = ?")];
+                    case 2:
+                        statement = _a.sent();
+                        //TODO: Implement this in a more robust manner
+                        return [4 /*yield*/, statement.run(user.getUsername(), user.getFirstname(), user.getLastname(), user.getBio(), user.getUsername())];
+                    case 3:
+                        //TODO: Implement this in a more robust manner
+                        _a.sent();
+                        return [4 /*yield*/, this.find(user.getUsername())];
+                    case 4:
+                        updatedUser = _a.sent();
+                        console.log(updatedUser);
+                        return [4 /*yield*/, statement.finalize()];
+                    case 5:
+                        _a.sent();
+                        return [3 /*break*/, 7];
+                    case 6:
+                        e_4 = _a.sent();
+                        throw new Error(e_4);
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
     UserSQLLiteRepo.prototype.delete = function (email) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, e_4;
+            var db, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -200,8 +241,8 @@ var UserSQLLiteRepo = /** @class */ (function () {
                         // no database error so return true
                         return [2 /*return*/, true];
                     case 3:
-                        e_4 = _a.sent();
-                        throw new Error(e_4);
+                        e_5 = _a.sent();
+                        throw new Error(e_5);
                     case 4: return [2 /*return*/];
                 }
             });

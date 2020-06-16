@@ -17,7 +17,7 @@ export default class Auth {
   public async authenitcateJWT(req: Request, res: Response, next: NextFunction) {
     try {
       // Get the JSONwebtoken 
-      let token: string | undefined = req.header('Authorization')?.replace('Bearer ', '')
+      let token: string | undefined = req.header('Authorization')?.replace('Bearer ', '');
 
       //verify the passed in jsonwebtoken 
       let PUBLIC_KEY: Buffer = fs.readFileSync('C:\\Users\\Aaron\\Desktop\\Basic-Blog\\src\\Auth\\rsa.pem');

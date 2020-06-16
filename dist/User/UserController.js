@@ -75,6 +75,7 @@ var UserController = /** @class */ (function () {
                         user.setUsername(req.body.username);
                         user.setEmail(req.body.email);
                         user.setPassword(req.body.password);
+                        console.log(user);
                         return [4 /*yield*/, this.userRepository.create(user)];
                     case 1:
                         userInserted = _a.sent();
@@ -89,6 +90,7 @@ var UserController = /** @class */ (function () {
                         return [3 /*break*/, 3];
                     case 2:
                         e_1 = _a.sent();
+                        console.log(e_1);
                         res.sendStatus(400);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
@@ -120,13 +122,14 @@ var UserController = /** @class */ (function () {
                             res.sendStatus(400);
                             return [2 /*return*/];
                         }
+                        console.log("wee");
                         jwtBearerToken = this.auth.createJWT(user);
-                        //send back the bearer token to the user
+                        //send back the bearer token to the user KEY: Too long to be secure. Usually other tactics as well are used. But this is practice. 
                         res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }); //TODO: Make configurable but is fine for now.
                         return [3 /*break*/, 4];
                     case 3:
                         e_2 = _a.sent();
-                        console.log(e_2);
+                        console.log("Login post" + e_2);
                         res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -134,13 +137,104 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //GUARDED ROUTES------------------------------------------------------------------------------------------------------------------
+        //TODO:
+        //  2. Create a blog viewer partial that loads user blogs
+        //  3. Send user's blog PK to allow the partial to load up those blogs
         //TEST of Guarding -- remove when directory is setup
-        // this.guardedRouter.get("/profile", async (req: Request, res: Response) => {
-        //   res.sendStatus(200);
-        // })
+        this.guardedRouter.get("/profile", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var username, user, e_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        username = req.query.userId;
+                        console.log(username);
+                        return [4 /*yield*/, this.userRepository.find(username)];
+                    case 1:
+                        user = _a.sent();
+                        //  1. Send user profile info to profile partial
+                        res.render('Profile', {
+                            userName: user.getUsername(), firstName: user.getFirstname(),
+                            lastName: user.getLastname(), bio: user.getBio()
+                        });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_3 = _a.sent();
+                        console.log("profile get" + e_3);
+                        res.sendStatus(400);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); });
+        //TODO: Allow editing to happen on the Profile page instead of on a separate page
+        this.guardedRouter.get("/profile/edit", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var username, user, e_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        username = req.query.userId;
+                        return [4 /*yield*/, this.userRepository.find(username)];
+                    case 1:
+                        user = _a.sent();
+                        //  1. Send user profile info to profile edit
+                        res.render('ProfileEdit', {
+                            userName: user.getUsername(), firstName: user.getFirstname(),
+                            lastName: user.getLastname(), bio: user.getBio()
+                        });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_4 = _a.sent();
+                        console.error("Profile edit get" + e_4);
+                        res.sendStatus(400);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); });
+        //TODO: Security checks
+        this.guardedRouter.post("/profile/edit", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var userName, firstName, lastName, bio, user, e_5;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        userName = req.body.userName;
+                        firstName = req.body.firstName;
+                        lastName = req.body.lastName;
+                        bio = req.body.bio;
+                        //Check if username still exists -- user cannot erase their username
+                        if (userName === "" || !userName) {
+                            //Send forbidden status code
+                            res.sendStatus(403);
+                            //stop execution
+                            return [2 /*return*/];
+                        }
+                        user = new User_1.default();
+                        user.setUsername(userName);
+                        user.setFirstname(firstName);
+                        user.setLastname(lastName);
+                        user.setBio(bio);
+                        //update the user information in the database
+                        return [4 /*yield*/, this.userRepository.update(user)];
+                    case 1:
+                        //update the user information in the database
+                        _a.sent();
+                        res.sendStatus(200);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_5 = _a.sent();
+                        console.error("Profile edit post" + e_5);
+                        res.sendStatus(400);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); });
         // register the routes
         app.use(this.unguardedRouter);
-        //app.use(this.guardedRouter);
+        app.use(this.guardedRouter);
     };
     return UserController;
 }());

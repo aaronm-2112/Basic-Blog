@@ -1,0 +1,44 @@
+<label for="uname">Username:</label>
+<input type="text" id="uname"><br>
+<label for="pword">Password:</label>
+<input type="text" id="pword"><br>
+<button id="login">Login</button>
+
+
+<script>
+  async function login() {
+    try {
+      const url = "http://localhost:3000/login";
+
+      let username = document.getElementById("uname").value;
+      let password = document.getElementById("pword").value;
+      console.log(username + password);
+
+
+      const Data = {
+        username: username,
+        password: password
+      };
+
+      //first response is http, second is the json data
+      let response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Data) });
+
+      //TODO: Send http request to homepage instead of redirect like this 
+      if (response.status === 200) {
+        console.log("Success");
+        let jsonResponse = await response.json();
+        let idToken = jsonResponse.idToken;
+        console.log(idToken);
+        let store = window.localStorage;
+        store.setItem("jwt", idToken);
+        //window.location.pathname = './';//TODO: Path?
+      } else {
+        console.log("Error");
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  document.getElementById("login").addEventListener("click", login);
+</script>

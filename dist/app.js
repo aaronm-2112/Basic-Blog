@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var path_1 = __importDefault(require("path"));
+var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
 var SqliteRepository_1 = __importDefault(require("./User/SqliteRepository"));
 var UserController_1 = __importDefault(require("./User/UserController"));
@@ -25,6 +26,9 @@ app.set('view engine', 'hbs');
 var viewsPath = path_1.default.join(__dirname, '../src/Views');
 //Direct express to use files in the views directory -- TODO: Better explanation. 
 app.set('views', viewsPath);
+//Define path to the application's partial views 
+var partialViewsPath = path_1.default.join(__dirname, '../src/Views/Partials');
+hbs_1.default.registerPartials(partialViewsPath);
 //Setup the app's filesystem 
 var staticDirectory = new directory_1.default();
 staticDirectory.registerRoutes(app); //TODO: Rename method
@@ -32,4 +36,21 @@ staticDirectory.registerRoutes(app); //TODO: Rename method
 var userRepo = new SqliteRepository_1.default();
 var usercont = new UserController_1.default(userRepo);
 usercont.registerRoutes(app);
+//TODO: 
+//Homepage, Profile, and profile edit are "firewalled" by jwts -- failure to authenticate should redirect to signup or login depending upon the situation --Use an http interceptor with Express to grab JWTs that are not sent in the header (b/c it was not an http request sent from within the site) from local storage. This ensures if someone is logged in they will be able tonav to pages they should be allowed in. 
+//Consider adding front end checks for if a user is logged in or not as well by checking expiration timer. 
+//Overall plan: 
+//1. Send http request to site 
+//2. Intercept request to check for token in storage or header
+//3. Go to Auth middleware for guarded routes 
+//4. Redirect to signup if auth fails direct to page if succeeds. 
+//TODO Priority:
+//1. Profile editing path from signup to login to profile editing 
+//-auth guard homepage route  [x]
+//Change signup and login to http get requests [o]
+//in login http request send jwt in the request as auth header so the homepage can be accessed 
+//change navigation partial to send http get requests to webpages that utilize local storage to send the jwt info
+//Load profile page with correct user information gathered from the jwt
+//2. Blogs
+//x[last priority]. Add http interceptors and redirects
 exports.default = app;
