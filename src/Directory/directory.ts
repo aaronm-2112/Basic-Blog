@@ -5,17 +5,14 @@ import Auth from '../Auth/Auth';
 
 export default class Directory {
 
-  //routes that do not need to be authguarded
-  private unguardedRouter: Router = express.Router();
-  //routes that need to be authguarded
-  private guardedRouter: Router = express.Router();
+  //common directory routes
+  private router: Router = express.Router();
   //Auth
   private auth: Auth;
 
-  //setup jwt authentication on the guarded router
+  //setup jwt authentication
   constructor() {
     this.auth = new Auth();
-    this.guardedRouter.use(this.auth.authenitcateJWT);
   }
 
   //all the paths in the filesystem that can be reached through normal user navigation
@@ -24,40 +21,35 @@ export default class Directory {
   //direct express middleware to render the paths using handlebars
   registerRoutes(app: express.Application) {
 
-    //render root path
-    this.unguardedRouter.get(`${this.paths.root}`, (req: Request, res: Response) => {
-      res.redirect('http://localhost:3000/homepage');
-    })
+    // //render root path -- for now make unguarded version of homepage
+    // this.unguardedRouter.get(`${this.paths.root}`, (req: Request, res: Response) => {
+    //   res.redirect('http://localhost:3000/homepage');
+    // })
 
-    this.guardedRouter.get(`${this.paths.homepage}`, (req: Request, res: Response) => {
+    this.router.get(`${this.paths.homepage}`, this.auth.authenitcateJWT, (req: Request, res: Response) => {
+      console.log("In homepage route");
       res.render('Homepage');
     })
 
     //render search path
-    this.unguardedRouter.get(`${this.paths.search}`, (req: Request, res: Response) => {
+    this.router.get(`${this.paths.search}`, (req: Request, res: Response) => {
       res.render('Search', this.paths)
     })
 
-    this.unguardedRouter.get(`${this.paths.signup}`, (req: Request, res: Response) => {
+    this.router.get(`${this.paths.signup}`, (req: Request, res: Response) => {
       res.render('Signup');
     })
 
-    this.unguardedRouter.get(`${this.paths.login}`, (req: Request, res: Response) => {
+    this.router.get(`${this.paths.login}`, (req: Request, res: Response) => {
       res.render('Login');
     })
 
-    // //render profile path
-    // this.guardedRouter.get(`${this.paths.profile}`, (req: Request, res: Response) => {
-    //   res.render('Profile', this.paths)
-    // })
-
-    //render wildcard path
-    // this.unguardedRouter.get('*', (req: Request, res: Response) => {
+    //render wildcard path -- needs to be after all routes defined in other paths too
+    // this.router.get('*', (req: Request, res: Response) => {
     //   res.send("Wow nothing there").status(200);
     // });
 
-    //Tell express to use these routes
-    app.use(this.unguardedRouter);
-    app.use(this.guardedRouter);
+    //Use the directory routes at root level 
+    app.use('/', this.router);
   }
 }

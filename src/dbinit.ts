@@ -18,6 +18,9 @@ export async function createDB() {
     //Create User table
     let res = await db.exec('CREATE TABLE User (userID INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, email TEXT NOT NULL UNIQUE, firstname TEXT, lastname TEXT, bio TEXT, salt TEXT)');
 
+    //Create blog table 
+    let blogRes = await db.exec('CREATE TABLE Blog (blogID INTEGER PRIMARY KEY AUTOINCREMENT, username INTEGER FOREIGN KEY, title TEXT NOT NULL, text TEXT, images TEXT)')
+
     await db.close();
 
 

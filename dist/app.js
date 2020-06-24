@@ -5,6 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var body_parser_1 = __importDefault(require("body-parser"));
+var cookie_parser_1 = __importDefault(require("cookie-parser"));
+var cors_1 = __importDefault(require("cors"));
 var path_1 = __importDefault(require("path"));
 var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
@@ -20,6 +22,15 @@ var UserController_1 = __importDefault(require("./User/UserController"));
 var app = express_1.default();
 //direct express middleware to use routes/settings
 app.use(body_parser_1.default.json());
+//tell app to use the cookie parser
+app.use(cookie_parser_1.default());
+//use cors
+app.use(cors_1.default({
+    origin: [
+        'http://localhost:3000'
+    ],
+    credentials: true
+}));
 //Direct express to use Handlebars templating engine for rendering the app's pages
 app.set('view engine', 'hbs');
 //Define path to the directory of the application's views
@@ -46,11 +57,11 @@ usercont.registerRoutes(app);
 //4. Redirect to signup if auth fails direct to page if succeeds. 
 //TODO Priority:
 //1. Profile editing path from signup to login to profile editing 
-//-auth guard homepage route  [x]
+//-setup root to redirect to homepage route and auth guard homepage route  [x]
 //Change signup and login to http get requests [o]
 //in login http request send jwt in the request as auth header so the homepage can be accessed 
 //change navigation partial to send http get requests to webpages that utilize local storage to send the jwt info
 //Load profile page with correct user information gathered from the jwt
 //2. Blogs
-//x[last priority]. Add http interceptors and redirects
+//x[last priority]. Add http interceptors and redirects such that all guarded routes send unathenticated users back to signup. this will make redirect from root to homepage work and make sense
 exports.default = app;

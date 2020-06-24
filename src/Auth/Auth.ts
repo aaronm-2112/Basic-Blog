@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import fs from 'fs';
+import jwt, { JwtHeader, VerifyOptions, decode } from 'jsonwebtoken';
+import fs, { access } from 'fs';
 import IUser from '../User/IUser';
+import { SSL_OP_COOKIE_EXCHANGE } from 'constants';
 
 export default class Auth {
 
@@ -17,14 +18,65 @@ export default class Auth {
   public async authenitcateJWT(req: Request, res: Response, next: NextFunction) {
     try {
       // Get the JSONwebtoken 
-      let token: string | undefined = req.header('Authorization')?.replace('Bearer ', '');
+      //from body
+      //let token: string | undefined = req.header('Authorization')?.replace('Bearer ', '');
+      //from cookie
+      console.log("Cookies:");
+      console.log(req.cookies);
+      let token: string | undefined = req.cookies["jwt"];
+
+      console.log("Parsed Cookie:");
+      console.log(token);
+
+      if (!token) {
+        return res.status(401); //not authenticated
+      }
 
       //verify the passed in jsonwebtoken 
       let PUBLIC_KEY: Buffer = fs.readFileSync('C:\\Users\\Aaron\\Desktop\\Basic-Blog\\src\\Auth\\rsa.pem');
-      let payload: string | object = jwt.verify((token as string), PUBLIC_KEY, { algorithms: ["RS256"] })
 
-      //check if authenticated 
-      payload ? next() : res.status(400).send("Failure authenticating")
+      //verify the token
+      jwt.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] }, function (err, payload) {
+        //check for error in the decoding 
+        if (err) {
+          res.status(401).send("Error authenticating");
+          return;
+        }
+
+        //check if payload is undefined --if not undefined the token is valid
+        if (payload === undefined) {
+          res.status(401).send("Error authenticating");
+          return;
+        }
+
+        console.log("Incoming cookies jwt payload: ");
+        console.log(payload);
+
+        //make the payload keys accessible -- token interface is: {iat: string, sub: string, expires: string} as well as other keys
+        let accessiblePayload: { [key: string]: any } = payload as { [key: string]: any };
+
+        //get the subject from the payload
+        let subject: string = accessiblePayload.sub;
+
+        //verify the subject exists
+        if (subject === undefined || subject === null || subject === '') {
+          res.status(401).send("Error authenticating");
+          return;
+        }
+
+        // attach subject information to res.locals to persist the information to endpoint
+        res.locals.userId = subject;
+
+        //continue flow to endpoint
+        next();
+
+      });
+
+
+
+
+
+
     } catch (e) {
       console.log("Error: " + e)
       res.status(401).send("Error authenticating")
@@ -39,7 +91,7 @@ export default class Auth {
       algorithm: 'RS256',
       expiresIn: "2 days",
       subject: `${user.getUsername()}` //TODO: Do not use username in the jwt payload -- use user id 
-    })
+    });
 
     return jwtBearerToken;
   }

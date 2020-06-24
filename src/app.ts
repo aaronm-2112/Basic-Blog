@@ -1,5 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import path from 'path';
 import hbs from 'hbs'; //templating engine
 import Directory from './Directory/directory';
@@ -21,6 +23,17 @@ const app: express.Application = express();
 
 //direct express middleware to use routes/settings
 app.use(bodyParser.json())
+
+//tell app to use the cookie parser
+app.use(cookieParser());
+
+//use cors
+app.use(cors({
+  origin: [
+    'http://localhost:3000'
+  ],
+  credentials: true
+}));
 
 //Direct express to use Handlebars templating engine for rendering the app's pages
 app.set('view engine', 'hbs');
@@ -44,26 +57,17 @@ let userRepo: IUserRepository = new UserRepository();
 let usercont: UserController = new UserController(userRepo);
 usercont.registerRoutes(app);
 
-//TODO: 
-//Homepage, Profile, and profile edit are "firewalled" by jwts -- failure to authenticate should redirect to signup or login depending upon the situation --Use an http interceptor with Express to grab JWTs that are not sent in the header (b/c it was not an http request sent from within the site) from local storage. This ensures if someone is logged in they will be able tonav to pages they should be allowed in. 
-//Consider adding front end checks for if a user is logged in or not as well by checking expiration timer. 
+//Current State:
+//Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
+//Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 
 
+//TODO: Add blog table to database: 
+//                                 1 to Many relationship with users
+//                                 Username is the foreign key in the blog table
+//                                 BlogId is pk 
+//                                 Blog Title 
+//                                 Blog Text 
+//                                 Blog Images
 
-//Overall plan: 
-//1. Send http request to site 
-//2. Intercept request to check for token in storage or header
-//3. Go to Auth middleware for guarded routes 
-//4. Redirect to signup if auth fails direct to page if succeeds. 
-
-//TODO Priority:
-//1. Profile editing path from signup to login to profile editing 
-//-setup root to redirect to homepage route and auth guard homepage route  [x]
-//Change signup and login to http get requests [o]
-//in login http request send jwt in the request as auth header so the homepage can be accessed 
-//change navigation partial to send http get requests to webpages that utilize local storage to send the jwt info
-//Load profile page with correct user information gathered from the jwt
-//2. Blogs
-
-//x[last priority]. Add http interceptors and redirects such that all guarded routes send unathenticated users back to signup. this will make redirect from root to homepage work and make sense
 
 export default app; 

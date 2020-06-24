@@ -194,11 +194,11 @@ var UserSQLLiteRepo = /** @class */ (function () {
                         ];
                     case 1:
                         db = _a.sent();
-                        return [4 /*yield*/, db.prepare("UPDATE User SET username = ?, firstname = ?, lastname = ?, bio = ? WHERE username = ?")];
+                        return [4 /*yield*/, db.prepare("UPDATE User SET firstname = ?, lastname = ?, bio = ? WHERE username = ?")];
                     case 2:
                         statement = _a.sent();
                         //TODO: Implement this in a more robust manner
-                        return [4 /*yield*/, statement.run(user.getUsername(), user.getFirstname(), user.getLastname(), user.getBio(), user.getUsername())];
+                        return [4 /*yield*/, statement.run(user.getFirstname(), user.getLastname(), user.getBio(), user.getUsername())];
                     case 3:
                         //TODO: Implement this in a more robust manner
                         _a.sent();

@@ -23,18 +23,15 @@
       //first response is http, second is the json data
       let response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Data) });
 
-      //TODO: Send http request to homepage instead of redirect like this 
+      //check if login is successful
       if (response.status === 200) {
-        console.log("Success");
-        let jsonResponse = await response.json();
-        let idToken = jsonResponse.idToken;
-        console.log(idToken);
-        let store = window.localStorage;
-        store.setItem("jwt", idToken);
-        //window.location.pathname = './';//TODO: Path?
+        //go to homepage
+        window.location.href = '/homepage';
       } else {
-        console.log("Error");
+        //Show user to try again --TODO: Make prettier
+        console.log("Error logging in");
       }
+
     } catch (e) {
       console.log(e);
     }

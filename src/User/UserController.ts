@@ -6,17 +6,16 @@ import { Request, Response, Router } from 'express';
 import * as express from 'express';
 import IController from "../Controllers/IController";
 import { compareUserPassword } from '../Common/salt';
-import UserSQLLiteRepo from "./SqliteRepository";
 
 
+//Purpose: Handle all actions 
 export default class UserController implements IController {
 
-  //TODO: Inversify for the experience?
+  //TODO: use Inversify for the experience?
   private userRepository: IUserRepository;
 
   //Router
-  private unguardedRouter: Router; // used for login
-  private guardedRouter: Router;   // used for post login user activities 
+  private router: Router; // used for login
 
   //Auth
   private auth: Auth;
@@ -25,11 +24,9 @@ export default class UserController implements IController {
     // setup the user repository 
     this.userRepository = userRepo;
     // setup the unguarded router 
-    this.unguardedRouter = express.Router();
-    // setup the guarded router 
-    this.guardedRouter = express.Router();
+    this.router = express.Router();
+    // setup authentication-- TODO: Make a singleton?
     this.auth = new Auth();
-    this.guardedRouter.use(this.auth.authenitcateJWT);
 
   }
 
@@ -38,7 +35,7 @@ export default class UserController implements IController {
     //UNGUARDED ROUTES------------------------------------------------------------------
 
     //SIGNUP
-    this.unguardedRouter.post('/signup', async (req: Request, res: Response) => {
+    this.router.post('/signup', async (req: Request, res: Response) => {
       try {
         //create the user with the information provided in the request
         let user: IUser = new User();
@@ -65,7 +62,7 @@ export default class UserController implements IController {
     })
 
     //LOGIN
-    this.unguardedRouter.post("/login", async (req: Request, res: Response) => {
+    this.router.post("/login", async (req: Request, res: Response) => {
       try {
         // Verify username and password passsed in
         let username: string = req.body.username;
@@ -89,12 +86,21 @@ export default class UserController implements IController {
           return;
         }
 
-        console.log("wee");
+        console.log(user);
         //create the bearer token for the user
         const jwtBearerToken: string = this.auth.createJWT(user);
 
+        console.log(jwtBearerToken);
         //send back the bearer token to the user KEY: Too long to be secure. Usually other tactics as well are used. But this is practice. 
-        res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }) //TODO: Make configurable but is fine for now.
+        //res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }) //TODO: Make configurable but is fine for now.
+        //cookies are sent automaticlaly with every request
+        res.cookie('jwt', jwtBearerToken, {
+          expires: new Date(Date.now() + 172800),
+          secure: false, //true when using https
+          httpOnly: true
+        }).sendStatus(200);
+
+
       } catch (e) {
         console.log("Login post" + e);
         res.sendStatus(400);
@@ -107,12 +113,10 @@ export default class UserController implements IController {
     //  2. Create a blog viewer partial that loads user blogs
     //  3. Send user's blog PK to allow the partial to load up those blogs
     //TEST of Guarding -- remove when directory is setup
-    this.guardedRouter.get("/profile", async (req: Request, res: Response) => {
+    this.router.get("/profile", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-        //grab username out of the url
-        let username: string = req.query.userId as string; //TODO: Add error checking
-
-        console.log(username);
+        //grab subject information out of res.locals 
+        let username: string = res.locals.userId;  //TODO: Add error checking
 
         //Get the user information 
         let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
@@ -130,10 +134,10 @@ export default class UserController implements IController {
     })
 
     //TODO: Allow editing to happen on the Profile page instead of on a separate page
-    this.guardedRouter.get("/profile/edit", async (req: Request, res: Response) => {
+    this.router.get("/profile/edit", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-        //grab username out of the url
-        let username: string = req.query.userId as string; //TODO: Add error checking
+        //grab username out of the local vars
+        let username: string = res.locals.userId //TODO: Add error checking
 
         //Get the user information 
         let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
@@ -151,21 +155,15 @@ export default class UserController implements IController {
     })
 
     //TODO: Security checks
-    this.guardedRouter.post("/profile/edit", async (req: Request, res: Response) => {
+    this.router.post("/profile/edit", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-        //Retrieve user profile edits
-        let userName: string = req.body.userName;
+        //Retrieve user id
+        let userName: string = res.locals.userId;
+
+        //retrieve user profile edits
         let firstName: string = req.body.firstName;
         let lastName: string = req.body.lastName;
         let bio: string = req.body.bio;
-
-        //Check if username still exists -- user cannot erase their username
-        if (userName === "" || !userName) {
-          //Send forbidden status code
-          res.sendStatus(403);
-          //stop execution
-          return;
-        }
 
         //populate user information in the user object
         let user: IUser = new User();
@@ -187,7 +185,6 @@ export default class UserController implements IController {
     })
 
     // register the routes
-    app.use(this.unguardedRouter);
-    app.use(this.guardedRouter);
+    app.use(this.router);
   }
 }

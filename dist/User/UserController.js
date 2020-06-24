@@ -50,22 +50,21 @@ var User_1 = __importDefault(require("../Models/User"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
 var express = __importStar(require("express"));
 var salt_1 = require("../Common/salt");
+//Purpose: Handle all actions 
 var UserController = /** @class */ (function () {
     function UserController(userRepo) {
         // setup the user repository 
         this.userRepository = userRepo;
         // setup the unguarded router 
-        this.unguardedRouter = express.Router();
-        // setup the guarded router 
-        this.guardedRouter = express.Router();
+        this.router = express.Router();
+        // setup authentication-- TODO: Make a singleton?
         this.auth = new Auth_1.default();
-        this.guardedRouter.use(this.auth.authenitcateJWT);
     }
     UserController.prototype.registerRoutes = function (app) {
         //UNGUARDED ROUTES------------------------------------------------------------------
         var _this = this;
         //SIGNUP
-        this.unguardedRouter.post('/signup', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.post('/signup', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var user, userInserted, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -98,7 +97,7 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //LOGIN
-        this.unguardedRouter.post("/login", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.post("/login", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var username, password, user, samePassword, jwtBearerToken, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -122,10 +121,17 @@ var UserController = /** @class */ (function () {
                             res.sendStatus(400);
                             return [2 /*return*/];
                         }
-                        console.log("wee");
+                        console.log(user);
                         jwtBearerToken = this.auth.createJWT(user);
+                        console.log(jwtBearerToken);
                         //send back the bearer token to the user KEY: Too long to be secure. Usually other tactics as well are used. But this is practice. 
-                        res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }); //TODO: Make configurable but is fine for now.
+                        //res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }) //TODO: Make configurable but is fine for now.
+                        //cookies are sent automaticlaly with every request
+                        res.cookie('jwt', jwtBearerToken, {
+                            expires: new Date(Date.now() + 172800),
+                            secure: false,
+                            httpOnly: true
+                        }).sendStatus(200);
                         return [3 /*break*/, 4];
                     case 3:
                         e_2 = _a.sent();
@@ -141,14 +147,13 @@ var UserController = /** @class */ (function () {
         //  2. Create a blog viewer partial that loads user blogs
         //  3. Send user's blog PK to allow the partial to load up those blogs
         //TEST of Guarding -- remove when directory is setup
-        this.guardedRouter.get("/profile", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.get("/profile", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var username, user, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        username = req.query.userId;
-                        console.log(username);
+                        username = res.locals.userId;
                         return [4 /*yield*/, this.userRepository.find(username)];
                     case 1:
                         user = _a.sent();
@@ -168,13 +173,14 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //TODO: Allow editing to happen on the Profile page instead of on a separate page
-        this.guardedRouter.get("/profile/edit", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.get("/profile/edit", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var username, user, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        username = req.query.userId;
+                        username = res.locals.userId //TODO: Add error checking
+                        ;
                         return [4 /*yield*/, this.userRepository.find(username)];
                     case 1:
                         user = _a.sent();
@@ -194,23 +200,16 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //TODO: Security checks
-        this.guardedRouter.post("/profile/edit", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.post("/profile/edit", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var userName, firstName, lastName, bio, user, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        userName = req.body.userName;
+                        userName = res.locals.userId;
                         firstName = req.body.firstName;
                         lastName = req.body.lastName;
                         bio = req.body.bio;
-                        //Check if username still exists -- user cannot erase their username
-                        if (userName === "" || !userName) {
-                            //Send forbidden status code
-                            res.sendStatus(403);
-                            //stop execution
-                            return [2 /*return*/];
-                        }
                         user = new User_1.default();
                         user.setUsername(userName);
                         user.setFirstname(firstName);
@@ -233,8 +232,7 @@ var UserController = /** @class */ (function () {
             });
         }); });
         // register the routes
-        app.use(this.unguardedRouter);
-        app.use(this.guardedRouter);
+        app.use(this.router);
     };
     return UserController;
 }());

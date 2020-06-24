@@ -121,10 +121,10 @@ export default class UserSQLLiteRepo implements IRepository {
       })
 
       //Update all fields except for password, salt, or email 
-      let statement = await db.prepare(`UPDATE User SET username = ?, firstname = ?, lastname = ?, bio = ? WHERE username = ?`);
+      let statement = await db.prepare(`UPDATE User SET firstname = ?, lastname = ?, bio = ? WHERE username = ?`);
 
       //TODO: Implement this in a more robust manner
-      await statement.run(user.getUsername(), user.getFirstname(), user.getLastname(), user.getBio(), user.getUsername());
+      await statement.run(user.getFirstname(), user.getLastname(), user.getBio(), user.getUsername());
 
       let updatedUser: IUser = await this.find(user.getUsername());
 
