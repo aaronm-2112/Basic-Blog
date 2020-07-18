@@ -8,5 +8,6 @@ export default interface IBlogRepository {
   find(searchBy: searchParameters, searchParam: string): Promise<IBlog>;
   create(blog: IBlog): Promise<Boolean>;
   update(blog: IBlog): Promise<void>;
-  delete(blog: string): Promise<Boolean>;
+  //update(title: string, content: string, username: string, titleImagePath: string, blogID: string): Promise<void>;
+  delete(blog: IBlog): Promise<Boolean>;
 }

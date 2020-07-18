@@ -7,4 +7,7 @@ export default interface IBlog {
   title: string;
   content: string;
   titleImagePath: string;
+
+
+  creator(incomingUser: string): boolean;
 }

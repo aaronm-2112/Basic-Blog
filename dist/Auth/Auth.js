@@ -53,15 +53,9 @@ var Auth = /** @class */ (function () {
             var token, PUBLIC_KEY;
             return __generator(this, function (_a) {
                 try {
-                    // Get the JSONwebtoken 
-                    //from body
-                    //let token: string | undefined = req.header('Authorization')?.replace('Bearer ', '');
-                    //from cookie
-                    console.log("Cookies:");
-                    console.log(req.cookies);
                     token = req.cookies["jwt"];
-                    console.log("Parsed Cookie:");
-                    console.log(token);
+                    // console.log("Parsed Cookie:");
+                    // console.log(token);
                     if (!token) {
                         return [2 /*return*/, res.status(401)]; //not authenticated
                     }
@@ -78,8 +72,8 @@ var Auth = /** @class */ (function () {
                             res.status(401).send("Error authenticating");
                             return;
                         }
-                        console.log("Incoming cookies jwt payload: ");
-                        console.log(payload);
+                        //console.log("Incoming cookies jwt payload: ");
+                        //console.log(payload);
                         //make the payload keys accessible -- token interface is: {iat: string, sub: string, expires: string} as well as other keys
                         var accessiblePayload = payload;
                         //get the subject from the payload

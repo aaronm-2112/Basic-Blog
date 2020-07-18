@@ -21,12 +21,12 @@ export default class Auth {
       //from body
       //let token: string | undefined = req.header('Authorization')?.replace('Bearer ', '');
       //from cookie
-      console.log("Cookies:");
-      console.log(req.cookies);
+      // console.log("Cookies:");
+      // console.log(req.cookies);
       let token: string | undefined = req.cookies["jwt"];
 
-      console.log("Parsed Cookie:");
-      console.log(token);
+      // console.log("Parsed Cookie:");
+      // console.log(token);
 
       if (!token) {
         return res.status(401); //not authenticated
@@ -49,8 +49,8 @@ export default class Auth {
           return;
         }
 
-        console.log("Incoming cookies jwt payload: ");
-        console.log(payload);
+        //console.log("Incoming cookies jwt payload: ");
+        //console.log(payload);
 
         //make the payload keys accessible -- token interface is: {iat: string, sub: string, expires: string} as well as other keys
         let accessiblePayload: { [key: string]: any } = payload as { [key: string]: any };

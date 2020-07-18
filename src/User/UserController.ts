@@ -6,13 +6,26 @@ import { Request, Response, Router } from 'express';
 import * as express from 'express';
 import IController from "../Controllers/IController";
 import { compareUserPassword } from '../Common/salt';
+import IBlogRepository from "../Blog/IBlogRepository";
+import BlogSQLiteRepo from "../Blog/BlogSQLiteRepo";
+import IBlog from '../Blog/IBlog';
+import { searchParameters } from "../Blog/BlogSearchCriteria";
 
 
-//Purpose: Handle all actions 
+//Purpose: Handle all user view behaviour.
+//Rather than use a service for representing a compound model I chose to place two repos in the UserControler.
+//           Rationale: 
+//              b/c a service is used for business logic utilizing repos the lack of such logic in this simple controller 
+//              disallows me to justify introducing another abstraction. 
 export default class UserController implements IController {
 
   //TODO: use Inversify for the experience?
   private userRepository: IUserRepository;
+
+  //used for sending blog information to the Profile view
+  private blogRepo: IBlogRepository;
+
+
 
   //Router
   private router: Router; // used for login
@@ -27,6 +40,8 @@ export default class UserController implements IController {
     this.router = express.Router();
     // setup authentication-- TODO: Make a singleton?
     this.auth = new Auth();
+    //setup blog repository
+    this.blogRepo = new BlogSQLiteRepo();
 
   }
 
@@ -109,10 +124,6 @@ export default class UserController implements IController {
 
     //GUARDED ROUTES------------------------------------------------------------------------------------------------------------------
 
-    //TODO:
-    //  2. Create a blog viewer partial that loads user blogs
-    //  3. Send user's blog PK to allow the partial to load up those blogs
-    //TEST of Guarding -- remove when directory is setup
     this.router.get("/profile", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //grab subject information out of res.locals 
@@ -121,11 +132,23 @@ export default class UserController implements IController {
         //Get the user information 
         let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
 
+        //Get the user's blogs
+        let blogs: IBlog[] = await this.blogRepo.findAll(searchParameters.Username, (user.username as string));
+
+        //store front end blog information
+        let blogDetails: Array<{ title: string, editPath: string, viewPath: string }> = new Array<{ title: string, editPath: string, viewPath: string }>();
+
+        //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
+        blogs.forEach(blog => {
+          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blog/edit/${blog.blogID}`, viewPath: `http://localhost:3000/blog/${blog.blogID}` })
+        });
+
         //  1. Send user profile info to profile partial
         res.render('Profile', {
           userName: user.getUsername(), firstName: user.getFirstname(),
-          lastName: user.getLastname(), bio: user.getBio()
-        })
+          lastName: user.getLastname(), bio: user.getBio(),
+          blogDetails: blogDetails
+        });
 
       } catch (e) {
         console.log("profile get" + e);

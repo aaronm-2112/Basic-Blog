@@ -1,0 +1,56 @@
+<!-- Template user creates their blog post with -->
+
+
+<!-- Upload an image for the header -->
+Title: <input type="text" id="title">
+<input name="image" type="file" id="imageBanner" />
+<!-- Text area for the content of the page  -->
+Content: <textarea name="content" id="content" cols="30" rows="10"></textarea>
+<button id="btnCreate">Upload</button>
+
+<script>
+  //upload the blog content to the blog creation route
+  async function createBlog() {
+    console.log("here n now boiii");
+    try {
+      //get the content of the blog 
+      let bannerImage = document.getElementById("imageBanner").files[0];
+
+      const imageFormData = new FormData();
+
+      //append the bannerimage
+      imageFormData.append("image", bannerImage);
+
+      //upload the image 
+      let result = await fetch('http://localhost:3000/blog', { method: 'POST', body: imageFormData });
+
+      //get the data from the result
+      let blogID = await result.json();
+
+      //get text content from the blog
+      let content = document.getElementById("content").value;
+      let title = document.getElementById("title").value;
+
+      //send patch request 
+      let patchResult = await fetch(`http://localhost:3000/blog/${blogID}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, title }) });
+
+      //check for success status code
+      if (patchResult.status === 204) {
+        console.log("Blog created!");
+        window.location.pathname = `/blog/${blogID}`;
+      } else {
+        console.log("Error creating blog!");
+      }
+
+
+
+    } catch (e) {
+      console.log(e);
+    }
+
+  }
+
+  document.getElementById("btnCreate").addEventListener("click", createBlog);
+
+
+</script>

@@ -1,0 +1,32 @@
+<!-- Upload an image for the header -->
+Title: <input type="text" id="title" value={{title}}>
+<img src="{{titleImagePath}}" alt="Title Image">
+<input name="image" type="file" id="imageBanner" />
+<!-- Text area for the content of the page  -->
+Content: <textarea name="content" id="content" cols="30" rows="10">{{content}}</textarea>
+<button id="Save">Save</button>
+
+<script>
+  function getBlogID() {
+    //get the url 
+    let url = window.location.href;
+
+    //extract the blog id
+    let blogIDStartPos = url.lastIndexOf('/');
+    let blogID = url.substring(blogIDStartPos);
+
+    //trim 
+    blogID = blogID.trim();
+  }
+
+  //get blogID
+  let blogID = getBlogID();
+
+  //get the input field values
+  let content = document.getElementById("content").value;
+  let title = document.getElementById("title").value;
+
+
+
+
+</script>

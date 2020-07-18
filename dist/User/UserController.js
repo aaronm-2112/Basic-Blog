@@ -50,7 +50,13 @@ var User_1 = __importDefault(require("../Models/User"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
 var express = __importStar(require("express"));
 var salt_1 = require("../Common/salt");
-//Purpose: Handle all actions 
+var BlogSQLiteRepo_1 = __importDefault(require("../Blog/BlogSQLiteRepo"));
+var BlogSearchCriteria_1 = require("../Blog/BlogSearchCriteria");
+//Purpose: Handle all user view behaviour.
+//Rather than use a service for representing a compound model I chose to place two repos in the UserControler.
+//           Rationale: 
+//              b/c a service is used for business logic utilizing repos the lack of such logic in this simple controller 
+//              disallows me to justify introducing another abstraction. 
 var UserController = /** @class */ (function () {
     function UserController(userRepo) {
         // setup the user repository 
@@ -59,6 +65,8 @@ var UserController = /** @class */ (function () {
         this.router = express.Router();
         // setup authentication-- TODO: Make a singleton?
         this.auth = new Auth_1.default();
+        //setup blog repository
+        this.blogRepo = new BlogSQLiteRepo_1.default();
     }
     UserController.prototype.registerRoutes = function (app) {
         //UNGUARDED ROUTES------------------------------------------------------------------
@@ -143,32 +151,37 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //GUARDED ROUTES------------------------------------------------------------------------------------------------------------------
-        //TODO:
-        //  2. Create a blog viewer partial that loads user blogs
-        //  3. Send user's blog PK to allow the partial to load up those blogs
-        //TEST of Guarding -- remove when directory is setup
         this.router.get("/profile", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var username, user, e_3;
+            var username, user, blogs, blogDetails_1, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
+                        _a.trys.push([0, 3, , 4]);
                         username = res.locals.userId;
                         return [4 /*yield*/, this.userRepository.find(username)];
                     case 1:
                         user = _a.sent();
+                        return [4 /*yield*/, this.blogRepo.findAll(BlogSearchCriteria_1.searchParameters.Username, user.username)];
+                    case 2:
+                        blogs = _a.sent();
+                        blogDetails_1 = new Array();
+                        //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
+                        blogs.forEach(function (blog) {
+                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blog/edit/" + blog.blogID, viewPath: "http://localhost:3000/blog/" + blog.blogID });
+                        });
                         //  1. Send user profile info to profile partial
                         res.render('Profile', {
                             userName: user.getUsername(), firstName: user.getFirstname(),
-                            lastName: user.getLastname(), bio: user.getBio()
+                            lastName: user.getLastname(), bio: user.getBio(),
+                            blogDetails: blogDetails_1
                         });
-                        return [3 /*break*/, 3];
-                    case 2:
+                        return [3 /*break*/, 4];
+                    case 3:
                         e_3 = _a.sent();
                         console.log("profile get" + e_3);
                         res.sendStatus(400);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         }); });

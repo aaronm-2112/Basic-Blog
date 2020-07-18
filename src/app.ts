@@ -9,7 +9,10 @@ import UserRepository from './User/SqliteRepository';
 import IUserRepository from './User/IRepository';
 import UserController from './User/UserController';
 import { createDB } from './dbinit';
-
+import IBlogRepository from './Blog/IBlogRepository';
+import BlogSQLiteRepo from './Blog/BlogSQLiteRepo';
+import IController from './Controllers/IController';
+import BlogController from './Blog/BlogController';
 
 //Used for development database changes. 
 // createDB().then(() => {
@@ -22,7 +25,15 @@ import { createDB } from './dbinit';
 const app: express.Application = express();
 
 //direct express middleware to use routes/settings
-app.use(bodyParser.json())
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+
+//static path we need to set up
+//To operate with images (or other static files) with Node.js configure static paths
+app.use('/uploads', express.static('uploads'));
+
 
 //tell app to use the cookie parser
 app.use(cookieParser());
@@ -40,12 +51,12 @@ app.set('view engine', 'hbs');
 
 
 //Define path to the directory of the application's views
-let viewsPath: string = path.join(__dirname, '../src/Views');
+let viewsPath: string = path.join(__dirname, '../Views');
 //Direct express to use files in the views directory -- TODO: Better explanation. 
 app.set('views', viewsPath);
 
 //Define path to the application's partial views 
-let partialViewsPath: string = path.join(__dirname, '../src/Views/Partials');
+let partialViewsPath: string = path.join(__dirname, '../Views/Partials');
 hbs.registerPartials(partialViewsPath);
 
 //Setup the app's filesystem 
@@ -56,6 +67,11 @@ staticDirectory.registerRoutes(app); //TODO: Rename method
 let userRepo: IUserRepository = new UserRepository();
 let usercont: UserController = new UserController(userRepo);
 usercont.registerRoutes(app);
+
+//register the blog routes 
+let blogrepo: IBlogRepository = new BlogSQLiteRepo();
+let blogcontroller: IController = new BlogController(blogrepo);
+blogcontroller.registerRoutes(app);
 
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
@@ -70,4 +86,5 @@ usercont.registerRoutes(app);
 //                                 Blog Images
 
 
-export default app; 
+export default app;
+

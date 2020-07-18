@@ -46,23 +46,27 @@ var path_1 = __importDefault(require("path"));
 var dbPath = path_1.default.resolve(__dirname, 'blog.db');
 function createDB() {
     return __awaiter(this, void 0, void 0, function () {
-        var db, res, e_1;
+        var db, res, blogRes, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 5, , 6]);
                     return [4 /*yield*/, sqlite_1.open({
-                            filename: "C:\\Users\\Aaron\\Desktop\\Typescript-Starter\\dist\\blog.db",
+                            filename: "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db",
                             driver: sqlite3_1.default.Database
-                        })];
+                        })
+                        // await db.exec('DROP TABLE User');
+                        // await db.exec('DROP TABLE Blog');
+                        //Create User table
+                    ];
                 case 1:
                     db = _a.sent();
-                    return [4 /*yield*/, db.exec('DROP TABLE User')];
-                case 2:
-                    _a.sent();
                     return [4 /*yield*/, db.exec('CREATE TABLE User (userID INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, email TEXT NOT NULL UNIQUE, firstname TEXT, lastname TEXT, bio TEXT, salt TEXT)')];
-                case 3:
+                case 2:
                     res = _a.sent();
+                    return [4 /*yield*/, db.exec('CREATE TABLE Blog (blogID INTEGER PRIMARY KEY AUTOINCREMENT, username INTEGER, title TEXT NOT NULL, content TEXT, titleImagePath TEXT, FOREIGN KEY(username) REFERENCES User(username))')];
+                case 3:
+                    blogRes = _a.sent();
                     return [4 /*yield*/, db.close()];
                 case 4:
                     _a.sent();
