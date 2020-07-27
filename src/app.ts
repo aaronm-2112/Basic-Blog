@@ -14,6 +14,8 @@ import BlogSQLiteRepo from './Blog/BlogSQLiteRepo';
 import IController from './Controllers/IController';
 import BlogController from './Blog/BlogController';
 
+//TODO: Add Location headers in all post request responses to client.
+
 //Used for development database changes. 
 // createDB().then(() => {
 //   console.log("Inited");

@@ -11,7 +11,6 @@ Content: <textarea name="content" id="content" cols="30" rows="10"></textarea>
 <script>
   //upload the blog content to the blog creation route
   async function createBlog() {
-    console.log("here n now boiii");
     try {
       //get the content of the blog 
       let bannerImage = document.getElementById("imageBanner").files[0];
@@ -21,18 +20,35 @@ Content: <textarea name="content" id="content" cols="30" rows="10"></textarea>
       //append the bannerimage
       imageFormData.append("image", bannerImage);
 
-      //upload the image 
-      let result = await fetch('http://localhost:3000/blog', { method: 'POST', body: imageFormData });
+      //create the hero image resource
+      let result = await fetch('http://localhost:3000/uploads', { method: 'POST', body: imageFormData });
 
-      //get the data from the result
-      let blogID = await result.json();
+      console.log(result);
 
-      //get text content from the blog
+      //get the image path
+      let imagePath = await result.json();
+
+      console.log(imagePath);
+
+      //get text content from the blog creation form
       let content = document.getElementById("content").value;
       let title = document.getElementById("title").value;
 
-      //send patch request 
-      let patchResult = await fetch(`http://localhost:3000/blog/${blogID}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, title }) });
+      console.log("Upload the blog content");
+
+      //create the blog resource using the text content
+      let blogResult = await fetch(`http://localhost:3000/blog`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, title }) });
+
+      console.log(blogResult);
+
+      //get the blogID from the request
+      let blogID = await blogResult.json();
+
+      //patch the blog at /blog/:blogID with the path to the hero image 
+      let patchResult = await fetch(`http://localhost:3000/blog/${blogID}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titleImagePath: imagePath })
+      });
 
       //check for success status code
       if (patchResult.status === 204) {

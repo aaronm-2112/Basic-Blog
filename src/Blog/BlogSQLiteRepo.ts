@@ -23,17 +23,16 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       //prepare the blog search query as a prepared statement
       let statement = await db.prepare(`SELECT blogID, username, title, content, titleImagePath FROM Blog WHERE ${searchBy} = ? `);
 
-      console.log("statement prepared");
-
       //execute the query 
       let rows: any[] = await statement.all(value);
 
       //create the blog array
       let blogs: IBlog[] = [];
-      let blog: IBlog = new Blog();
+      let blog: IBlog;
 
       //place results into the blog array 
       rows.forEach(row => {
+        blog = new Blog(); //TODO: Find better way to create a deep copy
         blog.blogID = row.blogID;
         blog.title = row.title;
         blog.titleImagePath = row.titleImagePath;
@@ -89,7 +88,7 @@ export default class BlogSQLiteRepo implements IBlogRepository {
     return blog;
   }
 
-  async create(blog: IBlog): Promise<Boolean> {
+  async create(blog: IBlog): Promise<number> {
     try {
       //connect to the database
       let db: Database = await open({
@@ -101,19 +100,24 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       let statement = await db.prepare(`INSERT INTO Blog ( username, title, content, titleImagePath) VALUES (?, ?, ?, ?)`);
 
       //execute the insertion
-      await statement.run(blog.username, blog.title, blog.content, blog.titleImagePath);
+      let result = await statement.run(blog.username, blog.title, blog.content, blog.titleImagePath);
+
+      console.log(result);
+
+      //retrieve the last rowID from the result object -- lastID is only populated when we use an insert
+      let rowID: number = (result.lastID as number);
 
       //finalize statmenet
-      statement.finalize();
+      await statement.finalize();
 
       //close db
       await db.close();
 
       //return database
-      return true;
+      return rowID;
     } catch (e) {
       console.log(e);
-      return false;
+      return -1;
     }
   }
 
@@ -160,10 +164,12 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       let blogID: string = blog.blogID.toString();
 
       //execute the statement 
-      await statement.run(...queryValues, blogID);
+      let result = await statement.run(...queryValues, blogID);
+
+      console.log(result);
 
       //finalize statmenet
-      statement.finalize();
+      await statement.finalize();
 
       //close db
       await db.close();

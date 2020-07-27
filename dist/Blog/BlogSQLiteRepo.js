@@ -77,10 +77,11 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         return [4 /*yield*/, statement.all(value)];
                     case 3:
                         rows = _a.sent();
+                        console.log(rows);
                         blogs_1 = [];
-                        blog_1 = new Blog_1.default();
                         //place results into the blog array 
                         rows.forEach(function (row) {
+                            blog_1 = new Blog_1.default(); //TODO: Find better way to create a deep copy
                             blog_1.blogID = row.blogID;
                             blog_1.title = row.title;
                             blog_1.titleImagePath = row.titleImagePath;
@@ -144,11 +145,11 @@ var BlogSQLiteRepo = /** @class */ (function () {
     };
     BlogSQLiteRepo.prototype.create = function (blog) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, statement, e_2;
+            var db, statement, result, rowID, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 5, , 6]);
+                        _a.trys.push([0, 6, , 7]);
                         return [4 /*yield*/, sqlite_1.open({
                                 filename: "" + this.dbPath,
                                 driver: sqlite3_1.default.Database
@@ -160,25 +161,28 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         return [4 /*yield*/, db.prepare("INSERT INTO Blog ( username, title, content, titleImagePath) VALUES (?, ?, ?, ?)")];
                     case 2:
                         statement = _a.sent();
-                        //execute the insertion
                         return [4 /*yield*/, statement.run(blog.username, blog.title, blog.content, blog.titleImagePath)];
                     case 3:
-                        //execute the insertion
-                        _a.sent();
+                        result = _a.sent();
+                        console.log(result);
+                        rowID = result.lastID;
                         //finalize statmenet
-                        statement.finalize();
+                        return [4 /*yield*/, statement.finalize()];
+                    case 4:
+                        //finalize statmenet
+                        _a.sent();
                         //close db
                         return [4 /*yield*/, db.close()];
-                    case 4:
+                    case 5:
                         //close db
                         _a.sent();
                         //return database
-                        return [2 /*return*/, true];
-                    case 5:
+                        return [2 /*return*/, rowID];
+                    case 6:
                         e_2 = _a.sent();
                         console.log(e_2);
-                        return [2 /*return*/, false];
-                    case 6: return [2 /*return*/];
+                        return [2 /*return*/, -1];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
@@ -186,11 +190,11 @@ var BlogSQLiteRepo = /** @class */ (function () {
     //upddate any changes that occur to the blog. Do not update BlogID
     BlogSQLiteRepo.prototype.update = function (blog) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, queryProperties, queryValues, blogEntries, entry, query, statement, blogID, e_3;
+            var db, queryProperties, queryValues, blogEntries, entry, query, statement, blogID, result, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 5, , 6]);
+                        _a.trys.push([0, 6, , 7]);
                         //check if blogID is filled
                         if (blog.blogID < 0) {
                             throw new Error("No ID");
@@ -219,24 +223,26 @@ var BlogSQLiteRepo = /** @class */ (function () {
                     case 2:
                         statement = _a.sent();
                         blogID = blog.blogID.toString();
-                        //execute the statement 
                         return [4 /*yield*/, statement.run.apply(statement, __spreadArrays(queryValues, [blogID]))];
                     case 3:
-                        //execute the statement 
-                        _a.sent();
+                        result = _a.sent();
+                        console.log(result);
                         //finalize statmenet
-                        statement.finalize();
+                        return [4 /*yield*/, statement.finalize()];
+                    case 4:
+                        //finalize statmenet
+                        _a.sent();
                         //close db
                         return [4 /*yield*/, db.close()];
-                    case 4:
+                    case 5:
                         //close db
                         _a.sent();
                         return [2 /*return*/];
-                    case 5:
+                    case 6:
                         e_3 = _a.sent();
                         console.log(e_3);
                         throw new Error(e_3);
-                    case 6: return [2 /*return*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         });

@@ -49,9 +49,6 @@ export default class BlogController implements IController {
         //TODO: Use env to get absolute path not hardcoded string
         let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleImagePath);
 
-        //change \ to / in blog's path to the title image
-        imagePath = imagePath.replace(/\\/g, "/");
-
         //render the blog template with the blog's properties
         res.render('Blog', {
           titleImagePath: imagePath,
@@ -155,11 +152,109 @@ export default class BlogController implements IController {
 
     // });
 
+    //create a blog resource --return blogID 
+    //A blog resource contains a path to the blog's title image if one was uploaded.
+    //This image path needs to be posted to the uploads path, then linked to blog with a patch request to blog.
     this.router.post('/blog', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+      try {
+        //create a blog resource
+        let blog: IBlog = new Blog();
+
+        //set the username -- foreign key for the Blog entity that connects it to the User entity
+        blog.username = res.locals.userId;
+
+        //set the content of the blog
+        blog.content = req.body.content;
+
+        //set the title of the blog
+        blog.title = req.body.title;
+
+        //create the blog in the database 
+        let blogID: number = await this.repo.create(blog);
+
+        //return the blog id to the user
+        res.send(blogID.toString());
+      } catch (e) {
+        res.sendStatus(400);
+        throw new Error(e);
+      }
 
     });
 
-    //allow the user to edit a blog
+    //TODO: Move this out of the blog controller and expand functionality to cover user profile image uploads.
+    //create an image resource -- return unique image ID or image path
+    //This blog hero image needs to be linked to a blog resource using the blog's Patch path.
+    this.router.post('/uploads', this.auth.authenitcateJWT, this.upload.single("image"), async (req: Request, res: Response) => {
+      try {
+        //check if image is uploaded 
+        if (req.file) {
+          console.log(req.file);
+
+          //extract the path to the image resource created 
+          let imagePath: string = JSON.stringify(req.file.path);
+
+          //change \ to / in blog's path to the title image
+          imagePath = imagePath.replace(/\\/g, "/");
+
+          console.log(imagePath);
+
+          //send back the imagepath to the user
+          res.send(imagePath);
+        }
+      } catch (e) {
+        res.sendStatus(400);
+        throw new Error(e);
+      }
+    });
+
+
+    //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
+    this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+      try {
+        //store incoming request parameters 
+        let blog: IBlog = new Blog();
+
+        //TODO: Make blog method to do this not controller logic 
+        //determine which blog properties are being patched based off request body parameters
+        if (req.body.content !== null && req.body.content !== undefined) {
+          blog.content = req.body.content;
+        }
+
+        //blog title
+        if (req.body.title !== null && req.body.title !== undefined) {
+          blog.title = req.body.title;
+        }
+
+        //blog's path to titleimage
+        if (req.body.titleImagePath !== null && req.body.titleImagePath !== undefined) {
+          blog.titleImagePath = req.body.titleImagePath;
+        }
+
+        //blog's username value -- TODO: Determine if this is necessary here
+        if (req.body.username !== null && req.body.username !== undefined) {
+          blog.username = req.body.username;
+        }
+
+        //set blog object's blogID using the incoming request parameter
+        blog.blogID = parseInt(req.params.blogID);
+
+        //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
+        await this.repo.update(blog);
+
+        console.log("Successful update!");
+
+        //send no content success
+        res.sendStatus(204);
+      } catch (e) {
+        console.error(e);
+        res.sendStatus(400);
+      }
+
+    });
+
+
+
+    //allow the user to edit a blog -- TODO: Change because Edit is not a resource
     this.router.get('/blog/edit/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //retrieve the BlogID parameter

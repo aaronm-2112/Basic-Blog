@@ -80,8 +80,6 @@ var BlogController = /** @class */ (function () {
                     case 1:
                         blog = _a.sent();
                         imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleImagePath);
-                        //change \ to / in blog's path to the title image
-                        imagePath = imagePath.replace(/\\/g, "/");
                         //render the blog template with the blog's properties
                         res.render('Blog', {
                             titleImagePath: imagePath,
@@ -101,45 +99,129 @@ var BlogController = /** @class */ (function () {
         }); });
         //Receive blog banner image place it in public images and create a blog resource
         //TODO: Ensure an image is sent and not other kinds of media[security thing]
-        this.router.post('/blog', this.auth.authenitcateJWT, this.upload.single("image"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        //Method One: Part of method one. To post image and create blog resource. Then patch resource with text content.
+        //            Decided to refactor this. 
+        // this.router.post('/blog', this.auth.authenitcateJWT, this.upload.single("image"), async (req: Request, res: Response) => {
+        //   try {
+        //     //check if image is uploaded 
+        //     if (req.file) {
+        //       console.log(req.file);
+        //       //if image is uploaded create a new blog 
+        //       let blog: IBlog = new Blog();
+        //       //set titleImagePath to the uploaded image's path attribute
+        //       blog.titleImagePath = req.file.path;
+        //       //set the username -- foreign key for the blog
+        //       blog.username = res.locals.userId;
+        //       //add the blog to the database 
+        //       await this.repo.create(blog);
+        //       //find the blog's ID and send back to user 
+        //       console.log("Creation successful");
+        //       blog = await this.repo.find(searchParameters.TitleImagePath, req.file.path);
+        //       //get the blog id
+        //       let blogID: string = blog.blogID.toString();
+        //       //return the blog id to the user
+        //       res.send(blogID);
+        //     }
+        //     //console.log(req.body.content);
+        //   } catch (e) {
+        //     res.sendStatus(400);
+        //     console.log(e);
+        //     throw new Error(e);
+        //   }
+        // });
+        //Receive a blog's text content and update the blog data (so this should be a patch to something like /blog/{blogID})
+        //Possible request body parameters: content, title, titleImagePath, username
+        //Method One: Part of method one. To post image and create blog resource. Then patch resource with text content.
+        //            Decided to refactor this. 
+        // this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+        //   try {
+        //     //store incoming request parameters 
+        //     let blog: IBlog = new Blog();
+        //     //TODO: Make blog method to do this not controller logic 
+        //     //determine which blog properties are being patched based off request body parameters
+        //     if (req.body.content !== null && req.body.content !== undefined) {
+        //       blog.content = req.body.content;
+        //     }
+        //     //blog title
+        //     if (req.body.title !== null && req.body.title !== undefined) {
+        //       blog.title = req.body.title;
+        //     }
+        //     //blog's path to titleimage
+        //     if (req.body.titleImagePath !== null && req.body.titleImagePath !== undefined) {
+        //       blog.titleImagePath = req.body.titleImagePath;
+        //     }
+        //     //blog's username value -- TODO: Determine if this is necessary here
+        //     if (req.body.username !== null && req.body.username !== undefined) {
+        //       blog.username = req.body.username;
+        //     }
+        //     //set blog object's blogID using the incoming request parameter
+        //     blog.blogID = parseInt(req.params.blogID);
+        //     //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
+        //     await this.repo.update(blog);
+        //     console.log("Successful update!");
+        //     //send no content success
+        //     res.sendStatus(204);
+        //   } catch (e) {
+        //     console.error(e);
+        //     res.sendStatus(400);
+        //   }
+        // });
+        //create a blog resource --return blogID 
+        //A blog resource contains a path to the blog's title image if one was uploaded.
+        //This image path needs to be posted to the uploads path, then linked to blog with a patch request to blog.
+        this.router.post('/blog', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blog, blogID, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 4, , 5]);
-                        if (!req.file) return [3 /*break*/, 3];
-                        console.log(req.file);
+                        _a.trys.push([0, 2, , 3]);
                         blog = new Blog_1.default();
-                        //set titleImagePath to the uploaded image's path attribute
-                        blog.titleImagePath = req.file.path;
-                        //set the username -- foreign key for the blog
+                        //set the username -- foreign key for the Blog entity that connects it to the User entity
                         blog.username = res.locals.userId;
-                        //add the blog to the database 
+                        //set the content of the blog
+                        blog.content = req.body.content;
+                        //set the title of the blog
+                        blog.title = req.body.title;
                         return [4 /*yield*/, this.repo.create(blog)];
                     case 1:
-                        //add the blog to the database 
-                        _a.sent();
-                        //find the blog's ID and send back to user 
-                        console.log("Creation successful");
-                        return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.TitleImagePath, req.file.path)];
-                    case 2:
-                        blog = _a.sent();
-                        blogID = blog.blogID.toString();
+                        blogID = _a.sent();
                         //return the blog id to the user
-                        res.send(blogID);
-                        _a.label = 3;
-                    case 3: return [3 /*break*/, 5];
-                    case 4:
+                        res.send(blogID.toString());
+                        return [3 /*break*/, 3];
+                    case 2:
                         e_2 = _a.sent();
                         res.sendStatus(400);
-                        console.log(e_2);
                         throw new Error(e_2);
-                    case 5: return [2 /*return*/];
+                    case 3: return [2 /*return*/];
                 }
             });
         }); });
-        //Receive a blog's text content and update the blog data (so this should be a patch to something like /blog/{blogID})
-        //Possible request body parameters: content, title, titleImagePath, username
+        //TODO: Move this out of the blog controller and expand functionality to cover user profile image uploads.
+        //create an image resource -- return unique image ID or image path
+        //This blog hero image needs to be linked to a blog resource using the blog's Patch path.
+        this.router.post('/uploads', this.auth.authenitcateJWT, this.upload.single("image"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var imagePath;
+            return __generator(this, function (_a) {
+                try {
+                    //check if image is uploaded 
+                    if (req.file) {
+                        console.log(req.file);
+                        imagePath = JSON.stringify(req.file.path);
+                        //change \ to / in blog's path to the title image
+                        imagePath = imagePath.replace(/\\/g, "/");
+                        console.log(imagePath);
+                        //send back the imagepath to the user
+                        res.send(imagePath);
+                    }
+                }
+                catch (e) {
+                    res.sendStatus(400);
+                    throw new Error(e);
+                }
+                return [2 /*return*/];
+            });
+        }); });
+        //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
         this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blog, e_3;
             return __generator(this, function (_a) {
@@ -184,7 +266,7 @@ var BlogController = /** @class */ (function () {
                 }
             });
         }); });
-        //allow the user to edit a blog
+        //allow the user to edit a blog -- TODO: Change because Edit is not a resource
         this.router.get('/blog/edit/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogID, blog, username, imagePath, e_4;
             return __generator(this, function (_a) {
@@ -196,7 +278,6 @@ var BlogController = /** @class */ (function () {
                     case 1:
                         blog = _a.sent();
                         username = res.locals.userId;
-                        console.log(username);
                         //check if the username in the blog properties matches the username of the user making the request
                         if (!blog.creator(username)) {
                             //If not stop and return unauthorized b/c the user did not create this blog

@@ -14,6 +14,7 @@ var SqliteRepository_1 = __importDefault(require("./User/SqliteRepository"));
 var UserController_1 = __importDefault(require("./User/UserController"));
 var BlogSQLiteRepo_1 = __importDefault(require("./Blog/BlogSQLiteRepo"));
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
+//TODO: Add Location headers in all post request responses to client.
 //Used for development database changes. 
 // createDB().then(() => {
 //   console.log("Inited");
