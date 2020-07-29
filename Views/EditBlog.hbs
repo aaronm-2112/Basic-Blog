@@ -19,12 +19,20 @@ Content: <textarea name="content" id="content" cols="30" rows="10">{{content}}</
     blogID = blogID.trim();
   }
 
-  //get blogID
-  let blogID = getBlogID();
+  //Begin patch function
+  function patch() {
+    //get blogID
+    let blogID = getBlogID();
 
-  //get the input field values
-  let content = document.getElementById("content").value;
-  let title = document.getElementById("title").value;
+    //get the input field values
+    let content = document.getElementById("content").value;
+    let title = document.getElementById("title").value;
+
+
+  }
+
+  //add event listener to the save button
+  document.getElementById("Save").addEventListener("click", patch);
 
 
 

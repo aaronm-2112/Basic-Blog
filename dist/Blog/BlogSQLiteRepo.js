@@ -73,11 +73,9 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         return [4 /*yield*/, db.prepare("SELECT blogID, username, title, content, titleImagePath FROM Blog WHERE " + searchBy + " = ? ")];
                     case 2:
                         statement = _a.sent();
-                        console.log("statement prepared");
                         return [4 /*yield*/, statement.all(value)];
                     case 3:
                         rows = _a.sent();
-                        console.log(rows);
                         blogs_1 = [];
                         //place results into the blog array 
                         rows.forEach(function (row) {

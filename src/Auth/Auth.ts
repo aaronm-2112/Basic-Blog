@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtHeader, VerifyOptions, decode } from 'jsonwebtoken';
 import fs, { access } from 'fs';
 import IUser from '../User/IUser';
-import { SSL_OP_COOKIE_EXCHANGE } from 'constants';
 
 export default class Auth {
 
@@ -71,18 +70,13 @@ export default class Auth {
         next();
 
       });
-
-
-
-
-
-
     } catch (e) {
       console.log("Error: " + e)
       res.status(401).send("Error authenticating")
     }
 
   }
+
 
   public createJWT(user: IUser): string {
     //create a jwt using the private key and the user information
@@ -96,5 +90,45 @@ export default class Auth {
     return jwtBearerToken;
   }
 
+  //code that takes a jwt token and authenticates it then passes back the subject
+  public setSubject(token: string | undefined, subject: { id: string }): void {
+    //check if token exists
+    if (!token) {
+      //if no token return an empty string
+      return;
+    }
 
+    //verify the passed in jsonwebtoken --TODO: Make async?
+    let PUBLIC_KEY: Buffer = fs.readFileSync('C:\\Users\\Aaron\\Desktop\\Basic-Blog\\src\\Auth\\rsa.pem');
+
+    //verify the token
+    jwt.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] }, function (err, payload) {
+      console.log("Verify callback");
+      //check for error in the decoding 
+      if (err) {
+        return;
+      }
+
+      //check if payload is undefined --if not undefined the token is valid
+      if (payload === undefined) {
+        return;
+      }
+
+      //make the payload keys accessible -- token interface is: {iat: string, sub: string, expires: string} as well as other keys
+      let accessiblePayload: { [key: string]: any } = payload as { [key: string]: any };
+
+      //set subject value 
+      subject.id = accessiblePayload.sub;
+
+      console.log("Subject should be set!");
+
+      console.log(subject);
+
+      //verify the subject exists
+      if (subject === undefined || subject === null || subject.id === '') {
+        return;
+      }
+    });
+
+  }
 }

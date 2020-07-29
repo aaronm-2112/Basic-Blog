@@ -69,24 +69,58 @@ var BlogController = /** @class */ (function () {
             });
         }); });
         //return a specific blog for viewing
-        this.router.get('/blog/:blogID', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blogID, blog, imagePath, e_1;
+        this.router.get('/blog/:blogID/:edit', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var blogID, blog, imagePath, userID, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
+                        console.log("In get blog route");
+                        console.log(req.params.edit);
                         blogID = req.params.blogID;
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogID)];
                     case 1:
                         blog = _a.sent();
                         imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleImagePath);
-                        //render the blog template with the blog's properties
-                        res.render('Blog', {
-                            titleImagePath: imagePath,
-                            title: blog.title,
-                            username: blog.username,
-                            content: blog.content
-                        });
+                        //check the value of edit
+                        if (req.params.edit === "true") {
+                            console.log("Editing");
+                            userID = { id: "" };
+                            this.auth.setSubject(req.cookies["jwt"], userID);
+                            console.log("After subject function");
+                            //check if a userID was extracted from the incoming JWT
+                            if (userID.id === "silly") {
+                                console.log("UserID is silly");
+                                //if not return because there is no way to verify if the incoming user owns the blog they want to edit
+                                res.sendStatus(400);
+                                return [2 /*return*/];
+                            }
+                            //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
+                            if (userID.id === blog.username) {
+                                //edit the blog -- TODO: Make this an edit blog page instead TODO: Make this one blog page with logic to determine this.
+                                res.render('EditBlog', {
+                                    titleImagePath: imagePath,
+                                    title: blog.title,
+                                    username: blog.username,
+                                    content: blog.content
+                                });
+                                return [2 /*return*/];
+                            }
+                            else {
+                                //user does not have access
+                                res.sendStatus(400);
+                                return [2 /*return*/];
+                            }
+                        }
+                        else {
+                            //render the blog template with the blog's properties
+                            res.render('Blog', {
+                                titleImagePath: imagePath,
+                                title: blog.title,
+                                username: blog.username,
+                                content: blog.content
+                            });
+                        }
                         return [3 /*break*/, 3];
                     case 2:
                         e_1 = _a.sent();

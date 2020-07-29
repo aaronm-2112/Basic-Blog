@@ -107,6 +107,38 @@ var Auth = /** @class */ (function () {
         });
         return jwtBearerToken;
     };
+    //code that takes a jwt token and authenticates it then passes back the subject
+    Auth.prototype.setSubject = function (token, subject) {
+        //check if token exists
+        if (!token) {
+            //if no token return an empty string
+            return;
+        }
+        //verify the passed in jsonwebtoken --TODO: Make async?
+        var PUBLIC_KEY = fs_1.default.readFileSync('C:\\Users\\Aaron\\Desktop\\Basic-Blog\\src\\Auth\\rsa.pem');
+        //verify the token
+        jsonwebtoken_1.default.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] }, function (err, payload) {
+            console.log("Verify callback");
+            //check for error in the decoding 
+            if (err) {
+                return;
+            }
+            //check if payload is undefined --if not undefined the token is valid
+            if (payload === undefined) {
+                return;
+            }
+            //make the payload keys accessible -- token interface is: {iat: string, sub: string, expires: string} as well as other keys
+            var accessiblePayload = payload;
+            //set subject value 
+            subject.id = accessiblePayload.sub;
+            console.log("Subject should be set!");
+            console.log(subject);
+            //verify the subject exists
+            if (subject === undefined || subject === null || subject.id === '') {
+                return;
+            }
+        });
+    };
     return Auth;
 }());
 exports.default = Auth;

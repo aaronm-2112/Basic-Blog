@@ -140,7 +140,7 @@ export default class UserController implements IController {
 
         //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
         blogs.forEach(blog => {
-          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blog/edit/${blog.blogID}`, viewPath: `http://localhost:3000/blog/${blog.blogID}` })
+          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blog/${blog.blogID}/true`, viewPath: `http://localhost:3000/blog/${blog.blogID}` })
         });
 
         //  1. Send user profile info to profile partial

@@ -37,8 +37,11 @@ export default class BlogController implements IController {
     });
 
     //return a specific blog for viewing
-    this.router.get('/blog/:blogID', async (req: Request, res: Response) => {
+    this.router.get('/blog/:blogID/:edit', async (req: Request, res: Response) => {
       try {
+        console.log("In get blog route");
+        console.log(req.params.edit);
+
         //retrieve the blogID from the request parameter
         let blogID: string = req.params.blogID;
 
@@ -49,14 +52,47 @@ export default class BlogController implements IController {
         //TODO: Use env to get absolute path not hardcoded string
         let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleImagePath);
 
-        //render the blog template with the blog's properties
-        res.render('Blog', {
-          titleImagePath: imagePath,
-          title: blog.title,
-          username: blog.username,
-          content: blog.content
-        });
+        //check the value of edit
+        if (req.params.edit === "true") {
+          console.log("Editing");
+          //get the userID from the cookie
+          let userID: { id: string } = { id: "" };
 
+          this.auth.setSubject(req.cookies["jwt"], userID);
+          console.log("After subject function");
+
+          //check if a userID was extracted from the incoming JWT
+          if (userID.id === "silly") {
+            console.log("UserID is silly");
+            //if not return because there is no way to verify if the incoming user owns the blog they want to edit
+            res.sendStatus(400);
+            return;
+          }
+
+          //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
+          if (userID.id === blog.username) {
+            //edit the blog -- TODO: Make this an edit blog page instead TODO: Make this one blog page with logic to determine this.
+            res.render('EditBlog', {
+              titleImagePath: imagePath,
+              title: blog.title,
+              username: blog.username,
+              content: blog.content
+            });
+            return;
+          } else {
+            //user does not have access
+            res.sendStatus(400);
+            return;
+          }
+        } else {
+          //render the blog template with the blog's properties
+          res.render('Blog', {
+            titleImagePath: imagePath,
+            title: blog.title,
+            username: blog.username,
+            content: blog.content
+          });
+        }
       } catch (e) {
         res.sendStatus(400);
         console.log(e);
@@ -211,35 +247,50 @@ export default class BlogController implements IController {
     //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
     this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-        //store incoming request parameters 
-        let blog: IBlog = new Blog();
 
-        //TODO: Make blog method to do this not controller logic 
+        //get the userID
+        let userID: string = res.locals.userId;
+
+        //get the blog via the blogID
+        let blog: IBlog = await this.repo.find(searchParameters.BlogID, req.params.blogID);
+
+        //TODO: Make blog method to do this b/c this is not/shouldn't be controller logic 
+        //check if the incoming userID isn't the same as the blog identified with the incoming blogID
+        if (userID !== blog.username) {
+          //the user does not have authorization to edit this blog
+          res.sendStatus(400);
+          return;
+        }
+
+        //store incoming request parameters 
+        let editBlog: IBlog = new Blog();
+
+        //TODO: Make blog method to do this b/c this is not/shouldn't be controller logic 
         //determine which blog properties are being patched based off request body parameters
         if (req.body.content !== null && req.body.content !== undefined) {
-          blog.content = req.body.content;
+          editBlog.content = req.body.content;
         }
 
         //blog title
         if (req.body.title !== null && req.body.title !== undefined) {
-          blog.title = req.body.title;
+          editBlog.title = req.body.title;
         }
 
         //blog's path to titleimage
         if (req.body.titleImagePath !== null && req.body.titleImagePath !== undefined) {
-          blog.titleImagePath = req.body.titleImagePath;
+          editBlog.titleImagePath = req.body.titleImagePath;
         }
 
         //blog's username value -- TODO: Determine if this is necessary here
         if (req.body.username !== null && req.body.username !== undefined) {
-          blog.username = req.body.username;
+          editBlog.username = req.body.username;
         }
 
         //set blog object's blogID using the incoming request parameter
-        blog.blogID = parseInt(req.params.blogID);
+        editBlog.blogID = parseInt(req.params.blogID);
 
         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
-        await this.repo.update(blog);
+        await this.repo.update(editBlog);
 
         console.log("Successful update!");
 
