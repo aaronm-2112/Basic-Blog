@@ -1,6 +1,6 @@
 import IUserRepository from "./IRepository";
 import IUser from './IUser';
-import User from '../Models/User';
+import User from './User';
 import Auth from '../Auth/Auth';
 import { Request, Response, Router } from 'express';
 import * as express from 'express';
@@ -147,7 +147,8 @@ export default class UserController implements IController {
         res.render('Profile', {
           userName: user.getUsername(), firstName: user.getFirstname(),
           lastName: user.getLastname(), bio: user.getBio(),
-          blogDetails: blogDetails
+          blogDetails: blogDetails,
+          profileImagePath: user.getProfilePicPath()
         });
 
       } catch (e) {
@@ -163,12 +164,12 @@ export default class UserController implements IController {
         let username: string = res.locals.userId //TODO: Add error checking
 
         //Get the user information 
-        let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
+        let user: IUser = await this.userRepository.find(username);
 
         //  1. Send user profile info to profile edit
         res.render('ProfileEdit', {
           userName: user.getUsername(), firstName: user.getFirstname(),
-          lastName: user.getLastname(), bio: user.getBio()
+          lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
         })
 
       } catch (e) {
@@ -178,6 +179,8 @@ export default class UserController implements IController {
     })
 
     //TODO: Security checks
+    //TOOD: Refactor into a route that points to a resource?
+    //TODO: Refactor into a Put or Patch request
     this.router.post("/profile/edit", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //Retrieve user id

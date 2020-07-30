@@ -46,7 +46,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var User_1 = __importDefault(require("../Models/User"));
+var User_1 = __importDefault(require("./User"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
 var express = __importStar(require("express"));
 var salt_1 = require("../Common/salt");
@@ -173,7 +173,8 @@ var UserController = /** @class */ (function () {
                         res.render('Profile', {
                             userName: user.getUsername(), firstName: user.getFirstname(),
                             lastName: user.getLastname(), bio: user.getBio(),
-                            blogDetails: blogDetails_1
+                            blogDetails: blogDetails_1,
+                            profileImagePath: user.getProfilePicPath()
                         });
                         return [3 /*break*/, 4];
                     case 3:
@@ -200,7 +201,7 @@ var UserController = /** @class */ (function () {
                         //  1. Send user profile info to profile edit
                         res.render('ProfileEdit', {
                             userName: user.getUsername(), firstName: user.getFirstname(),
-                            lastName: user.getLastname(), bio: user.getBio()
+                            lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
                         });
                         return [3 /*break*/, 3];
                     case 2:
@@ -213,6 +214,8 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //TODO: Security checks
+        //TOOD: Refactor into a route that points to a resource?
+        //TODO: Refactor into a Put or Patch request
         this.router.post("/profile/edit", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var userName, firstName, lastName, bio, user, e_5;
             return __generator(this, function (_a) {

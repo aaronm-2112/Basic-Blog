@@ -2,7 +2,7 @@ import IRepository from './IRepository';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import IUser from './IUser';
-import User from '../Models/User';
+import User from './User';
 import { generateUserSalt, generateUserHash } from '../Common/salt';
 
 

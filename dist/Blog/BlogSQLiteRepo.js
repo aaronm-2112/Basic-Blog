@@ -108,13 +108,16 @@ var BlogSQLiteRepo = /** @class */ (function () {
     };
     BlogSQLiteRepo.prototype.find = function (searchBy, value) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, statement, row, blog;
+            var db, statement, row, blog, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, sqlite_1.open({
-                            filename: "" + this.dbPath,
-                            driver: sqlite3_1.default.Database
-                        })];
+                    case 0:
+                        _a.trys.push([0, 5, , 6]);
+                        console.log("In find");
+                        return [4 /*yield*/, sqlite_1.open({
+                                filename: "" + this.dbPath,
+                                driver: sqlite3_1.default.Database
+                            })];
                     case 1:
                         db = _a.sent();
                         return [4 /*yield*/, db.prepare("SELECT blogID, username, title, content, titleImagePath FROM Blog WHERE " + searchBy + " = ?")];
@@ -137,13 +140,17 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         //close the database connection
                         _a.sent();
                         return [2 /*return*/, blog];
+                    case 5:
+                        e_2 = _a.sent();
+                        throw new Error(e_2);
+                    case 6: return [2 /*return*/];
                 }
             });
         });
     };
     BlogSQLiteRepo.prototype.create = function (blog) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, statement, result, rowID, e_2;
+            var db, statement, result, rowID, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -177,8 +184,8 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         //return database
                         return [2 /*return*/, rowID];
                     case 6:
-                        e_2 = _a.sent();
-                        console.log(e_2);
+                        e_3 = _a.sent();
+                        console.log(e_3);
                         return [2 /*return*/, -1];
                     case 7: return [2 /*return*/];
                 }
@@ -188,11 +195,12 @@ var BlogSQLiteRepo = /** @class */ (function () {
     //upddate any changes that occur to the blog. Do not update BlogID
     BlogSQLiteRepo.prototype.update = function (blog) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, queryProperties, queryValues, blogEntries, entry, query, statement, blogID, result, e_3;
+            var db, queryProperties, queryValues, blogEntries, entry, query, statement, blogID, result, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 6, , 7]);
+                        console.log("In update");
                         //check if blogID is filled
                         if (blog.blogID < 0) {
                             throw new Error("No ID");
@@ -217,6 +225,7 @@ var BlogSQLiteRepo = /** @class */ (function () {
                             }
                         }
                         query = "UPDATE BLOG SET " + queryProperties.join(',') + " WHERE blogID = ?";
+                        console.log(query);
                         return [4 /*yield*/, db.prepare(query)];
                     case 2:
                         statement = _a.sent();
@@ -237,9 +246,9 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         _a.sent();
                         return [2 /*return*/];
                     case 6:
-                        e_3 = _a.sent();
-                        console.log(e_3);
-                        throw new Error(e_3);
+                        e_4 = _a.sent();
+                        console.log(e_4);
+                        throw new Error(e_4);
                     case 7: return [2 /*return*/];
                 }
             });
@@ -247,7 +256,7 @@ var BlogSQLiteRepo = /** @class */ (function () {
     };
     BlogSQLiteRepo.prototype.delete = function (blog) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, statement, e_4;
+            var db, statement, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -277,8 +286,8 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         _a.sent();
                         return [2 /*return*/, true];
                     case 5:
-                        e_4 = _a.sent();
-                        console.log(e_4);
+                        e_5 = _a.sent();
+                        console.log(e_5);
                         return [2 /*return*/, false];
                     case 6: return [2 /*return*/];
                 }

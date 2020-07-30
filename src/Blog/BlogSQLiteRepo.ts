@@ -58,34 +58,41 @@ export default class BlogSQLiteRepo implements IBlogRepository {
   }
 
   async find(searchBy: searchParameters, value: string): Promise<IBlog> {
-    //connect to the database 
-    let db: Database = await open({
-      filename: `${this.dbPath}`,
-      driver: sqlite3.Database
-    });
+    try {
+      console.log("In find");
 
-    //prepare the query to find the blog
-    let statement = await db.prepare(`SELECT blogID, username, title, content, titleImagePath FROM Blog WHERE ${searchBy} = ?`);
+      //connect to the database 
+      let db: Database = await open({
+        filename: `${this.dbPath}`,
+        driver: sqlite3.Database
+      });
 
-    //execute the query 
-    let row: any = await statement.get(value);
+      //prepare the query to find the blog
+      let statement = await db.prepare(`SELECT blogID, username, title, content, titleImagePath FROM Blog WHERE ${searchBy} = ?`);
+      //db.prepare(`SELECT blogID, username, title, content, titleImagePath FROM Blog WHERE ${searchBy} = ? `);
 
-    //place the row data into a blog object and return it
-    let blog: IBlog = new Blog();
+      //execute the query 
+      let row: any = await statement.get(value);
 
-    blog.blogID = row.blogID;
-    blog.title = row.title;
-    blog.titleImagePath = row.titleImagePath;
-    blog.content = row.content;
-    blog.username = row.username;
+      //place the row data into a blog object and return it
+      let blog: IBlog = new Blog();
 
-    //finalize the statement
-    statement.finalize();
+      blog.blogID = row.blogID;
+      blog.title = row.title;
+      blog.titleImagePath = row.titleImagePath;
+      blog.content = row.content;
+      blog.username = row.username;
 
-    //close the database connection
-    await db.close();
+      //finalize the statement
+      statement.finalize();
 
-    return blog;
+      //close the database connection
+      await db.close();
+
+      return blog;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   async create(blog: IBlog): Promise<number> {
@@ -124,6 +131,7 @@ export default class BlogSQLiteRepo implements IBlogRepository {
   //upddate any changes that occur to the blog. Do not update BlogID
   async update(blog: IBlog): Promise<void> {
     try {
+      console.log("In update");
 
       //check if blogID is filled
       if (blog.blogID < 0) {
@@ -156,6 +164,8 @@ export default class BlogSQLiteRepo implements IBlogRepository {
 
       //create the update query
       let query: string = `UPDATE BLOG SET ` + queryProperties.join(',') + ` WHERE blogID = ?`;
+
+      console.log(query);
 
       //create the prepared statement to update the blog
       let statement = await db.prepare(query);

@@ -217,36 +217,39 @@ export default class BlogController implements IController {
 
     });
 
-    //TODO: Move this out of the blog controller and expand functionality to cover user profile image uploads.
-    //create an image resource -- return unique image ID or image path
-    //This blog hero image needs to be linked to a blog resource using the blog's Patch path.
-    this.router.post('/uploads', this.auth.authenitcateJWT, this.upload.single("image"), async (req: Request, res: Response) => {
-      try {
-        //check if image is uploaded 
-        if (req.file) {
-          console.log(req.file);
+    // //TODO: Move this out of the blog controller and expand functionality to cover user profile image uploads.
+    // //create an image resource -- return unique image ID or image path
+    // //This blog hero image needs to be linked to a blog resource using the blog's Patch path.
+    // this.router.post('/uploads', this.auth.authenitcateJWT, this.upload.single("image"), async (req: Request, res: Response) => {
+    //   try {
+    //     //check if image is uploaded 
+    //     if (req.file) {
+    //       console.log(req.file);
 
-          //extract the path to the image resource created 
-          let imagePath: string = JSON.stringify(req.file.path);
+    //       //extract the path to the image resource created 
+    //       let imagePath: string = JSON.stringify(req.file.path);
 
-          //change \ to / in blog's path to the title image
-          imagePath = imagePath.replace(/\\/g, "/");
+    //       //change \ to / in blog's path to the title image
+    //       imagePath = imagePath.replace(/\\/g, "/");
 
-          console.log(imagePath);
+    //       console.log(imagePath);
 
-          //send back the imagepath to the user
-          res.send(imagePath);
-        }
-      } catch (e) {
-        res.sendStatus(400);
-        throw new Error(e);
-      }
-    });
+    //       //send back the imagepath to the user
+    //       res.send(imagePath);
+    //     }
+    //   } catch (e) {
+    //     res.sendStatus(400);
+    //     throw new Error(e);
+    //   }
+    // });
 
 
     //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
     this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
+
+        console.log("Pathc route!");
+        console.log(req.body);
 
         //get the userID
         let userID: string = res.locals.userId;

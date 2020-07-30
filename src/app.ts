@@ -13,6 +13,7 @@ import IBlogRepository from './Blog/IBlogRepository';
 import BlogSQLiteRepo from './Blog/BlogSQLiteRepo';
 import IController from './Controllers/IController';
 import BlogController from './Blog/BlogController';
+import Upload from './Common/Resources/Uploads';
 
 //TODO: Add Location headers in all post request responses to client.
 
@@ -75,17 +76,14 @@ let blogrepo: IBlogRepository = new BlogSQLiteRepo();
 let blogcontroller: IController = new BlogController(blogrepo);
 blogcontroller.registerRoutes(app);
 
+//register the common upload route
+Upload(app).then(res => {
+  console.log("Uploads registered.");
+}).catch(e => console.log(e));
+
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 
-
-//TODO: Add blog table to database: 
-//                                 1 to Many relationship with users
-//                                 Username is the foreign key in the blog table
-//                                 BlogId is pk 
-//                                 Blog Title 
-//                                 Blog Text 
-//                                 Blog Images
 
 
 export default app;

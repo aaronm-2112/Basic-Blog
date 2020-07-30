@@ -9,6 +9,7 @@ export default interface IUser {
   lastname: String;
   bio: String;
   salt: string;
+  profilePicturePath: string;
 
   getUsername(): String;
   setUsername(username: String): void;
@@ -26,5 +27,7 @@ export default interface IUser {
   setBio(bio: String): void;
   getSalt(): string;
   setSalt(salt: string): void;
+  getProfilePicPath(): string;
+  setProfilePicPath(path: string): void;
 
 } 

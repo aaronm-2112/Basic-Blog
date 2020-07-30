@@ -12,15 +12,17 @@ var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
 var SqliteRepository_1 = __importDefault(require("./User/SqliteRepository"));
 var UserController_1 = __importDefault(require("./User/UserController"));
+var dbinit_1 = require("./dbinit");
 var BlogSQLiteRepo_1 = __importDefault(require("./Blog/BlogSQLiteRepo"));
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
+var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
 //TODO: Add Location headers in all post request responses to client.
 //Used for development database changes. 
-// createDB().then(() => {
-//   console.log("Inited");
-// }).catch(e => {
-//   console.log(e);
-// })
+dbinit_1.createDB().then(function () {
+    console.log("Inited");
+}).catch(function (e) {
+    console.log(e);
+});
 // Create a new express app instance
 var app = express_1.default();
 //direct express middleware to use routes/settings
@@ -60,14 +62,11 @@ usercont.registerRoutes(app);
 var blogrepo = new BlogSQLiteRepo_1.default();
 var blogcontroller = new BlogController_1.default(blogrepo);
 blogcontroller.registerRoutes(app);
+//register the common upload route
+Uploads_1.default(app).then(function (res) {
+    console.log("Uploads registered.");
+}).catch(function (e) { return console.log(e); });
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 
-//TODO: Add blog table to database: 
-//                                 1 to Many relationship with users
-//                                 Username is the foreign key in the blog table
-//                                 BlogId is pk 
-//                                 Blog Title 
-//                                 Blog Text 
-//                                 Blog Images
 exports.default = app;

@@ -1,4 +1,4 @@
-import IUser from "../User/IUser";
+import IUser from "./IUser";
 
 // Can implement an interface for a User if it will become necessary in the future. 
 export default class User implements IUser {
@@ -10,6 +10,7 @@ export default class User implements IUser {
   lastname: String;
   bio: String;
   salt: string;
+  profilePicturePath: string;
 
   constructor() {
     this.userID = 0;
@@ -20,6 +21,7 @@ export default class User implements IUser {
     this.lastname = "";
     this.bio = "";
     this.salt = "";
+    this.profilePicturePath = "";
   }
 
   getUsername(): String {
@@ -84,6 +86,13 @@ export default class User implements IUser {
 
   setSalt(salt: string): void {
     this.salt = salt;
+  }
+
+  getProfilePicPath(): string {
+    return this.profilePicturePath;
+  }
+  setProfilePicPath(path: string): void {
+    this.profilePicturePath = path;
   }
 
 
