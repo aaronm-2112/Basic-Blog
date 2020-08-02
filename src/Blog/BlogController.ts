@@ -38,6 +38,7 @@ export default class BlogController implements IController {
 
     //return a specific blog for viewing
     this.router.get('/blog/:blogID/:edit', async (req: Request, res: Response) => {
+      console.log("In this route");
       try {
         console.log("In get blog route");
         console.log(req.params.edit);
@@ -248,7 +249,7 @@ export default class BlogController implements IController {
     this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
 
-        console.log("Pathc route!");
+        console.log("Patch route!");
         console.log(req.body);
 
         //get the userID

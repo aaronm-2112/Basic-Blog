@@ -74,12 +74,15 @@ var BlogController = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
+                        console.log("In this route");
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
                         console.log("In get blog route");
                         console.log(req.params.edit);
                         blogID = req.params.blogID;
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogID)];
-                    case 1:
+                    case 2:
                         blog = _a.sent();
                         imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleImagePath);
                         //check the value of edit
@@ -121,13 +124,13 @@ var BlogController = /** @class */ (function () {
                                 content: blog.content
                             });
                         }
-                        return [3 /*break*/, 3];
-                    case 2:
+                        return [3 /*break*/, 4];
+                    case 3:
                         e_1 = _a.sent();
                         res.sendStatus(400);
                         console.log(e_1);
                         throw new Error(e_1);
-                    case 3: return [2 /*return*/];
+                    case 4: return [2 /*return*/];
                 }
             });
         }); });
@@ -258,7 +261,7 @@ var BlogController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
-                        console.log("Pathc route!");
+                        console.log("Patch route!");
                         console.log(req.body);
                         userID = res.locals.userId;
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, req.params.blogID)];

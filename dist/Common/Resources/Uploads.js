@@ -41,6 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var Auth_1 = __importDefault(require("../../Auth/Auth"));
 var multer_1 = __importDefault(require("multer"));
+var path_1 = __importDefault(require("path"));
 function Upload(app) {
     return __awaiter(this, void 0, void 0, function () {
         var auth, upload;
@@ -59,11 +60,13 @@ function Upload(app) {
                         if (req.file) {
                             console.log(req.file);
                             imagePath = JSON.stringify(req.file.path);
+                            //replace double // with /
+                            imagePath = path_1.default.normalize(imagePath);
                             //change \ to / in blog's path to the title image
                             imagePath = imagePath.replace(/\\/g, "/");
                             console.log(imagePath);
                             //send back the imagepath to the user
-                            res.send(imagePath);
+                            res.status(201).send(imagePath);
                         }
                     }
                     catch (e) {

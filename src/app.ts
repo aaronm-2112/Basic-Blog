@@ -68,12 +68,13 @@ staticDirectory.registerRoutes(app); //TODO: Rename method
 
 //register the user routes -- (could also have set up controllers which have the routes baked in)
 let userRepo: IUserRepository = new UserRepository();
-let usercont: UserController = new UserController(userRepo);
+let blogRepo: IBlogRepository = new BlogSQLiteRepo();
+let usercont: UserController = new UserController(userRepo, blogRepo);
 usercont.registerRoutes(app);
 
 //register the blog routes 
-let blogrepo: IBlogRepository = new BlogSQLiteRepo();
-let blogcontroller: IController = new BlogController(blogrepo);
+//let blogrepo: IBlogRepository = new BlogSQLiteRepo();
+let blogcontroller: IController = new BlogController(blogRepo);
 blogcontroller.registerRoutes(app);
 
 //register the common upload route

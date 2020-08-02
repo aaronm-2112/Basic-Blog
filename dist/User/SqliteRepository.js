@@ -35,6 +35,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -181,7 +188,7 @@ var UserSQLLiteRepo = /** @class */ (function () {
     //TODO: Allow password and email changes and make more robust
     UserSQLLiteRepo.prototype.update = function (user) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, statement, updatedUser, e_4;
+            var db, queryProperties, queryValues, userEntries, entry, query, statement, result, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -189,29 +196,52 @@ var UserSQLLiteRepo = /** @class */ (function () {
                         return [4 /*yield*/, sqlite_1.open({
                                 filename: "" + this.dbPath,
                                 driver: sqlite3_1.default.Database
-                            })
-                            //Update all fields except for password, salt, or email 
-                        ];
+                            })];
                     case 1:
                         db = _a.sent();
-                        return [4 /*yield*/, db.prepare("UPDATE User SET firstname = ?, lastname = ?, bio = ? WHERE username = ?")];
+                        queryProperties = [];
+                        queryValues = [];
+                        userEntries = Object.entries(user);
+                        //traverse the blog's entries
+                        for (entry in userEntries) {
+                            //console.log(userEntries[entry][0] + userEntries[entry][1]);
+                            //determine which user properties need to be updated -- and do not update those which can't be
+                            if (userEntries[entry][0] !== 'username' && userEntries[entry][1] !== "" && userEntries[entry][0] !== 'salt' && userEntries[entry][0] !== 'userID' && userEntries[entry][0] !== 'email') { //empty string not acceptable update value
+                                //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
+                                queryProperties.push(userEntries[entry][0] + ' = ?');
+                                //push the blog property value into the list of query values
+                                queryValues.push(userEntries[entry][1]);
+                                console.log(userEntries[entry][0] + userEntries[entry][1]);
+                            }
+                        }
+                        query = "UPDATE User SET " + queryProperties.join(',') + " WHERE username = ?";
+                        return [4 /*yield*/, db.prepare(query)];
                     case 2:
                         statement = _a.sent();
-                        //TODO: Implement this in a more robust manner
-                        return [4 /*yield*/, statement.run(user.getFirstname(), user.getLastname(), user.getBio(), user.getUsername())];
+                        console.log(query);
+                        console.log.apply(console, queryValues);
+                        return [4 /*yield*/, statement.run.apply(statement, __spreadArrays(queryValues, [user.getUsername()]))];
                     case 3:
-                        //TODO: Implement this in a more robust manner
-                        _a.sent();
-                        return [4 /*yield*/, this.find(user.getUsername())];
-                    case 4:
-                        updatedUser = _a.sent();
-                        console.log(updatedUser);
+                        result = _a.sent();
+                        console.log(result);
+                        //let updatedUser: IUser = await this.find(user.getUsername());
+                        //console.log(updatedUser);
+                        //finalize the statement
                         return [4 /*yield*/, statement.finalize()];
+                    case 4:
+                        //let updatedUser: IUser = await this.find(user.getUsername());
+                        //console.log(updatedUser);
+                        //finalize the statement
+                        _a.sent();
+                        //close the database connection
+                        return [4 /*yield*/, db.close()];
                     case 5:
+                        //close the database connection
                         _a.sent();
                         return [3 /*break*/, 7];
                     case 6:
                         e_4 = _a.sent();
+                        console.log(e_4);
                         throw new Error(e_4);
                     case 7: return [2 /*return*/];
                 }
@@ -224,7 +254,7 @@ var UserSQLLiteRepo = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 3, , 4]);
+                        _a.trys.push([0, 4, , 5]);
                         return [4 /*yield*/, sqlite_1.open({
                                 filename: "" + this.dbPath,
                                 driver: sqlite3_1.default.Database
@@ -238,12 +268,15 @@ var UserSQLLiteRepo = /** @class */ (function () {
                     case 2:
                         //query the database for the given email and delete the match
                         _a.sent();
+                        return [4 /*yield*/, db.close()];
+                    case 3:
+                        _a.sent();
                         // no database error so return true
                         return [2 /*return*/, true];
-                    case 3:
+                    case 4:
                         e_5 = _a.sent();
                         throw new Error(e_5);
-                    case 4: return [2 /*return*/];
+                    case 5: return [2 /*return*/];
                 }
             });
         });

@@ -2,6 +2,7 @@ import Auth from '../../Auth/Auth';
 import multer from 'multer';
 import { Request, Response } from 'express';
 import * as express from 'express';
+import path from 'path';
 
 export default async function Upload(app: express.Application) {
   //create resources
@@ -21,13 +22,16 @@ export default async function Upload(app: express.Application) {
         //extract the path to the image resource created 
         let imagePath: string = JSON.stringify(req.file.path);
 
+        //replace double // with /
+        imagePath = path.normalize(imagePath);
+
         //change \ to / in blog's path to the title image
         imagePath = imagePath.replace(/\\/g, "/");
 
         console.log(imagePath);
 
         //send back the imagepath to the user
-        res.send(imagePath);
+        res.status(201).send(imagePath);
       }
     } catch (e) {
       res.sendStatus(400);

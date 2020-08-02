@@ -10,6 +10,7 @@ import IBlogRepository from "../Blog/IBlogRepository";
 import BlogSQLiteRepo from "../Blog/BlogSQLiteRepo";
 import IBlog from '../Blog/IBlog';
 import { searchParameters } from "../Blog/BlogSearchCriteria";
+import path from 'path';
 
 
 //Purpose: Handle all user view behaviour.
@@ -33,7 +34,7 @@ export default class UserController implements IController {
   //Auth
   private auth: Auth;
 
-  constructor(userRepo: IUserRepository) {
+  constructor(userRepo: IUserRepository, blogRepo: IBlogRepository) {
     // setup the user repository 
     this.userRepository = userRepo;
     // setup the unguarded router 
@@ -41,7 +42,7 @@ export default class UserController implements IController {
     // setup authentication-- TODO: Make a singleton?
     this.auth = new Auth();
     //setup blog repository
-    this.blogRepo = new BlogSQLiteRepo();
+    this.blogRepo = blogRepo;
 
   }
 
@@ -110,7 +111,7 @@ export default class UserController implements IController {
         //res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }) //TODO: Make configurable but is fine for now.
         //cookies are sent automaticlaly with every request
         res.cookie('jwt', jwtBearerToken, {
-          expires: new Date(Date.now() + 172800),
+          expires: new Date(Date.now() + 1728000),
           secure: false, //true when using https
           httpOnly: true
         }).sendStatus(200);
@@ -140,7 +141,7 @@ export default class UserController implements IController {
 
         //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
         blogs.forEach(blog => {
-          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blog/${blog.blogID}/true`, viewPath: `http://localhost:3000/blog/${blog.blogID}` })
+          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blog/${blog.blogID}/true`, viewPath: `http://localhost:3000/blog/${blog.blogID}/false` })
         });
 
         //  1. Send user profile info to profile partial
@@ -166,11 +167,16 @@ export default class UserController implements IController {
         //Get the user information 
         let user: IUser = await this.userRepository.find(username);
 
+        //set path to the image from the Views directory [views are in /Views] using absolute paths
+        //TODO: Use env to get absolute path not hardcoded string
+        //let imagePath: string = "http://localhost:3000/" + path.normalize(user.getProfilePicPath());
+
+
         //  1. Send user profile info to profile edit
         res.render('ProfileEdit', {
           userName: user.getUsername(), firstName: user.getFirstname(),
           lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
-        })
+        });
 
       } catch (e) {
         console.error("Profile edit get" + e);
@@ -190,13 +196,35 @@ export default class UserController implements IController {
         let firstName: string = req.body.firstName;
         let lastName: string = req.body.lastName;
         let bio: string = req.body.bio;
+        let profilePicPath: string = req.body.profilePicturePath;
+
+        console.log(profilePicPath);
 
         //populate user information in the user object
         let user: IUser = new User();
         user.setUsername(userName);
-        user.setFirstname(firstName);
-        user.setLastname(lastName);
-        user.setBio(bio);
+
+        if (req.body.firstName !== null && req.body.firstName !== undefined) {
+          user.setFirstname(firstName);
+        }
+
+        //blog title
+        if (req.body.lastName !== null && req.body.lastName !== undefined) {
+          user.setLastname(lastName);
+        }
+
+        //blog's path to titleimage
+        if (req.body.bio !== null && req.body.bio !== undefined) {
+          user.setBio(bio);
+        }
+
+        //blog's username value -- TODO: Determine if this is necessary here
+        if (req.body.profilePicturePath !== null && req.body.profilePicturePath !== undefined) {
+          user.setProfilePicPath(profilePicPath);
+        }
+
+        console.log(user.getProfilePicPath());
+
 
         //update the user information in the database
         await this.userRepository.update(user);

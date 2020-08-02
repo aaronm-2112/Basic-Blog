@@ -118,22 +118,55 @@ export default class UserSQLLiteRepo implements IRepository {
       const db: Database = await open({
         filename: `${this.dbPath}`,
         driver: sqlite3.Database
-      })
+      });
 
-      //Update all fields except for password, salt, or email 
-      let statement = await db.prepare(`UPDATE User SET firstname = ?, lastname = ?, bio = ? WHERE username = ?`);
 
-      //TODO: Implement this in a more robust manner
-      await statement.run(user.getFirstname(), user.getLastname(), user.getBio(), user.getUsername());
+      //store blog properties and their respective values that need to be updated
+      let queryProperties: string[] = [];
+      let queryValues: string[] = [];
 
-      let updatedUser: IUser = await this.find(user.getUsername());
+      // get the blog object's properties and property values -- each entry is: ['property', 'property value']
+      let userEntries = Object.entries(user);
 
-      console.log(updatedUser);
+      //traverse the blog's entries
+      for (var entry in userEntries) {
+        //console.log(userEntries[entry][0] + userEntries[entry][1]);
+        //determine which user properties need to be updated -- and do not update those which can't be
+        if (userEntries[entry][0] !== 'username' && userEntries[entry][1] !== "" && userEntries[entry][0] !== 'salt' && userEntries[entry][0] !== 'userID' && userEntries[entry][0] !== 'email') { //empty string not acceptable update value
+          //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
+          queryProperties.push(userEntries[entry][0] + ' = ?');
+          //push the blog property value into the list of query values
+          queryValues.push(userEntries[entry][1]);
+          console.log(userEntries[entry][0] + userEntries[entry][1]);
+        }
+      }
 
+      //create the update query using the collection of valid user properties
+      let query: string = `UPDATE User SET ` + queryProperties.join(',') + ` WHERE username = ?`;
+
+      //prepare the statement
+      let statement = await db.prepare(query);
+
+      console.log(query);
+      console.log(...queryValues);
+
+      //execute the statement using the collection of corresponding user property values
+      let result = await statement.run(...queryValues, user.getUsername());
+
+      console.log(result);
+
+      //let updatedUser: IUser = await this.find(user.getUsername());
+
+      //console.log(updatedUser);
+
+      //finalize the statement
       await statement.finalize();
 
+      //close the database connection
+      await db.close();
 
     } catch (e) {
+      console.log(e);
       throw new Error(e);
     }
 
@@ -149,6 +182,8 @@ export default class UserSQLLiteRepo implements IRepository {
 
       //query the database for the given email and delete the match
       await db.exec(`DELETE FROM User WHERE email = '${email}'`);
+
+      await db.close();
 
       // no database error so return true
       return true;

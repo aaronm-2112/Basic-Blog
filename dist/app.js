@@ -12,17 +12,16 @@ var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
 var SqliteRepository_1 = __importDefault(require("./User/SqliteRepository"));
 var UserController_1 = __importDefault(require("./User/UserController"));
-var dbinit_1 = require("./dbinit");
 var BlogSQLiteRepo_1 = __importDefault(require("./Blog/BlogSQLiteRepo"));
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
 //TODO: Add Location headers in all post request responses to client.
 //Used for development database changes. 
-dbinit_1.createDB().then(function () {
-    console.log("Inited");
-}).catch(function (e) {
-    console.log(e);
-});
+// createDB().then(() => {
+//   console.log("Inited");
+// }).catch(e => {
+//   console.log(e);
+// })
 // Create a new express app instance
 var app = express_1.default();
 //direct express middleware to use routes/settings
@@ -56,11 +55,12 @@ var staticDirectory = new directory_1.default();
 staticDirectory.registerRoutes(app); //TODO: Rename method
 //register the user routes -- (could also have set up controllers which have the routes baked in)
 var userRepo = new SqliteRepository_1.default();
-var usercont = new UserController_1.default(userRepo);
+var blogRepo = new BlogSQLiteRepo_1.default();
+var usercont = new UserController_1.default(userRepo, blogRepo);
 usercont.registerRoutes(app);
 //register the blog routes 
-var blogrepo = new BlogSQLiteRepo_1.default();
-var blogcontroller = new BlogController_1.default(blogrepo);
+//let blogrepo: IBlogRepository = new BlogSQLiteRepo();
+var blogcontroller = new BlogController_1.default(blogRepo);
 blogcontroller.registerRoutes(app);
 //register the common upload route
 Uploads_1.default(app).then(function (res) {

@@ -50,7 +50,6 @@ var User_1 = __importDefault(require("./User"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
 var express = __importStar(require("express"));
 var salt_1 = require("../Common/salt");
-var BlogSQLiteRepo_1 = __importDefault(require("../Blog/BlogSQLiteRepo"));
 var BlogSearchCriteria_1 = require("../Blog/BlogSearchCriteria");
 //Purpose: Handle all user view behaviour.
 //Rather than use a service for representing a compound model I chose to place two repos in the UserControler.
@@ -58,7 +57,7 @@ var BlogSearchCriteria_1 = require("../Blog/BlogSearchCriteria");
 //              b/c a service is used for business logic utilizing repos the lack of such logic in this simple controller 
 //              disallows me to justify introducing another abstraction. 
 var UserController = /** @class */ (function () {
-    function UserController(userRepo) {
+    function UserController(userRepo, blogRepo) {
         // setup the user repository 
         this.userRepository = userRepo;
         // setup the unguarded router 
@@ -66,7 +65,7 @@ var UserController = /** @class */ (function () {
         // setup authentication-- TODO: Make a singleton?
         this.auth = new Auth_1.default();
         //setup blog repository
-        this.blogRepo = new BlogSQLiteRepo_1.default();
+        this.blogRepo = blogRepo;
     }
     UserController.prototype.registerRoutes = function (app) {
         //UNGUARDED ROUTES------------------------------------------------------------------
@@ -136,7 +135,7 @@ var UserController = /** @class */ (function () {
                         //res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }) //TODO: Make configurable but is fine for now.
                         //cookies are sent automaticlaly with every request
                         res.cookie('jwt', jwtBearerToken, {
-                            expires: new Date(Date.now() + 172800),
+                            expires: new Date(Date.now() + 1728000),
                             secure: false,
                             httpOnly: true
                         }).sendStatus(200);
@@ -167,7 +166,7 @@ var UserController = /** @class */ (function () {
                         blogDetails_1 = new Array();
                         //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
                         blogs.forEach(function (blog) {
-                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blog/" + blog.blogID + "/true", viewPath: "http://localhost:3000/blog/" + blog.blogID });
+                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blog/" + blog.blogID + "/true", viewPath: "http://localhost:3000/blog/" + blog.blogID + "/false" });
                         });
                         //  1. Send user profile info to profile partial
                         res.render('Profile', {
@@ -198,6 +197,9 @@ var UserController = /** @class */ (function () {
                         return [4 /*yield*/, this.userRepository.find(username)];
                     case 1:
                         user = _a.sent();
+                        //set path to the image from the Views directory [views are in /Views] using absolute paths
+                        //TODO: Use env to get absolute path not hardcoded string
+                        //let imagePath: string = "http://localhost:3000/" + path.normalize(user.getProfilePicPath());
                         //  1. Send user profile info to profile edit
                         res.render('ProfileEdit', {
                             userName: user.getUsername(), firstName: user.getFirstname(),
@@ -217,7 +219,7 @@ var UserController = /** @class */ (function () {
         //TOOD: Refactor into a route that points to a resource?
         //TODO: Refactor into a Put or Patch request
         this.router.post("/profile/edit", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userName, firstName, lastName, bio, user, e_5;
+            var userName, firstName, lastName, bio, profilePicPath, user, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -226,11 +228,26 @@ var UserController = /** @class */ (function () {
                         firstName = req.body.firstName;
                         lastName = req.body.lastName;
                         bio = req.body.bio;
+                        profilePicPath = req.body.profilePicturePath;
+                        console.log(profilePicPath);
                         user = new User_1.default();
                         user.setUsername(userName);
-                        user.setFirstname(firstName);
-                        user.setLastname(lastName);
-                        user.setBio(bio);
+                        if (req.body.firstName !== null && req.body.firstName !== undefined) {
+                            user.setFirstname(firstName);
+                        }
+                        //blog title
+                        if (req.body.lastName !== null && req.body.lastName !== undefined) {
+                            user.setLastname(lastName);
+                        }
+                        //blog's path to titleimage
+                        if (req.body.bio !== null && req.body.bio !== undefined) {
+                            user.setBio(bio);
+                        }
+                        //blog's username value -- TODO: Determine if this is necessary here
+                        if (req.body.profilePicturePath !== null && req.body.profilePicturePath !== undefined) {
+                            user.setProfilePicPath(profilePicPath);
+                        }
+                        console.log(user.getProfilePicPath());
                         //update the user information in the database
                         return [4 /*yield*/, this.userRepository.update(user)];
                     case 1:
