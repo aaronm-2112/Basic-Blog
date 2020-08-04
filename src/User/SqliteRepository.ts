@@ -149,15 +149,19 @@ export default class UserSQLLiteRepo implements IRepository {
 
       console.log(query);
       console.log(...queryValues);
+      console.log(user.getUsername());
 
       //execute the statement using the collection of corresponding user property values
-      let result = await statement.run(...queryValues, user.getUsername());
+      //let result = await statement.run(...queryValues, user.getUsername());
+      //let result = await statement.run("yes", user.getUsername());
 
-      console.log(result);
+      await db.run(`UPDATE User SET profilePic = ? WHERE username = ?`, 'yes', "First User");
 
-      //let updatedUser: IUser = await this.find(user.getUsername());
+      //console.log(result);
 
-      //console.log(updatedUser);
+      let updatedUser: IUser = await this.find(user.getUsername());
+
+      console.log(updatedUser);
 
       //finalize the statement
       await statement.finalize();

@@ -35,13 +35,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -188,11 +181,11 @@ var UserSQLLiteRepo = /** @class */ (function () {
     //TODO: Allow password and email changes and make more robust
     UserSQLLiteRepo.prototype.update = function (user) {
         return __awaiter(this, void 0, void 0, function () {
-            var db, queryProperties, queryValues, userEntries, entry, query, statement, result, e_4;
+            var db, queryProperties, queryValues, userEntries, entry, query, statement, updatedUser, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 6, , 7]);
+                        _a.trys.push([0, 7, , 8]);
                         return [4 /*yield*/, sqlite_1.open({
                                 filename: "" + this.dbPath,
                                 driver: sqlite3_1.default.Database
@@ -220,30 +213,36 @@ var UserSQLLiteRepo = /** @class */ (function () {
                         statement = _a.sent();
                         console.log(query);
                         console.log.apply(console, queryValues);
-                        return [4 /*yield*/, statement.run.apply(statement, __spreadArrays(queryValues, [user.getUsername()]))];
+                        console.log(user.getUsername());
+                        //execute the statement using the collection of corresponding user property values
+                        //let result = await statement.run(...queryValues, user.getUsername());
+                        //let result = await statement.run("yes", user.getUsername());
+                        return [4 /*yield*/, db.run("UPDATE User SET profilePic = ? WHERE username = ?", 'yes', "First User")];
                     case 3:
-                        result = _a.sent();
-                        console.log(result);
-                        //let updatedUser: IUser = await this.find(user.getUsername());
-                        //console.log(updatedUser);
+                        //execute the statement using the collection of corresponding user property values
+                        //let result = await statement.run(...queryValues, user.getUsername());
+                        //let result = await statement.run("yes", user.getUsername());
+                        _a.sent();
+                        return [4 /*yield*/, this.find(user.getUsername())];
+                    case 4:
+                        updatedUser = _a.sent();
+                        console.log(updatedUser);
                         //finalize the statement
                         return [4 /*yield*/, statement.finalize()];
-                    case 4:
-                        //let updatedUser: IUser = await this.find(user.getUsername());
-                        //console.log(updatedUser);
+                    case 5:
                         //finalize the statement
                         _a.sent();
                         //close the database connection
                         return [4 /*yield*/, db.close()];
-                    case 5:
+                    case 6:
                         //close the database connection
                         _a.sent();
-                        return [3 /*break*/, 7];
-                    case 6:
+                        return [3 /*break*/, 8];
+                    case 7:
                         e_4 = _a.sent();
                         console.log(e_4);
                         throw new Error(e_4);
-                    case 7: return [2 /*return*/];
+                    case 8: return [2 /*return*/];
                 }
             });
         });

@@ -11,7 +11,7 @@ var User = /** @class */ (function () {
         this.lastname = "";
         this.bio = "";
         this.salt = "";
-        this.profilePicturePath = "";
+        this.profilePic = "";
     }
     User.prototype.getUsername = function () {
         return this.username;
@@ -62,10 +62,10 @@ var User = /** @class */ (function () {
         this.salt = salt;
     };
     User.prototype.getProfilePicPath = function () {
-        return this.profilePicturePath;
+        return this.profilePic;
     };
     User.prototype.setProfilePicPath = function (path) {
-        this.profilePicturePath = path;
+        this.profilePic = path;
     };
     return User;
 }());
