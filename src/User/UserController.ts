@@ -1,4 +1,4 @@
-import IUserRepository from "./IRepository";
+import IUserRepository from "./Repositories/IRepository";
 import IUser from './IUser';
 import User from './User';
 import Auth from '../Auth/Auth';

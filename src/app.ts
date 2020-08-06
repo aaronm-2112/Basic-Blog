@@ -6,7 +6,7 @@ import path from 'path';
 import hbs from 'hbs'; //templating engine
 import Directory from './Directory/directory';
 import UserRepository from './User/Repositories/SqliteRepository';
-import IUserRepository from './User/IRepository';
+import IUserRepository from './User/Repositories/IRepository';
 import UserController from './User/UserController';
 import { createDB } from './dbinit';
 import IBlogRepository from './Blog/IBlogRepository';
