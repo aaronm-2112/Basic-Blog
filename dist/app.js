@@ -10,12 +10,13 @@ var cors_1 = __importDefault(require("cors"));
 var path_1 = __importDefault(require("path"));
 var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
-var SqliteRepository_1 = __importDefault(require("./User/SqliteRepository"));
-var UserController_1 = __importDefault(require("./User/UserController"));
-var BlogSQLiteRepo_1 = __importDefault(require("./Blog/BlogSQLiteRepo"));
-var BlogController_1 = __importDefault(require("./Blog/BlogController"));
+var SqliteRepository_1 = __importDefault(require("./User/Repositories/SqliteRepository"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
+var User_1 = __importDefault(require("./User/User"));
+var PGSQLiteRepo_1 = __importDefault(require("./User/Repositories/PGSQLiteRepo"));
+//configure env variables
 //TODO: Add Location headers in all post request responses to client.
+//TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //Used for development database changes. 
 // createDB().then(() => {
 //   console.log("Inited");
@@ -55,13 +56,13 @@ var staticDirectory = new directory_1.default();
 staticDirectory.registerRoutes(app); //TODO: Rename method
 //register the user routes -- (could also have set up controllers which have the routes baked in)
 var userRepo = new SqliteRepository_1.default();
-var blogRepo = new BlogSQLiteRepo_1.default();
-var usercont = new UserController_1.default(userRepo, blogRepo);
-usercont.registerRoutes(app);
+// let blogRepo: IBlogRepository = new BlogSQLiteRepo();
+// let usercont: UserController = new UserController(userRepo, blogRepo);
+// usercont.registerRoutes(app);
 //register the blog routes 
 //let blogrepo: IBlogRepository = new BlogSQLiteRepo();
-var blogcontroller = new BlogController_1.default(blogRepo);
-blogcontroller.registerRoutes(app);
+// let blogcontroller: IController = new BlogController(blogRepo);
+// blogcontroller.registerRoutes(app);
 //register the common upload route
 Uploads_1.default(app).then(function (res) {
     console.log("Uploads registered.");
@@ -69,4 +70,14 @@ Uploads_1.default(app).then(function (res) {
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 
+var user = new User_1.default();
+user.setUsername("First User");
+// user.setProfilePicPath("Profile Pic Path");
+// userRepo.update(user);
+var repo = new PGSQLiteRepo_1.default();
+repo.findAll().then(function (res) {
+    console.log(res);
+}).catch(function (e) {
+    console.log(e);
+});
 exports.default = app;

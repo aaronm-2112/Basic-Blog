@@ -3,6 +3,8 @@ import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 import path from 'path';
 import IUser from './User/IUser';
+import pg from 'pg';
+import { Pool, Client } from 'pg';
 
 const dbPath = path.resolve(__dirname, 'blog.db');
 
@@ -26,6 +28,50 @@ export async function createDB() {
 
 
     await db.close();
+
+    //Postgress db initilization
+
+    const client = new Client({
+      user: 'postgres',
+      host: 'localhost',
+      database: 'blog',
+      password: 'cBKq#F!23JZQ9*:A',
+      port: 5432
+    });
+
+    await client.connect();
+
+    let pgRes;
+
+    //drop the tables if they exist
+    //pgRes = await client.query(`DROP TABLE users`);
+    // console.log(pgRes);
+
+    //pgRes = await client.query('DROP TABLE blogs');
+    // console.log(pgRes);
+
+    //create the tables
+    // pgRes = await client.query(`CREATE TABLE users (
+    //     userID serial primary key,
+    //     username text not null unique,
+    //     password text not null,
+    //     email text not null unique,
+    //     firstname text,
+    //     lastname text,
+    //     bio text,
+    //     salt text, 
+    //     profilepic text
+    // );`);
+    // console.log(pgRes);
+
+    // pgRes = await client.query(`CREATE TABLE blogs (blogID serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
+
+    // console.log(pgRes);
+
+
+    //end the client's connection
+    await client.end()
+
 
 
   } catch (e) {

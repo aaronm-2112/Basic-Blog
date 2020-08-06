@@ -1,9 +1,9 @@
-import IRepository from './IRepository';
+import IRepository from '../IRepository';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
-import IUser from './IUser';
-import User from './User';
-import { generateUserSalt, generateUserHash } from '../Common/salt';
+import IUser from '../IUser';
+import User from '../User';
+import { generateUserSalt, generateUserHash } from '../../Common/salt';
 
 
 
@@ -155,7 +155,9 @@ export default class UserSQLLiteRepo implements IRepository {
       //let result = await statement.run(...queryValues, user.getUsername());
       //let result = await statement.run("yes", user.getUsername());
 
-      await db.run(`UPDATE User SET profilePic = ? WHERE username = ?`, 'yes', "First User");
+      let row = await db.run("UPDATE User SET profilePic = ? WHERE username = ?", "profile pic path", "First User");
+
+      console.log(row);
 
       //console.log(result);
 

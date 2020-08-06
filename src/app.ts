@@ -5,7 +5,7 @@ import cors from 'cors';
 import path from 'path';
 import hbs from 'hbs'; //templating engine
 import Directory from './Directory/directory';
-import UserRepository from './User/SqliteRepository';
+import UserRepository from './User/Repositories/SqliteRepository';
 import IUserRepository from './User/IRepository';
 import UserController from './User/UserController';
 import { createDB } from './dbinit';
@@ -14,8 +14,12 @@ import BlogSQLiteRepo from './Blog/BlogSQLiteRepo';
 import IController from './Controllers/IController';
 import BlogController from './Blog/BlogController';
 import Upload from './Common/Resources/Uploads';
+import IUser from './User/IUser';
+import User from './User/User';
+import UserPGSQLRepo from './User/Repositories/PGSQLiteRepo';
 
 //TODO: Add Location headers in all post request responses to client.
+//TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 
 //Used for development database changes. 
 // createDB().then(() => {
@@ -68,14 +72,14 @@ staticDirectory.registerRoutes(app); //TODO: Rename method
 
 //register the user routes -- (could also have set up controllers which have the routes baked in)
 let userRepo: IUserRepository = new UserRepository();
-let blogRepo: IBlogRepository = new BlogSQLiteRepo();
-let usercont: UserController = new UserController(userRepo, blogRepo);
-usercont.registerRoutes(app);
+// let blogRepo: IBlogRepository = new BlogSQLiteRepo();
+// let usercont: UserController = new UserController(userRepo, blogRepo);
+// usercont.registerRoutes(app);
 
 //register the blog routes 
 //let blogrepo: IBlogRepository = new BlogSQLiteRepo();
-let blogcontroller: IController = new BlogController(blogRepo);
-blogcontroller.registerRoutes(app);
+// let blogcontroller: IController = new BlogController(blogRepo);
+// blogcontroller.registerRoutes(app);
 
 //register the common upload route
 Upload(app).then(res => {
@@ -86,6 +90,22 @@ Upload(app).then(res => {
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 
 
+let user: IUser = new User();
+user.setUsername("First User");
+// user.setProfilePicPath("Profile Pic Path");
+
+// userRepo.update(user);
+
+let repo: UserPGSQLRepo = new UserPGSQLRepo();
+repo.findAll().then(res => {
+  console.log(res);
+}).catch(e => {
+  console.log(e);
+});
+
+
 
 export default app;
+
+
 

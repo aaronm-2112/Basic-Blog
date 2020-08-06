@@ -41,8 +41,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var sqlite_1 = require("sqlite");
 var sqlite3_1 = __importDefault(require("sqlite3"));
-var User_1 = __importDefault(require("./User"));
-var salt_1 = require("../Common/salt");
+var User_1 = __importDefault(require("../User"));
+var salt_1 = require("../../Common/salt");
 var UserSQLLiteRepo = /** @class */ (function () {
     function UserSQLLiteRepo() {
         this.dbPath = "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db";
