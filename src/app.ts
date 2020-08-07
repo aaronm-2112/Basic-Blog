@@ -72,9 +72,10 @@ staticDirectory.registerRoutes(app); //TODO: Rename method
 
 //register the user routes -- (could also have set up controllers which have the routes baked in)
 let userRepo: IUserRepository = new UserRepository();
-// let blogRepo: IBlogRepository = new BlogSQLiteRepo();
-// let usercont: UserController = new UserController(userRepo, blogRepo);
-// usercont.registerRoutes(app);
+let userRepoPostgre: IUserRepository = new UserPGSQLRepo();
+let blogRepo: IBlogRepository = new BlogSQLiteRepo();
+let usercont: UserController = new UserController(userRepoPostgre, blogRepo);
+usercont.registerRoutes(app);
 
 //register the blog routes 
 //let blogrepo: IBlogRepository = new BlogSQLiteRepo();
@@ -95,13 +96,6 @@ user.setUsername("First User");
 // user.setProfilePicPath("Profile Pic Path");
 
 // userRepo.update(user);
-
-let repo: UserPGSQLRepo = new UserPGSQLRepo();
-repo.findAll().then(res => {
-  console.log(res);
-}).catch(e => {
-  console.log(e);
-});
 
 
 

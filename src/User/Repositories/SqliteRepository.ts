@@ -4,14 +4,14 @@ import sqlite3 from 'sqlite3';
 import IUser from '../IUser';
 import User from '../User';
 import { generateUserSalt, generateUserHash } from '../../Common/salt';
-
+import { UserQueryParameters } from '../UserQueryParameters';
 
 
 export default class UserSQLLiteRepo implements IRepository {
 
   private dbPath = "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db";
 
-  async findAll(): Promise<IUser[]> {
+  async findAll(searchBy: UserQueryParameters, searchValue: string): Promise<IUser[]> {
     try {
       // connect to the database
       const db: Database = await open({

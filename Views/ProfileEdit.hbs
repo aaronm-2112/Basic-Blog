@@ -48,13 +48,13 @@
     try {
       //TODO: Make patch request
       //Update the user resource with the fname, lname, and bio information
-      //let response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      let response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
 
       //check if response is successful 
-      //if (response.status !== 200) {
-      // console.log("Data not uploaded!");
-      // return;
-      //}
+      if (response.status !== 200) {
+        console.log("Data not uploaded!");
+        return;
+      }
 
       //create a form data for uploading profile picture
       const imageProfileForm = new FormData();

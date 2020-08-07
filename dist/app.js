@@ -11,10 +11,11 @@ var path_1 = __importDefault(require("path"));
 var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
 var SqliteRepository_1 = __importDefault(require("./User/Repositories/SqliteRepository"));
+var UserController_1 = __importDefault(require("./User/UserController"));
+var BlogSQLiteRepo_1 = __importDefault(require("./Blog/BlogSQLiteRepo"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
 var User_1 = __importDefault(require("./User/User"));
 var PGSQLiteRepo_1 = __importDefault(require("./User/Repositories/PGSQLiteRepo"));
-//configure env variables
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //Used for development database changes. 
@@ -56,9 +57,10 @@ var staticDirectory = new directory_1.default();
 staticDirectory.registerRoutes(app); //TODO: Rename method
 //register the user routes -- (could also have set up controllers which have the routes baked in)
 var userRepo = new SqliteRepository_1.default();
-// let blogRepo: IBlogRepository = new BlogSQLiteRepo();
-// let usercont: UserController = new UserController(userRepo, blogRepo);
-// usercont.registerRoutes(app);
+var userRepoPostgre = new PGSQLiteRepo_1.default();
+var blogRepo = new BlogSQLiteRepo_1.default();
+var usercont = new UserController_1.default(userRepoPostgre, blogRepo);
+usercont.registerRoutes(app);
 //register the blog routes 
 //let blogrepo: IBlogRepository = new BlogSQLiteRepo();
 // let blogcontroller: IController = new BlogController(blogRepo);
@@ -74,10 +76,4 @@ var user = new User_1.default();
 user.setUsername("First User");
 // user.setProfilePicPath("Profile Pic Path");
 // userRepo.update(user);
-var repo = new PGSQLiteRepo_1.default();
-repo.findAll().then(function (res) {
-    console.log(res);
-}).catch(function (e) {
-    console.log(e);
-});
 exports.default = app;

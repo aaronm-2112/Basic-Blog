@@ -47,7 +47,7 @@ var UserSQLLiteRepo = /** @class */ (function () {
     function UserSQLLiteRepo() {
         this.dbPath = "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db";
     }
-    UserSQLLiteRepo.prototype.findAll = function () {
+    UserSQLLiteRepo.prototype.findAll = function (searchBy, searchValue) {
         return __awaiter(this, void 0, void 0, function () {
             var db, allUserRows, users_1, user_1, e_1;
             return __generator(this, function (_a) {

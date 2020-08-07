@@ -10,7 +10,7 @@ export default class User implements IUser {
   lastname: String;
   bio: String;
   salt: string;
-  profilePic: string;
+  profilepic: string;
 
   constructor() {
     this.userID = 0;
@@ -21,7 +21,7 @@ export default class User implements IUser {
     this.lastname = "";
     this.bio = "";
     this.salt = "";
-    this.profilePic = "";
+    this.profilepic = "";
   }
 
   getUsername(): String {
@@ -89,10 +89,10 @@ export default class User implements IUser {
   }
 
   getProfilePicPath(): string {
-    return this.profilePic;
+    return this.profilepic;
   }
   setProfilePicPath(path: string): void {
-    this.profilePic = path;
+    this.profilepic = path;
   }
 
 

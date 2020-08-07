@@ -41,46 +41,169 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var pg_1 = require("pg");
 var User_1 = __importDefault(require("../User"));
+var salt_1 = require("../../Common/salt");
 var UserPGSQLRepo = /** @class */ (function () {
     function UserPGSQLRepo() {
+        //create the connection pool
         this.pool = new pg_1.Pool({
-            user: 'postgres',
+            user: process.env.DB_USER,
             host: process.env.DB_HOST,
             database: process.env.DB_DATABASE,
             password: process.env.DB_PASS,
             port: parseInt(process.env.DB_PORT)
         });
     }
-    UserPGSQLRepo.prototype.findAll = function () {
+    UserPGSQLRepo.prototype.findAll = function (searchBy, searchValue) {
         return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
+            var query, values, res, rows, users_1, e_1;
             return __generator(this, function (_a) {
-                this.pool.query('SELECT NOW()', function (err, res) {
-                    console.log(err, res);
-                    _this.pool.end();
-                });
-                return [2 /*return*/, new Array()];
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        query = "SELECT * FROM users WHERE " + searchBy + " = $1";
+                        values = new Array();
+                        values.push(searchValue);
+                        return [4 /*yield*/, this.pool.query(query, values)];
+                    case 1:
+                        res = _a.sent();
+                        rows = res.rows;
+                        users_1 = [];
+                        //load the row values into the user collection
+                        rows.forEach(function (row) {
+                            //create a new user and populate its properties
+                            var user = new User_1.default();
+                            user.userID = row.userID;
+                            user.setUsername(row.username);
+                            user.setPassword(row.password);
+                            user.setEmail(row.email);
+                            user.setFirstname(row.firstname);
+                            user.setLastname(row.lastname);
+                            //user.setSalt(row.salt);
+                            user.setProfilePicPath(row.profilepic);
+                            //push the user into the users collection
+                            users_1.push(user);
+                        });
+                        //return the resulting query rows
+                        return [2 /*return*/, users_1];
+                    case 2:
+                        e_1 = _a.sent();
+                        throw new Error(e_1);
+                    case 3: return [2 /*return*/];
+                }
             });
         });
     };
+    //TODO: use search criteria and searchby values
     UserPGSQLRepo.prototype.find = function (username) {
         return __awaiter(this, void 0, void 0, function () {
+            var query, values, result, rows, user;
             return __generator(this, function (_a) {
-                return [2 /*return*/, new User_1.default()];
+                switch (_a.label) {
+                    case 0:
+                        query = "SELECT * FROM users WHERE username = $1";
+                        values = new Array();
+                        values.push(username);
+                        return [4 /*yield*/, this.pool.query(query, values)];
+                    case 1:
+                        result = _a.sent();
+                        rows = result.rows;
+                        user = new User_1.default();
+                        // fill out the user object and return it
+                        rows.forEach(function (row) {
+                            user.setEmail(row["email"]);
+                            user.setBio(row["bio"]);
+                            user.setFirstname(row["firstname"]);
+                            user.setLastname(row["lastname"]);
+                            user.setUsername(row["username"]);
+                            user.setPassword(row["password"]);
+                        });
+                        //return the user value
+                        return [2 /*return*/, user];
+                }
             });
         });
     };
     UserPGSQLRepo.prototype.create = function (user) {
         return __awaiter(this, void 0, void 0, function () {
+            var salt, hash, query, values, e_2;
             return __generator(this, function (_a) {
-                return [2 /*return*/, true];
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 4, , 5]);
+                        console.log("In create");
+                        return [4 /*yield*/, salt_1.generateUserSalt()];
+                    case 1:
+                        salt = _a.sent();
+                        //set user's salt
+                        user.setSalt(salt);
+                        return [4 /*yield*/, salt_1.generateUserHash(user.getPassword(), salt)];
+                    case 2:
+                        hash = _a.sent();
+                        //set the user's hash 
+                        user.setPassword(hash);
+                        query = "INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) VALUES($1, $2, $3, $4, $5, $6, $7, $8);";
+                        values = new Array();
+                        values.push(user.getUsername());
+                        values.push(user.getPassword());
+                        values.push(user.getEmail());
+                        values.push(user.getFirstname());
+                        values.push(user.getLastname());
+                        values.push(user.getBio());
+                        values.push(user.getSalt());
+                        values.push(user.getProfilePicPath());
+                        //insert the user into the users table
+                        return [4 /*yield*/, this.pool.query(query, values)];
+                    case 3:
+                        //insert the user into the users table
+                        _a.sent();
+                        return [2 /*return*/, true];
+                    case 4:
+                        e_2 = _a.sent();
+                        throw new Error(e_2);
+                    case 5: return [2 /*return*/];
+                }
             });
         });
     };
     UserPGSQLRepo.prototype.update = function (user) {
         return __awaiter(this, void 0, void 0, function () {
+            var queryProperties, queryValues, userEntries, parameterNumber, entry, query, result, e_3;
             return __generator(this, function (_a) {
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        console.log("In user update");
+                        queryProperties = [];
+                        queryValues = [];
+                        userEntries = Object.entries(user);
+                        parameterNumber = 1;
+                        //traverse the blog's entries
+                        for (entry in userEntries) {
+                            //console.log(userEntries[entry][0] + userEntries[entry][1]);
+                            //determine which user properties need to be updated -- and do not update those which can't be
+                            if (userEntries[entry][0] !== 'username' && userEntries[entry][1] !== "" && userEntries[entry][0] !== 'salt' && userEntries[entry][0] !== 'userID' && userEntries[entry][0] !== 'email') { //empty string not acceptable update value
+                                //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
+                                queryProperties.push(userEntries[entry][0] + (" = $" + parameterNumber));
+                                //push the blog property value into the list of query values
+                                queryValues.push(userEntries[entry][1]);
+                                console.log(userEntries[entry][0] + userEntries[entry][1]);
+                                //increment parameter value
+                                parameterNumber += 1;
+                            }
+                        }
+                        query = "UPDATE users SET " + queryProperties.join(',') + (" WHERE username = $" + parameterNumber);
+                        console.log(query);
+                        //add the username to the collection of query values
+                        queryValues.push(user.getUsername());
+                        return [4 /*yield*/, this.pool.query(query, queryValues)];
+                    case 1:
+                        result = _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_3 = _a.sent();
+                        throw new Error(e_3);
+                    case 3: return [2 /*return*/];
+                }
             });
         });
     };
