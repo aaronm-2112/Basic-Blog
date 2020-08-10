@@ -1,8 +1,8 @@
 import IBlogRepository from "./IBlogRepository";
-import { searchParameters } from './BlogSearchCriteria';
+import { searchParameters } from '../BlogSearchCriteria';
 //import { buildBlogUpdateQuery } from '../Common/queryBuilder';
-import IBlog from './IBlog';
-import Blog from './Blog';
+import IBlog from '../IBlog';
+import Blog from '../Blog';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 

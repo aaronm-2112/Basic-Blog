@@ -6,8 +6,8 @@ import { Request, Response, Router } from 'express';
 import * as express from 'express';
 import IController from "../Controllers/IController";
 import { compareUserPassword } from '../Common/salt';
-import IBlogRepository from "../Blog/IBlogRepository";
-import BlogSQLiteRepo from "../Blog/BlogSQLiteRepo";
+import IBlogRepository from "../Blog/Repositories/IBlogRepository";
+import BlogSQLiteRepo from "../Blog/Repositories/BlogSQLiteRepo";
 import IBlog from '../Blog/IBlog';
 import { searchParameters } from "../Blog/BlogSearchCriteria";
 import path from 'path';
@@ -228,6 +228,10 @@ export default class UserController implements IController {
 
         //update the user information in the database
         await this.userRepository.update(user);
+
+        let newuser: IUser = await this.userRepository.find(user.getUsername() as string);
+
+        console.log(newuser);
 
         res.sendStatus(200);
 

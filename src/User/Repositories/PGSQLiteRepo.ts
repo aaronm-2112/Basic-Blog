@@ -89,6 +89,7 @@ export default class UserPGSQLRepo implements IRepository {
       user.setLastname(row["lastname"]);
       user.setUsername(row["username"]);
       user.setPassword(row["password"]);
+      user.setProfilePicPath(row["profilepic"]);
     });
 
     //return the user value
@@ -173,7 +174,7 @@ export default class UserPGSQLRepo implements IRepository {
       queryValues.push(user.getUsername() as string);
 
       //execute the update query
-      let result = await this.pool.query(query, queryValues)
+      let result = await this.pool.query(query, queryValues);
     } catch (e) {
       throw new Error(e);
     }

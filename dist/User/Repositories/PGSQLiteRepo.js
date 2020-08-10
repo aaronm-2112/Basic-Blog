@@ -116,6 +116,7 @@ var UserPGSQLRepo = /** @class */ (function () {
                             user.setLastname(row["lastname"]);
                             user.setUsername(row["username"]);
                             user.setPassword(row["password"]);
+                            user.setProfilePicPath(row["profilepic"]);
                         });
                         //return the user value
                         return [2 /*return*/, user];

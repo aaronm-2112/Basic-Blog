@@ -67,6 +67,7 @@ export default class UserSQLLiteRepo implements IRepository {
       user.setLastname(row["lastname"]);
       user.setUsername(row["username"]);
       user.setPassword(row["password"]);
+      user.setProfilePicPath(row["profilepic"]);
       return user;
 
     } catch (e) {

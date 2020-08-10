@@ -219,11 +219,11 @@ var UserController = /** @class */ (function () {
         //TOOD: Refactor into a route that points to a resource?
         //TODO: Refactor into a Put or Patch request
         this.router.post("/profile/edit", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userName, firstName, lastName, bio, profilePicPath, user, e_5;
+            var userName, firstName, lastName, bio, profilePicPath, user, newuser, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
+                        _a.trys.push([0, 3, , 4]);
                         userName = res.locals.userId;
                         firstName = req.body.firstName;
                         lastName = req.body.lastName;
@@ -253,14 +253,18 @@ var UserController = /** @class */ (function () {
                     case 1:
                         //update the user information in the database
                         _a.sent();
-                        res.sendStatus(200);
-                        return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.userRepository.find(user.getUsername())];
                     case 2:
+                        newuser = _a.sent();
+                        console.log(newuser);
+                        res.sendStatus(200);
+                        return [3 /*break*/, 4];
+                    case 3:
                         e_5 = _a.sent();
                         console.error("Profile edit post" + e_5);
                         res.sendStatus(400);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         }); });

@@ -1,4 +1,4 @@
-import IBlogRepository from "./IBlogRepository";
+import IBlogRepository from "./Repositories/IBlogRepository";
 import IController from '../Controllers/IController';
 import express, { Router, Request, Response } from "express";
 import Auth from "../Auth/Auth";

@@ -1,7 +1,7 @@
 //Purpose: Interface for the blog repository
 
-import IBlog from "./IBlog";
-import { searchParameters } from './BlogSearchCriteria';
+import IBlog from "../IBlog";
+import { searchParameters } from '../BlogSearchCriteria';
 
 export default interface IBlogRepository {
   findAll(searchBy: searchParameters, searchParam: string): Promise<IBlog[]>;

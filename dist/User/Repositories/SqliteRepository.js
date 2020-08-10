@@ -122,6 +122,7 @@ var UserSQLLiteRepo = /** @class */ (function () {
                         user.setLastname(row["lastname"]);
                         user.setUsername(row["username"]);
                         user.setPassword(row["password"]);
+                        user.setProfilePicPath(row["profilepic"]);
                         return [2 /*return*/, user];
                     case 4:
                         e_2 = _a.sent();
