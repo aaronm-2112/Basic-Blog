@@ -17,6 +17,8 @@ import Upload from './Common/Resources/Uploads';
 import IUser from './User/IUser';
 import User from './User/User';
 import UserPGSQLRepo from './User/Repositories/PGSQLiteRepo';
+import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
+import IBlog from './Blog/IBlog';
 
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
@@ -74,13 +76,14 @@ staticDirectory.registerRoutes(app); //TODO: Rename method
 let userRepo: IUserRepository = new UserRepository();
 let userRepoPostgre: IUserRepository = new UserPGSQLRepo();
 let blogRepo: IBlogRepository = new BlogSQLiteRepo();
-let usercont: UserController = new UserController(userRepoPostgre, blogRepo);
+let blogRepoPostgre: IBlogRepository = new BlogPGSQLRepo();
+let usercont: UserController = new UserController(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 
 //register the blog routes 
-//let blogrepo: IBlogRepository = new BlogSQLiteRepo();
-// let blogcontroller: IController = new BlogController(blogRepo);
-// blogcontroller.registerRoutes(app);
+let blogrepo: IBlogRepository = new BlogSQLiteRepo();
+let blogcontroller: IController = new BlogController(blogRepo);
+blogcontroller.registerRoutes(app);
 
 //register the common upload route
 Upload(app).then(res => {
@@ -90,14 +93,6 @@ Upload(app).then(res => {
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 
-
-let user: IUser = new User();
-user.setUsername("First User");
-// user.setProfilePicPath("Profile Pic Path");
-
-// userRepo.update(user);
-
-
 
 export default app;
 

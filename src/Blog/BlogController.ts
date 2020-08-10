@@ -2,7 +2,6 @@ import IBlogRepository from "./Repositories/IBlogRepository";
 import IController from '../Controllers/IController';
 import express, { Router, Request, Response } from "express";
 import Auth from "../Auth/Auth";
-import multer from 'multer';
 import IBlog from "./IBlog";
 import Blog from "./Blog";
 import { searchParameters } from "./BlogSearchCriteria";
@@ -15,7 +14,6 @@ export default class BlogController implements IController {
   private repo: IBlogRepository;
   private router: Router;
   private auth: Auth;
-  private upload = multer({ dest: 'uploads/' });
 
   constructor(repo: IBlogRepository) {
     this.repo = repo;
@@ -101,93 +99,6 @@ export default class BlogController implements IController {
       }
     });
 
-    //Receive blog banner image place it in public images and create a blog resource
-    //TODO: Ensure an image is sent and not other kinds of media[security thing]
-    //Method One: Part of method one. To post image and create blog resource. Then patch resource with text content.
-    //            Decided to refactor this. 
-    // this.router.post('/blog', this.auth.authenitcateJWT, this.upload.single("image"), async (req: Request, res: Response) => {
-    //   try {
-    //     //check if image is uploaded 
-    //     if (req.file) {
-    //       console.log(req.file);
-    //       //if image is uploaded create a new blog 
-    //       let blog: IBlog = new Blog();
-
-    //       //set titleImagePath to the uploaded image's path attribute
-    //       blog.titleImagePath = req.file.path;
-
-    //       //set the username -- foreign key for the blog
-    //       blog.username = res.locals.userId;
-
-    //       //add the blog to the database 
-    //       await this.repo.create(blog);
-
-    //       //find the blog's ID and send back to user 
-    //       console.log("Creation successful");
-    //       blog = await this.repo.find(searchParameters.TitleImagePath, req.file.path);
-
-    //       //get the blog id
-    //       let blogID: string = blog.blogID.toString();
-
-    //       //return the blog id to the user
-    //       res.send(blogID);
-    //     }
-    //     //console.log(req.body.content);
-    //   } catch (e) {
-    //     res.sendStatus(400);
-    //     console.log(e);
-    //     throw new Error(e);
-    //   }
-    // });
-
-
-    //Receive a blog's text content and update the blog data (so this should be a patch to something like /blog/{blogID})
-    //Possible request body parameters: content, title, titleImagePath, username
-    //Method One: Part of method one. To post image and create blog resource. Then patch resource with text content.
-    //            Decided to refactor this. 
-    // this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
-    //   try {
-
-    //     //store incoming request parameters 
-    //     let blog: IBlog = new Blog();
-
-    //     //TODO: Make blog method to do this not controller logic 
-    //     //determine which blog properties are being patched based off request body parameters
-    //     if (req.body.content !== null && req.body.content !== undefined) {
-    //       blog.content = req.body.content;
-    //     }
-
-    //     //blog title
-    //     if (req.body.title !== null && req.body.title !== undefined) {
-    //       blog.title = req.body.title;
-    //     }
-
-    //     //blog's path to titleimage
-    //     if (req.body.titleImagePath !== null && req.body.titleImagePath !== undefined) {
-    //       blog.titleImagePath = req.body.titleImagePath;
-    //     }
-
-    //     //blog's username value -- TODO: Determine if this is necessary here
-    //     if (req.body.username !== null && req.body.username !== undefined) {
-    //       blog.username = req.body.username;
-    //     }
-
-    //     //set blog object's blogID using the incoming request parameter
-    //     blog.blogID = parseInt(req.params.blogID);
-
-    //     //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
-    //     await this.repo.update(blog);
-
-    //     console.log("Successful update!");
-
-    //     //send no content success
-    //     res.sendStatus(204);
-    //   } catch (e) {
-    //     console.error(e);
-    //     res.sendStatus(400);
-    //   }
-
-    // });
 
     //create a blog resource --return blogID 
     //A blog resource contains a path to the blog's title image if one was uploaded.
@@ -217,33 +128,6 @@ export default class BlogController implements IController {
       }
 
     });
-
-    // //TODO: Move this out of the blog controller and expand functionality to cover user profile image uploads.
-    // //create an image resource -- return unique image ID or image path
-    // //This blog hero image needs to be linked to a blog resource using the blog's Patch path.
-    // this.router.post('/uploads', this.auth.authenitcateJWT, this.upload.single("image"), async (req: Request, res: Response) => {
-    //   try {
-    //     //check if image is uploaded 
-    //     if (req.file) {
-    //       console.log(req.file);
-
-    //       //extract the path to the image resource created 
-    //       let imagePath: string = JSON.stringify(req.file.path);
-
-    //       //change \ to / in blog's path to the title image
-    //       imagePath = imagePath.replace(/\\/g, "/");
-
-    //       console.log(imagePath);
-
-    //       //send back the imagepath to the user
-    //       res.send(imagePath);
-    //     }
-    //   } catch (e) {
-    //     res.sendStatus(400);
-    //     throw new Error(e);
-    //   }
-    // });
-
 
     //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
     this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {

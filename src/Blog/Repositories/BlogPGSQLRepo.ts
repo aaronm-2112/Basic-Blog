@@ -7,7 +7,7 @@ import { Pool } from 'pg';
 //purpose: perform basic crud ops with the blog table using postgresql.
 //         Used in controllers. Decouples database layer from higher level modules.
 //How it works: pool of connections is used to perform usercontroller requests on the blog data. Paramaterized queries are used for sql injection protection.
-export default class BlogSQLiteRepo implements IBlogRepository {
+export default class BlogPGSQLRepo implements IBlogRepository {
   //the postgresql connection pool
   private pool: Pool;
 
