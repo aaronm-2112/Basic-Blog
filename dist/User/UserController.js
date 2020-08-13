@@ -166,7 +166,7 @@ var UserController = /** @class */ (function () {
                         blogDetails_1 = new Array();
                         //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
                         blogs.forEach(function (blog) {
-                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blog/" + blog.blogID + "/true", viewPath: "http://localhost:3000/blog/" + blog.blogID + "/false" });
+                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blog/" + blog.blogid + "/true", viewPath: "http://localhost:3000/blog/" + blog.blogid + "/false" });
                         });
                         //  1. Send user profile info to profile partial
                         res.render('Profile', {

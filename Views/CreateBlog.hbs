@@ -53,7 +53,7 @@ Content: <textarea name="content" id="content" cols="30" rows="10"></textarea>
       //check for success status code
       if (patchResult.status === 204) {
         console.log("Blog created!");
-        window.location.pathname = `/blog/${blogID}`;
+        window.location.pathname = `/blog/${blogID}/false`;
       } else {
         console.log("Error creating blog!");
       }

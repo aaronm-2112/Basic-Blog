@@ -33,9 +33,9 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       //place results into the blog array 
       rows.forEach(row => {
         blog = new Blog(); //TODO: Find better way to create a deep copy
-        blog.blogID = row.blogID;
+        blog.blogid = row.blogid;
         blog.title = row.title;
-        blog.titleImagePath = row.titleImagePath;
+        blog.titleimagepath = row.titleImagePath;
         blog.username = row.username;
         blog.content = row.content;
 
@@ -77,9 +77,9 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       //place the row data into a blog object and return it
       let blog: IBlog = new Blog();
 
-      blog.blogID = row.blogID;
+      blog.blogid = row.blogid;
       blog.title = row.title;
-      blog.titleImagePath = row.titleImagePath;
+      blog.titleimagepath = row.titleImagePath;
       blog.content = row.content;
       blog.username = row.username;
 
@@ -104,10 +104,10 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       })
 
       //prepare the insert statement 
-      let statement = await db.prepare(`INSERT INTO Blog ( username, title, content, titleImagePath) VALUES (?, ?, ?, ?)`);
+      let statement = await db.prepare(`INSERT INTO Blog ( username, title, content, titleimagepath) VALUES (?, ?, ?, ?)`);
 
       //execute the insertion
-      let result = await statement.run(blog.username, blog.title, blog.content, blog.titleImagePath);
+      let result = await statement.run(blog.username, blog.title, blog.content, blog.titleimagepath);
 
       console.log(result);
 
@@ -134,7 +134,7 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       console.log("In update");
 
       //check if blogID is filled
-      if (blog.blogID < 0) {
+      if (blog.blogid < 0) {
         throw new Error("No ID");
       }
 
@@ -171,7 +171,7 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       let statement = await db.prepare(query);
 
       //get the blog ID from the blog object
-      let blogID: string = blog.blogID.toString();
+      let blogID: string = blog.blogid.toString();
 
       //execute the statement 
       let result = await statement.run(...queryValues, blogID);
@@ -204,7 +204,7 @@ export default class BlogSQLiteRepo implements IBlogRepository {
       let statement = await db.prepare(`DELETE FROM Blog WHERE blogID = ?`);
 
       //delete the blog 
-      await statement.run(blog.blogID);
+      await statement.run(blog.blogid);
 
       //finalize statement
       statement.finalize();

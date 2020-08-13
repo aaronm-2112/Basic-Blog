@@ -44,27 +44,27 @@ export async function createDB() {
     let pgRes;
 
     //drop the tables if they exist
-    //pgRes = await client.query(`DROP TABLE users`);
+    pgRes = await client.query(`DROP TABLE users CASCADE`);
     // console.log(pgRes);
 
-    //pgRes = await client.query('DROP TABLE blogs');
+    pgRes = await client.query('DROP TABLE blogs');
     // console.log(pgRes);
 
     //create the tables
-    // pgRes = await client.query(`CREATE TABLE users (
-    //     userID serial primary key,
-    //     username text not null unique,
-    //     password text not null,
-    //     email text not null unique,
-    //     firstname text,
-    //     lastname text,
-    //     bio text,
-    //     salt text, 
-    //     profilepic text
-    // );`);
-    // console.log(pgRes);
+    pgRes = await client.query(`CREATE TABLE users (
+        userid serial primary key,
+        username text not null unique,
+        password text not null,
+        email text not null unique,
+        firstname text,
+        lastname text,
+        bio text,
+        salt text, 
+        profilepic text
+    );`);
+    console.log(pgRes);
 
-    // pgRes = await client.query(`CREATE TABLE blogs (blogID serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
+    pgRes = await client.query(`CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
 
     // console.log(pgRes);
 

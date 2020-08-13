@@ -25,7 +25,41 @@ export default class BlogController implements IController {
 
     //returns blog creation view
     this.router.get('/blog', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+      console.log("Root blog route");
       try {
+        //grab the query string from the parameters
+        let searchBy: string = req.query.param as string;
+        let value: string = req.query.value as string;
+
+        console.log(searchBy);
+        console.log(value);
+
+        //check if the query string exists
+        if (value !== "" && value !== undefined) {
+          //create the blog collection
+          let blogs: IBlog[]
+
+          //check if parameter is valid
+          switch (searchBy) {
+            case searchParameters.Username:
+              //search the blog repo using the query parameter
+              blogs = await this.repo.findAll(searchParameters.Username, value);
+              break;
+            case searchParameters.Title:
+              //search the blog repo using the query parameter
+              blogs = await this.repo.findAll(searchParameters.Title, value);
+              break;
+            default:
+              //invalid search parameter -- result not found
+              res.sendStatus(404);
+              return;
+          }
+
+          //return the results to the user 
+          res.send(blogs);
+          return;
+        }//else send create blog view to user
+
         res.render('CreateBlog');
       } catch (e) {
         res.sendStatus(400);
@@ -34,12 +68,14 @@ export default class BlogController implements IController {
       }
     });
 
-    //return a specific blog for viewing
+    //return a specific blog for viewing/editing or a list of blogs based off a query term
+    //TODO: update the edit parameter and turn it into a query parameter -- This is more RESTful
     this.router.get('/blog/:blogID/:edit', async (req: Request, res: Response) => {
       console.log("In this route");
       try {
         console.log("In get blog route");
-        console.log(req.params.edit);
+
+
 
         //retrieve the blogID from the request parameter
         let blogID: string = req.params.blogID;
@@ -49,7 +85,7 @@ export default class BlogController implements IController {
 
         //set path to the image from the Views directory [views are in /Views] using absolute paths
         //TODO: Use env to get absolute path not hardcoded string
-        let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleImagePath);
+        let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleimagepath);
 
         //check the value of edit
         if (req.params.edit === "true") {
@@ -166,7 +202,7 @@ export default class BlogController implements IController {
 
         //blog's path to titleimage
         if (req.body.titleImagePath !== null && req.body.titleImagePath !== undefined) {
-          editBlog.titleImagePath = req.body.titleImagePath;
+          editBlog.titleimagepath = req.body.titleImagePath;
         }
 
         //blog's username value -- TODO: Determine if this is necessary here
@@ -175,7 +211,7 @@ export default class BlogController implements IController {
         }
 
         //set blog object's blogID using the incoming request parameter
-        editBlog.blogID = parseInt(req.params.blogID);
+        editBlog.blogid = parseInt(req.params.blogID);
 
         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
         await this.repo.update(editBlog);
@@ -214,7 +250,7 @@ export default class BlogController implements IController {
 
         //set path to the image from the Views directory [views are in /Views] using absolute paths
         //TODO: Use env to get absolute path not hardcoded string. Add this code to some model?
-        let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleImagePath);
+        let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleimagepath);
 
         //change \ to / in blog's path to the title image
         imagePath = imagePath.replace(/\\/g, "/");

@@ -54,21 +54,60 @@ var BlogController = /** @class */ (function () {
         var _this = this;
         //returns blog creation view
         this.router.get('/blog', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                try {
-                    res.render('CreateBlog');
+            var searchBy, value, blogs, _a, e_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        console.log("Root blog route");
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 9, , 10]);
+                        searchBy = req.query.param;
+                        value = req.query.value;
+                        console.log(searchBy);
+                        console.log(value);
+                        if (!(value !== "" && value !== undefined)) return [3 /*break*/, 8];
+                        blogs = void 0;
+                        _a = searchBy;
+                        switch (_a) {
+                            case BlogSearchCriteria_1.searchParameters.Username: return [3 /*break*/, 2];
+                            case BlogSearchCriteria_1.searchParameters.Title: return [3 /*break*/, 4];
+                        }
+                        return [3 /*break*/, 6];
+                    case 2: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Username, value)];
+                    case 3:
+                        //search the blog repo using the query parameter
+                        blogs = _b.sent();
+                        return [3 /*break*/, 7];
+                    case 4: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Title, value)];
+                    case 5:
+                        //search the blog repo using the query parameter
+                        blogs = _b.sent();
+                        return [3 /*break*/, 7];
+                    case 6:
+                        //invalid search parameter -- result not found
+                        res.sendStatus(404);
+                        return [2 /*return*/];
+                    case 7:
+                        //return the results to the user 
+                        res.send(blogs);
+                        return [2 /*return*/];
+                    case 8:
+                        res.render('CreateBlog');
+                        return [3 /*break*/, 10];
+                    case 9:
+                        e_1 = _b.sent();
+                        res.sendStatus(400);
+                        console.log(e_1);
+                        throw new Error(e_1);
+                    case 10: return [2 /*return*/];
                 }
-                catch (e) {
-                    res.sendStatus(400);
-                    console.log(e);
-                    throw new Error(e);
-                }
-                return [2 /*return*/];
             });
         }); });
-        //return a specific blog for viewing
+        //return a specific blog for viewing/editing or a list of blogs based off a query term
+        //TODO: update the edit parameter and turn it into a query parameter -- This is more RESTful
         this.router.get('/blog/:blogID/:edit', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blogID, blog, imagePath, userID, e_1;
+            var blogID, blog, imagePath, userID, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -77,12 +116,11 @@ var BlogController = /** @class */ (function () {
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         console.log("In get blog route");
-                        console.log(req.params.edit);
                         blogID = req.params.blogID;
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogID)];
                     case 2:
                         blog = _a.sent();
-                        imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleImagePath);
+                        imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleimagepath);
                         //check the value of edit
                         if (req.params.edit === "true") {
                             console.log("Editing");
@@ -124,10 +162,10 @@ var BlogController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_1 = _a.sent();
+                        e_2 = _a.sent();
                         res.sendStatus(400);
-                        console.log(e_1);
-                        throw new Error(e_1);
+                        console.log(e_2);
+                        throw new Error(e_2);
                     case 4: return [2 /*return*/];
                 }
             });
@@ -136,7 +174,7 @@ var BlogController = /** @class */ (function () {
         //A blog resource contains a path to the blog's title image if one was uploaded.
         //This image path needs to be posted to the uploads path, then linked to blog with a patch request to blog.
         this.router.post('/blog', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blog, blogID, e_2;
+            var blog, blogID, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -155,16 +193,16 @@ var BlogController = /** @class */ (function () {
                         res.send(blogID.toString());
                         return [3 /*break*/, 3];
                     case 2:
-                        e_2 = _a.sent();
+                        e_3 = _a.sent();
                         res.sendStatus(400);
-                        throw new Error(e_2);
+                        throw new Error(e_3);
                     case 3: return [2 /*return*/];
                 }
             });
         }); });
         //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
         this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userID, blog, editBlog, e_3;
+            var userID, blog, editBlog, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -194,14 +232,14 @@ var BlogController = /** @class */ (function () {
                         }
                         //blog's path to titleimage
                         if (req.body.titleImagePath !== null && req.body.titleImagePath !== undefined) {
-                            editBlog.titleImagePath = req.body.titleImagePath;
+                            editBlog.titleimagepath = req.body.titleImagePath;
                         }
                         //blog's username value -- TODO: Determine if this is necessary here
                         if (req.body.username !== null && req.body.username !== undefined) {
                             editBlog.username = req.body.username;
                         }
                         //set blog object's blogID using the incoming request parameter
-                        editBlog.blogID = parseInt(req.params.blogID);
+                        editBlog.blogid = parseInt(req.params.blogID);
                         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
                         return [4 /*yield*/, this.repo.update(editBlog)];
                     case 2:
@@ -212,8 +250,8 @@ var BlogController = /** @class */ (function () {
                         res.sendStatus(204);
                         return [3 /*break*/, 4];
                     case 3:
-                        e_3 = _a.sent();
-                        console.error(e_3);
+                        e_4 = _a.sent();
+                        console.error(e_4);
                         res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -222,7 +260,7 @@ var BlogController = /** @class */ (function () {
         }); });
         //allow the user to edit a blog -- TODO: Change because Edit is not a resource
         this.router.get('/blog/edit/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blogID, blog, username, imagePath, e_4;
+            var blogID, blog, username, imagePath, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -238,7 +276,7 @@ var BlogController = /** @class */ (function () {
                             res.sendStatus(401);
                             return [2 /*return*/];
                         }
-                        imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleImagePath);
+                        imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleimagepath);
                         //change \ to / in blog's path to the title image
                         imagePath = imagePath.replace(/\\/g, "/");
                         //direct the user to the blog edit view with blog parameters
@@ -249,9 +287,9 @@ var BlogController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 3];
                     case 2:
-                        e_4 = _a.sent();
+                        e_5 = _a.sent();
                         res.sendStatus(400);
-                        throw new Error(e_4);
+                        throw new Error(e_5);
                     case 3: return [2 /*return*/];
                 }
             });

@@ -10,6 +10,8 @@ Title: <input type="text" id="title" value="{{title}}">
 Content: <textarea name="content" id="content" cols="30" rows="10">{{content}}</textarea>
 <button id="SaveContent">Save</button>
 
+<button id="StopEditing">Stop Editing</button>
+
 <script>
   function getBlogID() {
     //get the url 
@@ -108,6 +110,10 @@ Content: <textarea name="content" id="content" cols="30" rows="10">{{content}}</
 
   }
 
+  function exit() {
+    window.location.pathname = '/profile';
+  }
+
   //add event listener to the save content button
   document.getElementById("SaveContent").addEventListener("click", patchContent);
 
@@ -116,4 +122,8 @@ Content: <textarea name="content" id="content" cols="30" rows="10">{{content}}</
 
   //add event listener to the save content button
   document.getElementById("SaveBannerImage").addEventListener("click", patchBannerImage);
+
+  //add event listener to exit page
+  document.getElementById("StopEditing").addEventListener("click", exit);
+
 </script>

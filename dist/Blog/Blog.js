@@ -4,11 +4,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //TODO: Add getters and setters
 var Blog = /** @class */ (function () {
     function Blog() {
-        this.blogID = -1; //give junk value so it breaks if unset id gets through 
+        this.blogid = -1; //give junk value so it breaks if unset id gets through 
         this.username = "";
         this.title = "";
         this.content = "";
-        this.titleImagePath = "";
+        this.titleimagepath = "";
     }
     //validate if a user owns this blog resource
     Blog.prototype.creator = function (incomingUser) {

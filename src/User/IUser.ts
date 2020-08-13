@@ -1,7 +1,7 @@
 //Purpose: Provide an interface for User entities. 
 
 export default interface IUser {
-  userID: Number;
+  userid: Number;
   username: String;
   password: String;
   email: String;

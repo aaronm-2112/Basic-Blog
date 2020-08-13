@@ -12,7 +12,6 @@ var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
 var SqliteRepository_1 = __importDefault(require("./User/Repositories/SqliteRepository"));
 var UserController_1 = __importDefault(require("./User/UserController"));
-var BlogSQLiteRepo_1 = __importDefault(require("./Blog/Repositories/BlogSQLiteRepo"));
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
 var PGSQLiteRepo_1 = __importDefault(require("./User/Repositories/PGSQLiteRepo"));
@@ -59,13 +58,13 @@ staticDirectory.registerRoutes(app); //TODO: Rename method
 //register the user routes -- (could also have set up controllers which have the routes baked in)
 var userRepo = new SqliteRepository_1.default();
 var userRepoPostgre = new PGSQLiteRepo_1.default();
-var blogRepo = new BlogSQLiteRepo_1.default();
+//let blogRepo: IBlogRepository = new BlogSQLiteRepo();
 var blogRepoPostgre = new BlogPGSQLRepo_1.default();
 var usercont = new UserController_1.default(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 //register the blog routes 
-var blogrepo = new BlogSQLiteRepo_1.default();
-var blogcontroller = new BlogController_1.default(blogRepo);
+//let blogrepo: IBlogRepository = new BlogSQLiteRepo();
+var blogcontroller = new BlogController_1.default(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
 //register the common upload route
 Uploads_1.default(app).then(function (res) {

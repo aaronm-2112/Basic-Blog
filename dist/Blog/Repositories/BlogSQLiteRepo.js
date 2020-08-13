@@ -80,9 +80,9 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         //place results into the blog array 
                         rows.forEach(function (row) {
                             blog_1 = new Blog_1.default(); //TODO: Find better way to create a deep copy
-                            blog_1.blogID = row.blogID;
+                            blog_1.blogid = row.blogid;
                             blog_1.title = row.title;
-                            blog_1.titleImagePath = row.titleImagePath;
+                            blog_1.titleimagepath = row.titleImagePath;
                             blog_1.username = row.username;
                             blog_1.content = row.content;
                             //push blog into blog array 
@@ -127,9 +127,9 @@ var BlogSQLiteRepo = /** @class */ (function () {
                     case 3:
                         row = _a.sent();
                         blog = new Blog_1.default();
-                        blog.blogID = row.blogID;
+                        blog.blogid = row.blogid;
                         blog.title = row.title;
-                        blog.titleImagePath = row.titleImagePath;
+                        blog.titleimagepath = row.titleImagePath;
                         blog.content = row.content;
                         blog.username = row.username;
                         //finalize the statement
@@ -163,10 +163,10 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         ];
                     case 1:
                         db = _a.sent();
-                        return [4 /*yield*/, db.prepare("INSERT INTO Blog ( username, title, content, titleImagePath) VALUES (?, ?, ?, ?)")];
+                        return [4 /*yield*/, db.prepare("INSERT INTO Blog ( username, title, content, titleimagepath) VALUES (?, ?, ?, ?)")];
                     case 2:
                         statement = _a.sent();
-                        return [4 /*yield*/, statement.run(blog.username, blog.title, blog.content, blog.titleImagePath)];
+                        return [4 /*yield*/, statement.run(blog.username, blog.title, blog.content, blog.titleimagepath)];
                     case 3:
                         result = _a.sent();
                         console.log(result);
@@ -202,7 +202,7 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         _a.trys.push([0, 6, , 7]);
                         console.log("In update");
                         //check if blogID is filled
-                        if (blog.blogID < 0) {
+                        if (blog.blogid < 0) {
                             throw new Error("No ID");
                         }
                         return [4 /*yield*/, sqlite_1.open({
@@ -229,7 +229,7 @@ var BlogSQLiteRepo = /** @class */ (function () {
                         return [4 /*yield*/, db.prepare(query)];
                     case 2:
                         statement = _a.sent();
-                        blogID = blog.blogID.toString();
+                        blogID = blog.blogid.toString();
                         return [4 /*yield*/, statement.run.apply(statement, __spreadArrays(queryValues, [blogID]))];
                     case 3:
                         result = _a.sent();
@@ -273,7 +273,7 @@ var BlogSQLiteRepo = /** @class */ (function () {
                     case 2:
                         statement = _a.sent();
                         //delete the blog 
-                        return [4 /*yield*/, statement.run(blog.blogID)];
+                        return [4 /*yield*/, statement.run(blog.blogid)];
                     case 3:
                         //delete the blog 
                         _a.sent();

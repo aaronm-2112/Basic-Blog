@@ -63,7 +63,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "SELECT blogID, username, title, content, titleimagepath FROM blogs WHERE " + searchBy + " = $1";
+                        query = "SELECT * FROM blogs WHERE " + searchBy + " = $1";
                         values = [];
                         //add the search value to the value collection
                         values.push(value);
@@ -75,11 +75,12 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         //place results into the blog array 
                         rows.forEach(function (row) {
                             blog_1 = new Blog_1.default(); //TODO: Find better way to create a deep copy
-                            blog_1.blogID = row.blogID;
+                            blog_1.blogid = row.blogid;
                             blog_1.title = row.title;
-                            blog_1.titleImagePath = row.titleimagepath;
+                            blog_1.titleimagepath = row.titleimagepath;
                             blog_1.username = row.username;
                             blog_1.content = row.content;
+                            console.log(blog_1);
                             //push blog into blog array 
                             blogs_1.push(blog_1);
                         });
@@ -103,7 +104,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "SELECT blogID, username, title, content, titleimagepath FROM blogs WHERE " + searchBy + " = $1";
+                        query = "SELECT blogid, username, title, content, titleimagepath FROM blogs WHERE " + searchBy + " = $1";
                         values = [];
                         values.push(value);
                         return [4 /*yield*/, this.pool.query(query, values)];
@@ -111,9 +112,9 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         result = _a.sent();
                         row = result.rows[0];
                         blog = new Blog_1.default();
-                        blog.blogID = row.blogID;
+                        blog.blogid = row.blogid;
                         blog.title = row.title;
-                        blog.titleImagePath = row.titleimagepath;
+                        blog.titleimagepath = row.titleimagepath;
                         blog.content = row.content;
                         blog.username = row.username;
                         return [2 /*return*/, blog];
@@ -132,17 +133,17 @@ var BlogPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "INSERT INTO blogs ( username, title, content, titleimagepath) VALUES ($1, $2, $3, $4)";
+                        query = "INSERT INTO blogs ( username, title, content) VALUES ($1, $2, $3) RETURNING blogid";
                         values = [];
                         values.push(blog.username);
                         values.push(blog.title);
                         values.push(blog.content);
-                        values.push(blog.titleImagePath);
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 1:
                         result = _a.sent();
                         console.log(result);
-                        blogID = result.rows[0].blogID;
+                        blogID = result.rows[0]["blogid"];
+                        console.log(blogID);
                         //return database
                         return [2 /*return*/, blogID];
                     case 2:
@@ -164,7 +165,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         _a.trys.push([0, 2, , 3]);
                         console.log("In update");
                         //check if blogID is filled -- TODO move out of repo?
-                        if (blog.blogID < 0) {
+                        if (blog.blogid < 0) {
                             throw new Error("No ID");
                         }
                         queryProperties = [];
@@ -174,7 +175,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         //traverse the blog's entries
                         for (entry in blogEntries) {
                             //determine which blog properties need to be updated
-                            if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogID' && blogEntries[entry][1] !== "") { //empty string not acceptable update value
+                            if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogid' && blogEntries[entry][1] !== "") { //empty string not acceptable update value
                                 //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
                                 queryProperties.push(blogEntries[entry][0] + (" = $" + parameterNumber));
                                 //push the blog property value into the list of query values
@@ -183,10 +184,10 @@ var BlogPGSQLRepo = /** @class */ (function () {
                                 parameterNumber += 1;
                             }
                         }
-                        query = "UPDATE blogs SET " + queryProperties.join(',') + " WHERE blogID = ?";
+                        query = "UPDATE blogs SET " + queryProperties.join(',') + (" WHERE blogid = $" + parameterNumber);
                         console.log(query);
                         //add the blogID to the queryValues list
-                        queryValues.push(blog.blogID.toString());
+                        queryValues.push(blog.blogid.toString());
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         result = _a.sent();
@@ -208,9 +209,9 @@ var BlogPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "DELETE FROM Blog WHERE blogID = $1";
+                        query = "DELETE FROM Blog WHERE blogid = $1";
                         values = [];
-                        values.push(blog.blogID.toString());
+                        values.push(blog.blogid.toString());
                         //execute the delete query
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 1:

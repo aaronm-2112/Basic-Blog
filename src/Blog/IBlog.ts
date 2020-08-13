@@ -2,11 +2,11 @@
 
 //TODO: Add getters and setters, make abstract class too, make properties private
 export default interface IBlog {
-  blogID: number;
+  blogid: number;
   username: string;
   title: string;
   content: string;
-  titleImagePath: string;
+  titleimagepath: string;
 
 
   creator(incomingUser: string): boolean;

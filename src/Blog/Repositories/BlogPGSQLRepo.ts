@@ -26,8 +26,8 @@ export default class BlogPGSQLRepo implements IBlogRepository {
   async findAll(searchBy: searchParameters, value: string): Promise<IBlog[]> {
     try {
       //prepare the blog search query
-      let query: string = `SELECT blogID, username, title, content, titleimagepath FROM blogs WHERE ${searchBy} = $1`;
-
+      let query: string = `SELECT * FROM blogs WHERE ${searchBy} = $1`;
+      //SELECT blogID, username, title, content, titleimagepath FROM blogs WHERE ${searchBy} = $1
       //create the collection of query values
       let values: string[] = [];
 
@@ -47,12 +47,13 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //place results into the blog array 
       rows.forEach(row => {
         blog = new Blog(); //TODO: Find better way to create a deep copy
-        blog.blogID = row.blogID;
+        blog.blogid = row.blogid;
         blog.title = row.title;
-        blog.titleImagePath = row.titleimagepath;
+        blog.titleimagepath = row.titleimagepath;
         blog.username = row.username;
         blog.content = row.content;
 
+        console.log(blog);
         //push blog into blog array 
         blogs.push(blog);
       });
@@ -70,7 +71,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
   async find(searchBy: searchParameters, value: string): Promise<IBlog> {
     try {
       //prepare the query to find the blog
-      let query: string = `SELECT blogID, username, title, content, titleimagepath FROM blogs WHERE ${searchBy} = $1`;
+      let query: string = `SELECT blogid, username, title, content, titleimagepath FROM blogs WHERE ${searchBy} = $1`;
 
       //prepare the values for the query
       let values: string[] = [];
@@ -85,9 +86,9 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //place the row data into a blog object and return it
       let blog: IBlog = new Blog();
 
-      blog.blogID = row.blogID;
+      blog.blogid = row.blogid;
       blog.title = row.title;
-      blog.titleImagePath = row.titleimagepath;
+      blog.titleimagepath = row.titleimagepath;
       blog.content = row.content;
       blog.username = row.username;
 
@@ -100,14 +101,14 @@ export default class BlogPGSQLRepo implements IBlogRepository {
   async create(blog: IBlog): Promise<number> {
     try {
       //prepare the insert query
-      let query: string = `INSERT INTO blogs ( username, title, content, titleimagepath) VALUES ($1, $2, $3, $4)`;
+      let query: string = `INSERT INTO blogs ( username, title, content) VALUES ($1, $2, $3) RETURNING blogid`;
 
       //prepare the insert values -- order matters
       let values: string[] = [];
       values.push(blog.username);
       values.push(blog.title);
       values.push(blog.content);
-      values.push(blog.titleImagePath);
+      //values.push(blog.titleImagePath);
 
       //execute the insertion
       let result = await this.pool.query(query, values);
@@ -115,7 +116,9 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       console.log(result);
 
       //retrieve the last rowID from the result object -- lastID is only populated when we use an insert
-      let blogID: number = (result.rows[0].blogID as number);
+      let blogID: number = result.rows[0]["blogid"];
+
+      console.log(blogID);
 
       //return database
       return blogID;
@@ -131,7 +134,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       console.log("In update");
 
       //check if blogID is filled -- TODO move out of repo?
-      if (blog.blogID < 0) {
+      if (blog.blogid < 0) {
         throw new Error("No ID");
       }
 
@@ -148,7 +151,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //traverse the blog's entries
       for (var entry in blogEntries) {
         //determine which blog properties need to be updated
-        if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogID' && blogEntries[entry][1] !== "") { //empty string not acceptable update value
+        if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogid' && blogEntries[entry][1] !== "") { //empty string not acceptable update value
           //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
           queryProperties.push(blogEntries[entry][0] + ` = $${parameterNumber}`);
           //push the blog property value into the list of query values
@@ -159,12 +162,12 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       }
 
       //create the update query
-      let query: string = `UPDATE blogs SET ` + queryProperties.join(',') + ` WHERE blogID = ?`;
+      let query: string = `UPDATE blogs SET ` + queryProperties.join(',') + ` WHERE blogid = $${parameterNumber}`;
 
       console.log(query);
 
       //add the blogID to the queryValues list
-      queryValues.push(blog.blogID.toString());
+      queryValues.push(blog.blogid.toString());
 
       //execute the update query
       let result = await this.pool.query(query, queryValues);
@@ -183,11 +186,11 @@ export default class BlogPGSQLRepo implements IBlogRepository {
     try {
 
       //prepare the blog deletion statement
-      let query = `DELETE FROM Blog WHERE blogID = $1`;
+      let query = `DELETE FROM Blog WHERE blogid = $1`;
 
       //collect the query values
       let values: string[] = [];
-      values.push(blog.blogID.toString());
+      values.push(blog.blogid.toString());
 
       //execute the delete query
       await this.pool.query(query, values);

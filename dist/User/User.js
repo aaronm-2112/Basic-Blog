@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Can implement an interface for a User if it will become necessary in the future. 
 var User = /** @class */ (function () {
     function User() {
-        this.userID = 0;
+        this.userid = 0;
         this.username = "";
         this.password = "";
         this.email = "";
@@ -32,10 +32,10 @@ var User = /** @class */ (function () {
         this.email = email;
     };
     User.prototype.getUserID = function () {
-        return this.userID;
+        return this.userid;
     };
     User.prototype.setUserID = function (id) {
-        this.userID = id;
+        this.userid = id;
     };
     User.prototype.getFirstname = function () {
         return this.firstname;

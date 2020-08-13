@@ -72,7 +72,7 @@ var UserPGSQLRepo = /** @class */ (function () {
                         rows.forEach(function (row) {
                             //create a new user and populate its properties
                             var user = new User_1.default();
-                            user.userID = row.userID;
+                            user.userid = row.userid;
                             user.setUsername(row.username);
                             user.setPassword(row.password);
                             user.setEmail(row.email);
@@ -182,7 +182,7 @@ var UserPGSQLRepo = /** @class */ (function () {
                         for (entry in userEntries) {
                             //console.log(userEntries[entry][0] + userEntries[entry][1]);
                             //determine which user properties need to be updated -- and do not update those which can't be
-                            if (userEntries[entry][0] !== 'username' && userEntries[entry][1] !== "" && userEntries[entry][0] !== 'salt' && userEntries[entry][0] !== 'userID' && userEntries[entry][0] !== 'email') { //empty string not acceptable update value
+                            if (userEntries[entry][0] !== 'username' && userEntries[entry][1] !== "" && userEntries[entry][0] !== 'salt' && userEntries[entry][0] !== 'userid' && userEntries[entry][0] !== 'email') { //empty string not acceptable update value
                                 //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
                                 queryProperties.push(userEntries[entry][0] + (" = $" + parameterNumber));
                                 //push the blog property value into the list of query values

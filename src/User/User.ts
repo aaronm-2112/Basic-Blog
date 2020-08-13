@@ -2,7 +2,7 @@ import IUser from "./IUser";
 
 // Can implement an interface for a User if it will become necessary in the future. 
 export default class User implements IUser {
-  userID: Number;
+  userid: Number;
   username: String;
   password: string;
   email: String;
@@ -13,7 +13,7 @@ export default class User implements IUser {
   profilepic: string;
 
   constructor() {
-    this.userID = 0;
+    this.userid = 0;
     this.username = "";
     this.password = "";
     this.email = "";
@@ -49,11 +49,11 @@ export default class User implements IUser {
   }
 
   getUserID(): Number {
-    return this.userID;
+    return this.userid;
   }
 
   setUserID(id: Number): void {
-    this.userID = id;
+    this.userid = id;
   }
 
   getFirstname(): String {

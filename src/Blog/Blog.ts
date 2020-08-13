@@ -5,18 +5,18 @@ import IBlog from "./IBlog";
 
 //TODO: Add getters and setters
 export default class Blog implements IBlog {
-  blogID: number;
+  blogid: number;
   username: string;
   title: string;
   content: string;
-  titleImagePath: string;
+  titleimagepath: string;
 
   constructor() {
-    this.blogID = -1; //give junk value so it breaks if unset id gets through 
+    this.blogid = -1; //give junk value so it breaks if unset id gets through 
     this.username = "";
     this.title = "";
     this.content = "";
-    this.titleImagePath = "";
+    this.titleimagepath = "";
   }
 
   //validate if a user owns this blog resource

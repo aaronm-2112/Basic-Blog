@@ -51,7 +51,7 @@ function createDB() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 9, , 10]);
+                    _a.trys.push([0, 13, , 14]);
                     return [4 /*yield*/, sqlite_1.open({
                             filename: "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db",
                             driver: sqlite3_1.default.Database
@@ -84,57 +84,36 @@ function createDB() {
                 case 7:
                     _a.sent();
                     pgRes = void 0;
+                    return [4 /*yield*/, client.query("DROP TABLE users CASCADE")];
+                case 8:
                     //drop the tables if they exist
-                    //pgRes = await client.query(`DROP TABLE users`);
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query('DROP TABLE blogs')];
+                case 9:
                     // console.log(pgRes);
-                    //pgRes = await client.query('DROP TABLE blogs');
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE TABLE users (\n        userid serial primary key,\n        username text not null unique,\n        password text not null,\n        email text not null unique,\n        firstname text,\n        lastname text,\n        bio text,\n        salt text, \n        profilepic text\n    );")];
+                case 10:
                     // console.log(pgRes);
                     //create the tables
-                    // pgRes = await client.query(`CREATE TABLE users (
-                    //     userID serial primary key,
-                    //     username text not null unique,
-                    //     password text not null,
-                    //     email text not null unique,
-                    //     firstname text,
-                    //     lastname text,
-                    //     bio text,
-                    //     salt text, 
-                    //     profilepic text
-                    // );`);
-                    // console.log(pgRes);
-                    // pgRes = await client.query(`CREATE TABLE blogs (blogID serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
+                    pgRes = _a.sent();
+                    console.log(pgRes);
+                    return [4 /*yield*/, client.query("CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));")];
+                case 11:
+                    pgRes = _a.sent();
                     // console.log(pgRes);
                     //end the client's connection
                     return [4 /*yield*/, client.end()];
-                case 8:
-                    //drop the tables if they exist
-                    //pgRes = await client.query(`DROP TABLE users`);
-                    // console.log(pgRes);
-                    //pgRes = await client.query('DROP TABLE blogs');
-                    // console.log(pgRes);
-                    //create the tables
-                    // pgRes = await client.query(`CREATE TABLE users (
-                    //     userID serial primary key,
-                    //     username text not null unique,
-                    //     password text not null,
-                    //     email text not null unique,
-                    //     firstname text,
-                    //     lastname text,
-                    //     bio text,
-                    //     salt text, 
-                    //     profilepic text
-                    // );`);
-                    // console.log(pgRes);
-                    // pgRes = await client.query(`CREATE TABLE blogs (blogID serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
+                case 12:
                     // console.log(pgRes);
                     //end the client's connection
                     _a.sent();
-                    return [3 /*break*/, 10];
-                case 9:
+                    return [3 /*break*/, 14];
+                case 13:
                     e_1 = _a.sent();
                     console.error(e_1);
-                    return [3 /*break*/, 10];
-                case 10: return [2 /*return*/];
+                    return [3 /*break*/, 14];
+                case 14: return [2 /*return*/];
             }
         });
     });
