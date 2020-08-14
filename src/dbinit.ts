@@ -68,7 +68,6 @@ export async function createDB() {
 
     // console.log(pgRes);
 
-
     //end the client's connection
     await client.end()
 

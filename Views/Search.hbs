@@ -21,29 +21,45 @@
 
     <input type="text" id="query">
     <button id="search">Search</button>
+    Author: <input type="checkbox" id="author" name="author" value="author">
+    Title: <input type="checkbox" id="title" name="title" value="title">
   </div>
 
   <div id="search-results"></div>
 
 
   <script>
-    //TODO 1: Basic search that returns results that are put on the page
-    //TODO 2: Refine search by adding categories
-    //TODO 3: Refine search by adding pagination to front end and back end if necessary(e.g., if we show 15 results we do not need to collect all 1000 matching blogs for the user) 
+    //TODO 1: Basic search that returns results that are put on the page x
+    //TODO 2: Refine search by adding categories x
+    //TODO 3: Refine search by adding pagination to front end and back end if necessary(e.g., if we show 15 results we do not need to collect all 1000 matching blogs for the user) [WIP]
     //script that searches by the client's keywords and returns a set of results
     async function search() {
       //get the search query
       let value = document.getElementById("query").value;
-      console.log(value);
+
+      //get the checkbox values
+      let authorCheckbox = document.getElementById("author");
+      let categoryCheckbox = document.getElementById("title");
+
+      let authorCheck = authorCheckbox.checked;
+      let categoryCheck = categoryCheckbox.checked;
+
+      //set the query parameter value 
+      let param;
+      if (authorCheck && categoryCheck) {
+        return;
+      } else if (authorCheck) {
+        param = "username";
+      } else {
+        param = "title";
+      }
 
       //send query request to the blog controller
-      let response = await fetch(`http://localhost:3000/blog?param=username&value=${value}`, {
+      let response = await fetch(`http://localhost:3000/blog?param=${param}&value=${value}`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
 
       let blogs = await response.json();
-
-      console.log(blogs);
 
       //place blog results into the search-results div
       let title;
@@ -55,20 +71,21 @@
         //set the username
         username = blogs[i].username;
         //construct the path to the blog  -- blogID and if editing or not
-        blogurl = `http://localhost:3000/blog/${blogs[i].blogID}/false`;
+        blogurl = `http://localhost:3000/blog/${blogs[i].blogid}/false`;
 
         //create the title DOM element
         let DOMTitle = document.createElement('p');
-        DOMTitle.value = title;
+        DOMTitle.innerText = title;
+        console.log(DOMTitle);
 
         //create the username DOM element
         let DOMUsername = document.createElement('p');
-        DOMUsername.value = username;
+        DOMUsername.innerText = username;
 
         //create anchor
         let DOMLink = document.createElement('a');
-        DOMLink.value = blogurl;
-
+        DOMLink.href = blogurl;
+        DOMLink.innerText = "Blog"
         //get the target
         let div = document.getElementById("search-results");
 
