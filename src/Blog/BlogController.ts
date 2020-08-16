@@ -30,9 +30,11 @@ export default class BlogController implements IController {
         //grab the query string from the parameters
         let searchBy: string = req.query.param as string;
         let value: string = req.query.value as string;
+        let blogid: string = req.query.blogid as string;
 
         console.log(searchBy);
         console.log(value);
+        console.log(blogid);
 
         //check if the query string exists
         if (value !== "" && value !== undefined) {
@@ -43,11 +45,11 @@ export default class BlogController implements IController {
           switch (searchBy) {
             case searchParameters.Username:
               //search the blog repo using the query parameter
-              blogs = await this.repo.findAll(searchParameters.Username, value);
+              blogs = await this.repo.findAll(searchParameters.Username, value, blogid);
               break;
             case searchParameters.Title:
               //search the blog repo using the query parameter
-              blogs = await this.repo.findAll(searchParameters.Title, value);
+              blogs = await this.repo.findAll(searchParameters.Title, value, blogid);
               break;
             default:
               //invalid search parameter -- result not found

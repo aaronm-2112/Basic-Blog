@@ -62,6 +62,7 @@ export async function createDB() {
         salt text, 
         profilepic text
     );`);
+
     console.log(pgRes);
 
     pgRes = await client.query(`CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);

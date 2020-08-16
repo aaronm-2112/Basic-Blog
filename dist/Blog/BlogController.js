@@ -54,7 +54,7 @@ var BlogController = /** @class */ (function () {
         var _this = this;
         //returns blog creation view
         this.router.get('/blog', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var searchBy, value, blogs, _a, e_1;
+            var searchBy, value, blogid, blogs, _a, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -64,8 +64,10 @@ var BlogController = /** @class */ (function () {
                         _b.trys.push([1, 9, , 10]);
                         searchBy = req.query.param;
                         value = req.query.value;
+                        blogid = req.query.blogid;
                         console.log(searchBy);
                         console.log(value);
+                        console.log(blogid);
                         if (!(value !== "" && value !== undefined)) return [3 /*break*/, 8];
                         blogs = void 0;
                         _a = searchBy;
@@ -74,12 +76,12 @@ var BlogController = /** @class */ (function () {
                             case BlogSearchCriteria_1.searchParameters.Title: return [3 /*break*/, 4];
                         }
                         return [3 /*break*/, 6];
-                    case 2: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Username, value)];
+                    case 2: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Username, value, blogid)];
                     case 3:
                         //search the blog repo using the query parameter
                         blogs = _b.sent();
                         return [3 /*break*/, 7];
-                    case 4: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Title, value)];
+                    case 4: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Title, value, blogid)];
                     case 5:
                         //search the blog repo using the query parameter
                         blogs = _b.sent();

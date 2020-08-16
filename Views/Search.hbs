@@ -26,6 +26,8 @@
   </div>
 
   <div id="search-results"></div>
+  <button id="prev" style="display:none">Previous</button>
+  <button id="next" style="display:none">Next</button>
 
 
   <script>
@@ -44,6 +46,34 @@
       let authorCheck = authorCheckbox.checked;
       let categoryCheck = categoryCheckbox.checked;
 
+      //set the keyset pagination key --blogid is our keyset pagination key
+      let blogid;
+
+      //get the seach results div
+      let div = document.getElementById("search-results");
+
+      //clear any results
+      clearResults();
+
+      //check if the search results div is empty
+      if (div.childElementCount === 0) {
+        console.log("0 elems");
+        //set the pagination key to 0 
+        blogid = 0;
+      } else { //else set the pagination key to the last result's blogid value
+        //grab the last search result -- this should be an anchor tag
+        let lastResult = div.lastChild;
+        console.log(lastResult);
+        //extract the anchor url from the last search result
+        let lastResultUrl = lastResult.href;
+        console.log(lastResultUrl);
+        //trim the edit value
+        lastResultUrl = lastResultUrl.slice(0, lastResultUrl.lastIndexOf('/'));
+        //extract the blogid
+        blogid = lastResultUrl.slice(lastResultUrl.lastIndexOf('/') + 1);
+        console.log(blogid);
+      }
+
       //set the query parameter value 
       let param;
       if (authorCheck && categoryCheck) {
@@ -55,7 +85,7 @@
       }
 
       //send query request to the blog controller
-      let response = await fetch(`http://localhost:3000/blog?param=${param}&value=${value}`, {
+      let response = await fetch(`http://localhost:3000/blog?param=${param}&value=${value}&blogid=${blogid}`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
 
@@ -86,13 +116,22 @@
         let DOMLink = document.createElement('a');
         DOMLink.href = blogurl;
         DOMLink.innerText = "Blog"
-        //get the target
-        let div = document.getElementById("search-results");
 
+        //append results to the search-results div
         div.appendChild(DOMTitle);
         div.appendChild(DOMUsername);
         div.appendChild(DOMLink);
 
+      }
+    }
+
+    function clearResults() {
+      //get the search-result DOM element
+      let searchResultsDiv = document.getElementById("search-results");
+
+      //remove the first result until their are no more results remaining
+      while (searchResultsDiv.firstChild) {
+        searchResultsDiv.removeChild(searchResultsDiv.firstChild);
       }
     }
 

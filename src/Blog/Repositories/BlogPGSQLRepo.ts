@@ -23,10 +23,11 @@ export default class BlogPGSQLRepo implements IBlogRepository {
   }
 
   //find all blogs using a certain search criteria 
-  async findAll(searchBy: searchParameters, value: string): Promise<IBlog[]> {
+  //Uses the blogid to perform basic keyset pagination. Returns only 10 results per search.
+  async findAll(searchBy: searchParameters, value: string, key: string): Promise<IBlog[]> {
     try {
       //prepare the blog search query
-      let query: string = `SELECT * FROM blogs WHERE ${searchBy} = $1`;
+      let query: string = `SELECT * FROM blogs WHERE ${searchBy} = $1 AND blogid > ${key} LIMIT 10`;
       //SELECT blogID, username, title, content, titleimagepath FROM blogs WHERE ${searchBy} = $1
       //create the collection of query values
       let values: string[] = [];
