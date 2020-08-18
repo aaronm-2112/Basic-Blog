@@ -131,14 +131,16 @@ export default class UserController implements IController {
         let username: string = res.locals.userId;  //TODO: Add error checking
 
         //get the blogid -- the keyset pagination key
-        let blogid: string = req.query.blogid as string;
+        let blogid: string = req.query.key as string;
         console.log(blogid);
+        //get the key conditional -- can be lt(<) or gt(>)
+        let keyCondition: string = req.query.keyCondition as string;
 
         //Get the user information 
         let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
 
         //Get the user's blogs
-        let blogs: IBlog[] = await this.blogRepo.findAll(searchParameters.Username, (user.username as string), blogid);
+        let blogs: IBlog[] = await this.blogRepo.findAll(searchParameters.Username, (user.username as string), blogid, keyCondition);
 
         //store front end blog information
         let blogDetails: Array<{ title: string, editPath: string, viewPath: string }> = new Array<{ title: string, editPath: string, viewPath: string }>();

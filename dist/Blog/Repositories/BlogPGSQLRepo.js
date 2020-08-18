@@ -57,14 +57,14 @@ var BlogPGSQLRepo = /** @class */ (function () {
     }
     //find all blogs using a certain search criteria 
     //Uses the blogid to perform basic keyset pagination. Returns only 10 results per search.
-    BlogPGSQLRepo.prototype.findAll = function (searchBy, value, key) {
+    BlogPGSQLRepo.prototype.findAll = function (searchBy, value, key, keyCondition) {
         return __awaiter(this, void 0, void 0, function () {
             var query, values, result, rows, blogs_1, blog_1, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "SELECT * FROM blogs WHERE " + searchBy + " = $1 AND blogid > " + key + " LIMIT 10";
+                        query = "SELECT * FROM blogs WHERE " + searchBy + " = $1 AND blogid " + keyCondition + " " + key + " LIMIT 10";
                         values = [];
                         //add the search value to the value collection
                         values.push(value);

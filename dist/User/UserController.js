@@ -151,18 +151,19 @@ var UserController = /** @class */ (function () {
         }); });
         //GUARDED ROUTES------------------------------------------------------------------------------------------------------------------
         this.router.get("/profile", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var username, blogid, user, blogs, blogDetails_1, e_3;
+            var username, blogid, keyCondition, user, blogs, blogDetails_1, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
                         username = res.locals.userId;
-                        blogid = req.query.blogid;
+                        blogid = req.query.key;
                         console.log(blogid);
+                        keyCondition = req.query.keyCondition;
                         return [4 /*yield*/, this.userRepository.find(username)];
                     case 1:
                         user = _a.sent();
-                        return [4 /*yield*/, this.blogRepo.findAll(BlogSearchCriteria_1.searchParameters.Username, user.username, blogid)];
+                        return [4 /*yield*/, this.blogRepo.findAll(BlogSearchCriteria_1.searchParameters.Username, user.username, blogid, keyCondition)];
                     case 2:
                         blogs = _a.sent();
                         blogDetails_1 = new Array();
