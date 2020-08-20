@@ -70,6 +70,15 @@ blogcontroller.registerRoutes(app);
 Uploads_1.default(app).then(function (res) {
     console.log("Uploads registered.");
 }).catch(function (e) { return console.log(e); });
+// //create 15 blogs
+// for (let i = 0; i < 15; i++) {
+//   let blog: IBlog = new Blog();
+//   blog.title = `Blog ${i}`;
+//   blog.content = `The ${i}th/rd blog.`;
+//   blog.titleimagepath = "/uploads/e8cb2abb7301b20d4abb46d0679357ad";
+//   blog.username = "First User";
+//   blogRepoPostgre.create(blog).then(r => console.log(r));
+// }
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 

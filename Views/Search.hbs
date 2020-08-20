@@ -48,7 +48,12 @@
       let button = evt.target;
 
       //determine if the search or next buttons were clicked
-      if (button === document.getElementById("search") || button === document.getElementById("next")) {
+      if (button === document.getElementById("search")) {
+        //clear any previous results
+        clearResults();
+        //get the search results
+        blogs = await getNextResults()
+      } else if (button === document.getElementById("next")) {
         //get the search results
         blogs = await getNextResults();
       } else {

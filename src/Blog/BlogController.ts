@@ -8,8 +8,6 @@ import { searchParameters } from "./BlogSearchCriteria";
 import path from 'path';
 
 
-
-
 export default class BlogController implements IController {
   private repo: IBlogRepository;
   private router: Router;
@@ -78,8 +76,6 @@ export default class BlogController implements IController {
       console.log("In this route");
       try {
         console.log("In get blog route");
-
-
 
         //retrieve the blogID from the request parameter
         let blogID: string = req.params.blogID;

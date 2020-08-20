@@ -19,6 +19,7 @@ import User from './User/User';
 import UserPGSQLRepo from './User/Repositories/PGSQLiteRepo';
 import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
 import IBlog from './Blog/IBlog';
+import Blog from './Blog/Blog';
 
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
@@ -89,6 +90,16 @@ blogcontroller.registerRoutes(app);
 Upload(app).then(res => {
   console.log("Uploads registered.");
 }).catch(e => console.log(e));
+
+// //create 15 blogs
+// for (let i = 0; i < 15; i++) {
+//   let blog: IBlog = new Blog();
+//   blog.title = `Blog ${i}`;
+//   blog.content = `The ${i}th/rd blog.`;
+//   blog.titleimagepath = "/uploads/e8cb2abb7301b20d4abb46d0679357ad";
+//   blog.username = "First User";
+//   blogRepoPostgre.create(blog).then(r => console.log(r));
+// }
 
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies

@@ -64,7 +64,21 @@ var BlogPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "SELECT * FROM blogs WHERE " + searchBy + " = $1 AND blogid " + keyCondition + " " + key + " LIMIT 10";
+                        query = void 0;
+                        //determine query condition
+                        if (keyCondition === '>') {
+                            //analagous to getting the next set of results
+                            query = "SELECT * FROM blogs WHERE " + searchBy + " = $1 AND blogid " + keyCondition + " " + key + " LIMIT 10";
+                        }
+                        else if (keyCondition === '<') {
+                            //analagous to getting the previous results
+                            query = "SELECT * FROM blogs WHERE " + searchBy + " = $1 AND blogid < " + key + " AND blogid >= " + key + " - 10 LIMIT 10";
+                        }
+                        else {
+                            //TODO: Handle more appropriately
+                            //unaccepted condition return 
+                            return [2 /*return*/, []];
+                        }
                         values = [];
                         //add the search value to the value collection
                         values.push(value);
