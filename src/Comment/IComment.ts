@@ -1,6 +1,4 @@
-import IComment from './IComment';
-
-export default class Comment implements IComment {
+export default interface IComment {
   commentid: number; //pk
   username: string; //fk to users
   blogid: number;  //fs to blogs
@@ -12,25 +10,8 @@ export default class Comment implements IComment {
   created: Date;   //tells us when the comment was created -- replies to comments will be ordered by time created. 
   //TODO(but likely won't): Query a time server for a consistent creation date across all user systems.  
 
-  constructor() {
-    this.commentid = 0; //gets set by database values
-    this.username = "";
-    this.blogid = 0;
-    this.content = "";
-    this.reply = false;
-    this.replyto = 0;
-    this.likes = 0;
-    this.deleted = false;
-    this.created = new Date();
-  }
-
-  setCreatedDate(date: Date): void {
-    this.created = date;
-  }
-
-  getCreatedDate(): Date {
-    return this.created;
-  }
+  setCreatedDate(date: Date): void; //may just happen in constructor
+  getCreatedDate(): Date;
 
 
 }

@@ -26,8 +26,6 @@ export default class UserController implements IController {
   //used for sending blog information to the Profile view
   private blogRepo: IBlogRepository;
 
-
-
   //Router
   private router: Router; // used for login
 
