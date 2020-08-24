@@ -44,30 +44,42 @@ export async function createDB() {
     let pgRes;
 
     //drop the tables if they exist
-    pgRes = await client.query(`DROP TABLE users CASCADE`);
+    //pgRes = await client.query(`DROP TABLE users CASCADE`);
     // console.log(pgRes);
 
-    pgRes = await client.query('DROP TABLE blogs');
+    //gRes = await client.query('DROP TABLE blogs');
     // console.log(pgRes);
 
     //create the tables
-    pgRes = await client.query(`CREATE TABLE users (
-        userid serial primary key,
-        username text not null unique,
-        password text not null,
-        email text not null unique,
-        firstname text,
-        lastname text,
-        bio text,
-        salt text, 
-        profilepic text
-    );`);
 
-    console.log(pgRes);
+    //TABLE users
+    // pgRes = await client.query(`CREATE TABLE users (
+    //     userid serial primary key,
+    //     username text not null unique,
+    //     password text not null,
+    //     email text not null unique,
+    //     firstname text,
+    //     lastname text,
+    //     bio text,
+    //     salt text, 
+    //     profilepic text
+    // );`);
 
-    pgRes = await client.query(`CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
+    //console.log(pgRes);
+
+    //TABLE blogs
+    // pgRes = await client.query(`CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
 
     // console.log(pgRes);
+
+
+    //DROP TABLE comments
+    //pgRes = await client.query(`DROP TABLE comments`);
+
+    //TABLE comments --TODO: No reply instead only use replyto?
+    pgRes = await client.query(`CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, likes integer not null, deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));`)
+
+    console.log(pgRes);
 
     //end the client's connection
     await client.end()

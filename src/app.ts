@@ -101,6 +101,8 @@ Upload(app).then(res => {
 //   blogRepoPostgre.create(blog).then(r => console.log(r));
 // }
 
+
+
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 

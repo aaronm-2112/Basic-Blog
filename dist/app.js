@@ -12,18 +12,19 @@ var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
 var SqliteRepository_1 = __importDefault(require("./User/Repositories/SqliteRepository"));
 var UserController_1 = __importDefault(require("./User/UserController"));
+var dbinit_1 = require("./dbinit");
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
-var PGSQLiteRepo_1 = __importDefault(require("./User/Repositories/PGSQLiteRepo"));
+var PGSQLRepo_1 = __importDefault(require("./User/Repositories/PGSQLRepo"));
 var BlogPGSQLRepo_1 = __importDefault(require("./Blog/Repositories/BlogPGSQLRepo"));
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //Used for development database changes. 
-// createDB().then(() => {
-//   console.log("Inited");
-// }).catch(e => {
-//   console.log(e);
-// })
+dbinit_1.createDB().then(function () {
+    console.log("Inited");
+}).catch(function (e) {
+    console.log(e);
+});
 // Create a new express app instance
 var app = express_1.default();
 //direct express middleware to use routes/settings
@@ -57,7 +58,7 @@ var staticDirectory = new directory_1.default();
 staticDirectory.registerRoutes(app); //TODO: Rename method
 //register the user routes -- (could also have set up controllers which have the routes baked in)
 var userRepo = new SqliteRepository_1.default();
-var userRepoPostgre = new PGSQLiteRepo_1.default();
+var userRepoPostgre = new PGSQLRepo_1.default();
 //let blogRepo: IBlogRepository = new BlogSQLiteRepo();
 var blogRepoPostgre = new BlogPGSQLRepo_1.default();
 var usercont = new UserController_1.default(userRepoPostgre, blogRepoPostgre);

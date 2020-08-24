@@ -51,7 +51,7 @@ function createDB() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 13, , 14]);
+                    _a.trys.push([0, 10, , 11]);
                     return [4 /*yield*/, sqlite_1.open({
                             filename: "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db",
                             driver: sqlite3_1.default.Database
@@ -84,36 +84,53 @@ function createDB() {
                 case 7:
                     _a.sent();
                     pgRes = void 0;
-                    return [4 /*yield*/, client.query("DROP TABLE users CASCADE")];
+                    return [4 /*yield*/, client.query("CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, likes integer not null, deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));")
+                        //CONSTRAINT FOREIGN KEY SoldToCustID REFERENCES Customers(CustID),
+                        //CONSTRAINT FOREIGN KEY ShipToCustID REFERENCES Customers(CustID)
+                        //foreign key(username) references users(username) foreign key(blogid) references blogs(blogid)
+                    ];
                 case 8:
                     //drop the tables if they exist
-                    pgRes = _a.sent();
-                    return [4 /*yield*/, client.query('DROP TABLE blogs')];
-                case 9:
+                    //pgRes = await client.query(`DROP TABLE users CASCADE`);
                     // console.log(pgRes);
-                    pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("CREATE TABLE users (\n        userid serial primary key,\n        username text not null unique,\n        password text not null,\n        email text not null unique,\n        firstname text,\n        lastname text,\n        bio text,\n        salt text, \n        profilepic text\n    );")];
-                case 10:
+                    //gRes = await client.query('DROP TABLE blogs');
                     // console.log(pgRes);
                     //create the tables
-                    pgRes = _a.sent();
-                    console.log(pgRes);
-                    return [4 /*yield*/, client.query("CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));")];
-                case 11:
-                    pgRes = _a.sent();
+                    //TABLE users
+                    // pgRes = await client.query(`CREATE TABLE users (
+                    //     userid serial primary key,
+                    //     username text not null unique,
+                    //     password text not null,
+                    //     email text not null unique,
+                    //     firstname text,
+                    //     lastname text,
+                    //     bio text,
+                    //     salt text, 
+                    //     profilepic text
+                    // );`);
+                    //console.log(pgRes);
+                    //TABLE blogs
+                    // pgRes = await client.query(`CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
                     // console.log(pgRes);
+                    //DROP TABLE comments
+                    //pgRes = await client.query(`DROP TABLE comments`);
+                    //TABLE comments --TODO: No reply instead only use replyto?
+                    pgRes = _a.sent();
+                    //CONSTRAINT FOREIGN KEY SoldToCustID REFERENCES Customers(CustID),
+                    //CONSTRAINT FOREIGN KEY ShipToCustID REFERENCES Customers(CustID)
+                    //foreign key(username) references users(username) foreign key(blogid) references blogs(blogid)
+                    console.log(pgRes);
                     //end the client's connection
                     return [4 /*yield*/, client.end()];
-                case 12:
-                    // console.log(pgRes);
+                case 9:
                     //end the client's connection
                     _a.sent();
-                    return [3 /*break*/, 14];
-                case 13:
+                    return [3 /*break*/, 11];
+                case 10:
                     e_1 = _a.sent();
                     console.error(e_1);
-                    return [3 /*break*/, 14];
-                case 14: return [2 /*return*/];
+                    return [3 /*break*/, 11];
+                case 11: return [2 /*return*/];
             }
         });
     });
