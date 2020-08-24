@@ -16,7 +16,7 @@ import BlogController from './Blog/BlogController';
 import Upload from './Common/Resources/Uploads';
 import IUser from './User/IUser';
 import User from './User/User';
-import UserPGSQLRepo from './User/Repositories/PGSQLiteRepo';
+import UserPGSQLRepo from './User/Repositories/PGSQLRepo';
 import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
 import IBlog from './Blog/IBlog';
 import Blog from './Blog/Blog';
