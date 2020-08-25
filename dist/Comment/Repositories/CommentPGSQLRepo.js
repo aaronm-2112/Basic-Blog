@@ -51,7 +51,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
     //returns comments(replies or top level) ordered by likes or date and cid
     CommentPGSQLRepo.prototype.findAll = function (reply, replyTo, orderBy, likes, cid) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, queryValues, res, comments, e_1;
+            var query, queryValues, res, rows, comments, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -59,30 +59,44 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         query = void 0;
                         queryValues = [];
                         //determine if comment is a reply or a top level comment
-                        if (reply) {
-                            //construct query that returns replies using the date as the primary means of ordering
-                            if (orderBy === 'date') {
-                                query = "SELECT FROM comments * WHERE replyto = $1 AND cid > $2 ORDER BY date ASC, cid ASC LIMIT 10";
-                                //add the query values to the query values collection
-                                queryValues.push(replyTo);
-                                queryValues.push(cid);
-                            }
-                            else { //return replies ordered by likes
-                                query = "SELECT FROM comments * WHERE replyto = $1 AND ( likes, cid) < ($2, $3) ORDER BY likes DESC, cid DESC LIMIT 10";
-                                //add the query values to the query values collection
-                                queryValues.push(replyTo);
-                                queryValues.push(likes);
-                                queryValues.push(cid);
-                            }
+                        //if (reply) {
+                        //construct query that returns replies using the date as the primary means of ordering
+                        if (orderBy === 'date') {
+                            query = "SELECT FROM comments * WHERE replyto = $1 AND commentid > $2 ORDER BY date ASC, commentid ASC LIMIT 10";
+                            //add the query values to the query values collection
+                            queryValues.push(replyTo);
+                            queryValues.push(cid);
                         }
-                        else {
-                            //construct query that return top level comments 
-                            query = "";
+                        else { //return replies ordered by likes
+                            console.log("In likes query");
+                            //query = `SELECT FROM comments * WHERE replyto = $1 AND ( likes, commentid) < ($2, $3) ORDER BY likes DESC, commentid DESC LIMIT 10`;
+                            query = "SELECT FROM comments *";
+                            //add the query values to the query values collection
+                            //queryValues.push(replyTo);
+                            //queryValues.push(likes);
+                            //queryValues.push(cid);
                         }
+                        // } else {
+                        //   //construct query that return top level comments 
+                        //   query = "";
+                        // }
+                        //execute the query
+                        //let res = await this.pool.query(query, queryValues);
+                        //query = `SELECT * FROM comments WHERE replyto = $1 AND likes < $2 AND commentid < $3 ORDER BY likes DESC, commentid DESC LIMIT 10`;
+                        query = "SELECT * FROM comments WHERE replyto = $1 AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10";
+                        queryValues.push(replyTo);
+                        queryValues.push(9);
+                        queryValues.push(12);
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         res = _a.sent();
+                        rows = res.rows;
+                        //fill comments with row values
+                        rows.forEach(function (row) {
+                            console.log(row);
+                        });
                         comments = res.rows;
+                        //console.log(comments);
                         //return the results
                         return [2 /*return*/, comments];
                     case 2:
@@ -96,13 +110,13 @@ var CommentPGSQLRepo = /** @class */ (function () {
     //TODO: Make values array more typescript. 
     CommentPGSQLRepo.prototype.create = function (comment) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, values, result, cid, e_2;
+            var query, values, result, commentid, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "INSERT INTO comments username, blogid, content, reply, replyto, likes, deleted created VALUES ($1, $2, $3, $4, $5, $6, $7)";
-                        values = [];
+                        query = "INSERT INTO comments ( username, blogid, content, reply, replyto, likes, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7)";
+                        values = new Array();
                         values.push(comment.username);
                         values.push(comment.blogid);
                         values.push(comment.content);
@@ -114,10 +128,10 @@ var CommentPGSQLRepo = /** @class */ (function () {
                     case 1:
                         result = _a.sent();
                         console.log(result);
-                        cid = result.rows[0]["cid"];
-                        console.log(cid);
+                        commentid = result.rows[0]["commentid"];
+                        console.log(commentid);
                         //returnt the comment id
-                        return [2 /*return*/, cid];
+                        return [2 /*return*/, commentid];
                     case 2:
                         e_2 = _a.sent();
                         throw new Error(e_2);

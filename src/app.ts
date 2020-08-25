@@ -20,6 +20,9 @@ import UserPGSQLRepo from './User/Repositories/PGSQLRepo';
 import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
 import IBlog from './Blog/IBlog';
 import Blog from './Blog/Blog';
+import IComment from './Comment/IComment';
+import Comment from './Comment/Comment';
+import CommentPGSQLRepo from './Comment/Repositories/CommentPGSQLRepo';
 
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
@@ -100,6 +103,42 @@ Upload(app).then(res => {
 //   blog.username = "First User";
 //   blogRepoPostgre.create(blog).then(r => console.log(r));
 // }
+
+//create the commnet repository
+let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
+
+//create 20
+// for (let i = 0; i < 20; i++) {
+
+//   let comment: IComment = new Comment();
+//   comment.blogid = i + 1;
+//   comment.content = `Reply #${i}`;
+//   comment.deleted = false;
+//   if (i === 10 || i === 11) {
+//     comment.likes = 9;
+//   } else {
+//     comment.likes = i + 1;
+//   }
+//   comment.replyto = 1;
+//   comment.username = "First User";
+//   commentRepo.create(comment).then(c => { console.log("comment created") }).catch(e => { console.log(e) });
+// }
+
+// let comment: IComment = new Comment();
+// comment.blogid = 21;
+// comment.content = `Reply 21`;
+// comment.deleted = false;
+// comment.likes = 1;
+// comment.replyto = 1;
+// comment.username = "First User";
+// commentRepo.create(comment).then(c => { console.log("comment created") }).catch(e => { console.log(e) });
+
+// let comments: IComment[] = [];
+// commentRepo.findAll(true, 1, "likes", 1000, 1000).then(comments => {
+//   //console.log(comments);
+// }).catch(e => {
+//   console.log(e);
+// })
 
 
 

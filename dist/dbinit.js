@@ -51,7 +51,7 @@ function createDB() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 10, , 11]);
+                    _a.trys.push([0, 11, , 12]);
                     return [4 /*yield*/, sqlite_1.open({
                             filename: "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db",
                             driver: sqlite3_1.default.Database
@@ -84,11 +84,7 @@ function createDB() {
                 case 7:
                     _a.sent();
                     pgRes = void 0;
-                    return [4 /*yield*/, client.query("CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, likes integer not null, deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));")
-                        //CONSTRAINT FOREIGN KEY SoldToCustID REFERENCES Customers(CustID),
-                        //CONSTRAINT FOREIGN KEY ShipToCustID REFERENCES Customers(CustID)
-                        //foreign key(username) references users(username) foreign key(blogid) references blogs(blogid)
-                    ];
+                    return [4 /*yield*/, client.query("DROP TABLE comments")];
                 case 8:
                     //drop the tables if they exist
                     //pgRes = await client.query(`DROP TABLE users CASCADE`);
@@ -113,24 +109,23 @@ function createDB() {
                     // pgRes = await client.query(`CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
                     // console.log(pgRes);
                     //DROP TABLE comments
-                    //pgRes = await client.query(`DROP TABLE comments`);
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, replyto integer not null, likes integer not null, deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));")];
+                case 9:
                     //TABLE comments --TODO: No reply instead only use replyto?
                     pgRes = _a.sent();
-                    //CONSTRAINT FOREIGN KEY SoldToCustID REFERENCES Customers(CustID),
-                    //CONSTRAINT FOREIGN KEY ShipToCustID REFERENCES Customers(CustID)
-                    //foreign key(username) references users(username) foreign key(blogid) references blogs(blogid)
                     console.log(pgRes);
                     //end the client's connection
                     return [4 /*yield*/, client.end()];
-                case 9:
+                case 10:
                     //end the client's connection
                     _a.sent();
-                    return [3 /*break*/, 11];
-                case 10:
+                    return [3 /*break*/, 12];
+                case 11:
                     e_1 = _a.sent();
                     console.error(e_1);
-                    return [3 /*break*/, 11];
-                case 11: return [2 /*return*/];
+                    return [3 /*break*/, 12];
+                case 12: return [2 /*return*/];
             }
         });
     });

@@ -12,19 +12,19 @@ var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
 var SqliteRepository_1 = __importDefault(require("./User/Repositories/SqliteRepository"));
 var UserController_1 = __importDefault(require("./User/UserController"));
-var dbinit_1 = require("./dbinit");
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
 var PGSQLRepo_1 = __importDefault(require("./User/Repositories/PGSQLRepo"));
 var BlogPGSQLRepo_1 = __importDefault(require("./Blog/Repositories/BlogPGSQLRepo"));
+var CommentPGSQLRepo_1 = __importDefault(require("./Comment/Repositories/CommentPGSQLRepo"));
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //Used for development database changes. 
-dbinit_1.createDB().then(function () {
-    console.log("Inited");
-}).catch(function (e) {
-    console.log(e);
-});
+// createDB().then(() => {
+//   console.log("Inited");
+// }).catch(e => {
+//   console.log(e);
+// })
 // Create a new express app instance
 var app = express_1.default();
 //direct express middleware to use routes/settings
@@ -80,6 +80,37 @@ Uploads_1.default(app).then(function (res) {
 //   blog.username = "First User";
 //   blogRepoPostgre.create(blog).then(r => console.log(r));
 // }
+//create the commnet repository
+var commentRepo = new CommentPGSQLRepo_1.default();
+//create 20
+// for (let i = 0; i < 20; i++) {
+//   let comment: IComment = new Comment();
+//   comment.blogid = i + 1;
+//   comment.content = `Reply #${i}`;
+//   comment.deleted = false;
+//   if (i === 10 || i === 11) {
+//     comment.likes = 9;
+//   } else {
+//     comment.likes = i + 1;
+//   }
+//   comment.replyto = 1;
+//   comment.username = "First User";
+//   commentRepo.create(comment).then(c => { console.log("comment created") }).catch(e => { console.log(e) });
+// }
+// let comment: IComment = new Comment();
+// comment.blogid = 21;
+// comment.content = `Reply 21`;
+// comment.deleted = false;
+// comment.likes = 1;
+// comment.replyto = 1;
+// comment.username = "First User";
+// commentRepo.create(comment).then(c => { console.log("comment created") }).catch(e => { console.log(e) });
+var comments = [];
+commentRepo.findAll(true, 1, "likes", 1000, 1000).then(function (comments) {
+    //console.log(comments);
+}).catch(function (e) {
+    console.log(e);
+});
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 

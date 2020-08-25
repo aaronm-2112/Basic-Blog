@@ -1,5 +1,6 @@
 import ICommentRepository from './ICommentRepository';
 import IComment from '../IComment';
+import Comment from '../Comment';
 import { Pool } from 'pg';
 
 
@@ -26,31 +27,64 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       let queryValues: number[] = [];
 
       //determine if comment is a reply or a top level comment
-      if (reply) {
-        //construct query that returns replies using the date as the primary means of ordering
-        if (orderBy === 'date') {
-          query = `SELECT FROM comments * WHERE replyto = $1 AND cid > $2 ORDER BY date ASC, cid ASC LIMIT 10`;
-          //add the query values to the query values collection
-          queryValues.push(replyTo);
-          queryValues.push(cid);
-        } else {//return replies ordered by likes
-          query = `SELECT FROM comments * WHERE replyto = $1 AND ( likes, cid) < ($2, $3) ORDER BY likes DESC, cid DESC LIMIT 10`;
-          //add the query values to the query values collection
-          queryValues.push(replyTo);
-          queryValues.push(likes);
-          queryValues.push(cid);
-        }
-      } else {
-        //construct query that return top level comments 
-        query = "";
-
+      //if (reply) {
+      //construct query that returns replies using the date as the primary means of ordering
+      if (orderBy === 'date') {
+        query = `SELECT * FROM comments WHERE replyto = $1 AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10`
+        queryValues.push(replyTo);
+        queryValues.push(likes);
+        queryValues.push(cid);
+      } else {//return replies ordered by likes
+        console.log("In likes query");
+        //query = `SELECT FROM comments * WHERE replyto = $1 AND ( likes, commentid) < ($2, $3) ORDER BY likes DESC, commentid DESC LIMIT 10`;
+        query = `SELECT FROM comments *`;
+        //add the query values to the query values collection
+        //queryValues.push(replyTo);
+        //queryValues.push(likes);
+        //queryValues.push(cid);
       }
+      // } else {
+      //   //construct query that return top level comments 
+      //   query = "";
+
+      // }
+
+
+
+      //THIS WORKS
+      // query = `SELECT * FROM comments WHERE replyto = $1 AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10`
+      // queryValues.push(replyTo);
+      // queryValues.push(9);
+      // queryValues.push(12);
 
       //execute the query
       let res = await this.pool.query(query, queryValues);
 
-      //retrieve the results
-      let comments: IComment[] = res.rows;
+      //retrieve the result rows
+      let rows: any[] = res.rows;
+
+      //fill the row values into a comments collection
+      let comments: IComment[] = [];
+
+      //fill comments with row values
+      rows.forEach(row => {
+        //populate a comment object
+        let comment: IComment = new Comment();
+        comment.commentid = row.commentid;
+        comment.username = row.username;
+        comment.blogid = row.blogid;
+        comment.content = row.content;
+        comment.reply = row.reply;
+        comment.replyto = row.replyto;
+        comment.likes = row.likes;
+        comment.deleted = row.deleted;
+        comment.created = row.created;
+
+        //add the comment object to the comments collection
+        comments.push(comment);
+        console.log(row);
+      });
+
 
       //return the results
       return comments;
@@ -63,10 +97,10 @@ export default class CommentPGSQLRepo implements ICommentRepository {
   async create(comment: IComment): Promise<number> {
     try {
       //create the query -- created and cid should be auto-created columns
-      let query: string = `INSERT INTO comments username, blogid, content, reply, replyto, likes, deleted created VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+      let query: string = `INSERT INTO comments ( username, blogid, content, reply, replyto, likes, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7)`;
 
       //add the comment values
-      let values: any[] = [];
+      let values: Array<any> = new Array();
       values.push(comment.username);
       values.push(comment.blogid);
       values.push(comment.content);
@@ -81,12 +115,12 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       console.log(result);
 
       //retrieve the last rowID from the result object -- lastID is only populated when we use an insert
-      let cid: number = result.rows[0]["cid"];
+      let commentid: number = result.rows[0]["commentid"];
 
-      console.log(cid);
+      console.log(commentid);
 
       //returnt the comment id
-      return cid;
+      return commentid;
     } catch (e) {
       throw new Error(e);
     }
