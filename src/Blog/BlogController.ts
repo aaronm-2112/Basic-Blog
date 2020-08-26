@@ -168,10 +168,6 @@ export default class BlogController implements IController {
     //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
     this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-
-        console.log("Patch route!");
-        console.log(req.body);
-
         //get the userID
         let userID: string = res.locals.userId;
 
@@ -215,8 +211,6 @@ export default class BlogController implements IController {
 
         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
         await this.repo.update(editBlog);
-
-        console.log("Successful update!");
 
         //send no content success
         res.sendStatus(204);

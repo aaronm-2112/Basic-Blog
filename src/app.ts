@@ -23,6 +23,7 @@ import Blog from './Blog/Blog';
 import IComment from './Comment/IComment';
 import Comment from './Comment/Comment';
 import CommentPGSQLRepo from './Comment/Repositories/CommentPGSQLRepo';
+import CommentController from './Comment/CommentController';
 
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
@@ -89,10 +90,33 @@ usercont.registerRoutes(app);
 let blogcontroller: IController = new BlogController(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
 
+//create the comment repo
+let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
+//register the comment routes
+let commentcontroller: IController = new CommentController(commentRepo);
+commentcontroller.registerRoutes(app);
+
 //register the common upload route
 Upload(app).then(res => {
   console.log("Uploads registered.");
 }).catch(e => console.log(e));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // //create 15 blogs
 // for (let i = 0; i < 15; i++) {
@@ -105,7 +129,7 @@ Upload(app).then(res => {
 // }
 
 //create the commnet repository
-let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
+//let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
 
 //create 20
 // for (let i = 0; i < 20; i++) {

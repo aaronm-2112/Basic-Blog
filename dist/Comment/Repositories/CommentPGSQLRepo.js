@@ -35,7 +35,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var Comment_1 = __importDefault(require("../Comment"));
 var pg_1 = require("pg");
 var CommentPGSQLRepo = /** @class */ (function () {
     function CommentPGSQLRepo() {
@@ -51,7 +55,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
     //returns comments(replies or top level) ordered by likes or date and cid
     CommentPGSQLRepo.prototype.findAll = function (reply, replyTo, orderBy, likes, cid) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, queryValues, res, rows, comments, e_1;
+            var query, queryValues, res, rows, comments_1, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -59,46 +63,55 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         query = void 0;
                         queryValues = [];
                         //determine if comment is a reply or a top level comment
-                        //if (reply) {
-                        //construct query that returns replies using the date as the primary means of ordering
-                        if (orderBy === 'date') {
-                            query = "SELECT FROM comments * WHERE replyto = $1 AND commentid > $2 ORDER BY date ASC, commentid ASC LIMIT 10";
-                            //add the query values to the query values collection
-                            queryValues.push(replyTo);
+                        if (reply) {
+                            //check if requesting replies ordered by date
+                            if (orderBy === 'date') {
+                                //construct query that returns replies using the date as the primary means of ordering
+                                query = "SELECT FROM comments * WHERE replyto = $1 AND commentid > $2 ORDER BY date ASC, commentid ASC LIMIT 10";
+                                //add the query values
+                                queryValues.push(replyTo);
+                                queryValues.push(likes);
+                                queryValues.push(cid);
+                            }
+                            else { //return replies ordered by likes
+                                //construct query 
+                                query = "SELECT * FROM comments WHERE replyto = $1 AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10";
+                                //add the query values to the query values collection
+                                queryValues.push(replyTo);
+                                queryValues.push(likes);
+                                queryValues.push(cid);
+                            }
+                        }
+                        else { //return top level comments not replies
+                            //construct query that return top level comments by likes
+                            query = "SELECT * FROM comments WHERE reply = false AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10";
+                            queryValues.push(likes);
                             queryValues.push(cid);
                         }
-                        else { //return replies ordered by likes
-                            console.log("In likes query");
-                            //query = `SELECT FROM comments * WHERE replyto = $1 AND ( likes, commentid) < ($2, $3) ORDER BY likes DESC, commentid DESC LIMIT 10`;
-                            query = "SELECT FROM comments *";
-                            //add the query values to the query values collection
-                            //queryValues.push(replyTo);
-                            //queryValues.push(likes);
-                            //queryValues.push(cid);
-                        }
-                        // } else {
-                        //   //construct query that return top level comments 
-                        //   query = "";
-                        // }
-                        //execute the query
-                        //let res = await this.pool.query(query, queryValues);
-                        //query = `SELECT * FROM comments WHERE replyto = $1 AND likes < $2 AND commentid < $3 ORDER BY likes DESC, commentid DESC LIMIT 10`;
-                        query = "SELECT * FROM comments WHERE replyto = $1 AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10";
-                        queryValues.push(replyTo);
-                        queryValues.push(9);
-                        queryValues.push(12);
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         res = _a.sent();
                         rows = res.rows;
+                        comments_1 = [];
                         //fill comments with row values
                         rows.forEach(function (row) {
+                            //populate a comment object
+                            var comment = new Comment_1.default();
+                            comment.commentid = row.commentid;
+                            comment.username = row.username;
+                            comment.blogid = row.blogid;
+                            comment.content = row.content;
+                            comment.reply = row.reply;
+                            comment.replyto = row.replyto;
+                            comment.likes = row.likes;
+                            comment.deleted = row.deleted;
+                            comment.created = row.created;
+                            //add the comment object to the comments collection
+                            comments_1.push(comment);
                             console.log(row);
                         });
-                        comments = res.rows;
-                        //console.log(comments);
                         //return the results
-                        return [2 /*return*/, comments];
+                        return [2 /*return*/, comments_1];
                     case 2:
                         e_1 = _a.sent();
                         throw new Error(e_1);

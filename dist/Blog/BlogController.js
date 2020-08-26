@@ -211,8 +211,6 @@ var BlogController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
-                        console.log("Patch route!");
-                        console.log(req.body);
                         userID = res.locals.userId;
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, req.params.blogID)];
                     case 1:
@@ -249,7 +247,6 @@ var BlogController = /** @class */ (function () {
                     case 2:
                         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
                         _a.sent();
-                        console.log("Successful update!");
                         //send no content success
                         res.sendStatus(204);
                         return [3 /*break*/, 4];

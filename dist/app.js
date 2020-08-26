@@ -17,6 +17,7 @@ var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
 var PGSQLRepo_1 = __importDefault(require("./User/Repositories/PGSQLRepo"));
 var BlogPGSQLRepo_1 = __importDefault(require("./Blog/Repositories/BlogPGSQLRepo"));
 var CommentPGSQLRepo_1 = __importDefault(require("./Comment/Repositories/CommentPGSQLRepo"));
+var CommentController_1 = __importDefault(require("./Comment/CommentController"));
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //Used for development database changes. 
@@ -67,6 +68,11 @@ usercont.registerRoutes(app);
 //let blogrepo: IBlogRepository = new BlogSQLiteRepo();
 var blogcontroller = new BlogController_1.default(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
+//create the comment repo
+var commentRepo = new CommentPGSQLRepo_1.default();
+//register the comment routes
+var commentcontroller = new CommentController_1.default(commentRepo);
+commentcontroller.registerRoutes(app);
 //register the common upload route
 Uploads_1.default(app).then(function (res) {
     console.log("Uploads registered.");
@@ -81,7 +87,7 @@ Uploads_1.default(app).then(function (res) {
 //   blogRepoPostgre.create(blog).then(r => console.log(r));
 // }
 //create the commnet repository
-var commentRepo = new CommentPGSQLRepo_1.default();
+//let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
 //create 20
 // for (let i = 0; i < 20; i++) {
 //   let comment: IComment = new Comment();
@@ -105,12 +111,12 @@ var commentRepo = new CommentPGSQLRepo_1.default();
 // comment.replyto = 1;
 // comment.username = "First User";
 // commentRepo.create(comment).then(c => { console.log("comment created") }).catch(e => { console.log(e) });
-var comments = [];
-commentRepo.findAll(true, 1, "likes", 1000, 1000).then(function (comments) {
-    //console.log(comments);
-}).catch(function (e) {
-    console.log(e);
-});
+// let comments: IComment[] = [];
+// commentRepo.findAll(true, 1, "likes", 1000, 1000).then(comments => {
+//   //console.log(comments);
+// }).catch(e => {
+//   console.log(e);
+// })
 //Current State:
 //Authentication: Handled with jwts. Profile, profile edit, and homepage route are guarded with auth. JWTS are sent with cookies
 //Homepage: Homepage is not on root yet. Will need a homepage that uses js to dynamically decide how to load page based off if a user is logged in or not. 
