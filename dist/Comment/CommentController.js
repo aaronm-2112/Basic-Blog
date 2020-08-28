@@ -50,40 +50,55 @@ var CommentControler = /** @class */ (function () {
     }
     CommentControler.prototype.registerRoutes = function (app) {
         var _this = this;
-        //retrive a set of comments 
-        //query parameters: reply, replyto, orderby, likes, commentid
+        //retrive a set of comments that can belong to a particular blog 
+        //or be a search for any comment without regard to what blog it belongs to.
+        //query parameters: blog, reply, replyto, orderby, likes, commentid
         //replyto is 0 when the requested comments are not replies
         //TODO: Add parameter to allow for going to the previous page.
         this.router.get('/comments', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var reply, replyto, orderby, likes, commentid, comments, e_1;
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var blogid, reply, replyto, orderby, likes, commentid, comments, e_1;
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        _b.trys.push([0, 2, , 3]);
+                        _c.trys.push([0, 5, , 6]);
+                        console.log("In comments route!");
+                        blogid = parseInt(req.query.blog);
                         reply = req.query.reply;
                         replyto = req.query.replyto;
                         orderby = req.query.orderby;
                         likes = req.query.likes;
                         commentid = req.query.commentid;
                         //check if query parameters are valid
-                        if (reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined) {
+                        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined) {
+                            console.log("Yes");
                             //no query parameters or bad query parameters in set return
                             res.sendStatus(400); //client error in parameters
                             return [2 /*return*/];
                         }
-                        return [4 /*yield*/, this.repo.findAll((_a = (reply === "true")) !== null && _a !== void 0 ? _a : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid))];
+                        comments = void 0;
+                        if (!(blogid > 0)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.repo.findAll(blogid, (_a = (reply === "true")) !== null && _a !== void 0 ? _a : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid))];
                     case 1:
-                        comments = _b.sent();
+                        //fetch the comments from the repo with the query paramaters
+                        comments = _c.sent();
+                        return [3 /*break*/, 4];
+                    case 2: return [4 /*yield*/, this.repo.findAll(0, (_b = (reply === "true")) !== null && _b !== void 0 ? _b : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid))];
+                    case 3:
+                        // client is requesting general comments -- mark blogid as 0
+                        comments = _c.sent();
+                        _c.label = 4;
+                    case 4:
                         console.log(comments);
                         //return the comments 
                         res.send(comments);
-                        return [3 /*break*/, 3];
-                    case 2:
-                        e_1 = _b.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
+                        e_1 = _c.sent();
                         res.sendStatus(400);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        console.log(e_1);
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
                 }
             });
         }); });

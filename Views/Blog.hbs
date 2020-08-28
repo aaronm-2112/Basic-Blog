@@ -8,8 +8,18 @@
     <h2>{{username}}</h2>
   </header>
 
-  <div>
+  <div id="content">
     {{content}}
+  </div>
+
+  <button id="comment">See Comments</button>
+
+  <div id="comments-section">
+    <div id="create-top-level-comment">
+      <textarea name="user-top-level-comment-content" id="user-top-level-comment-content" cols="30" rows="10">Enter Your Comment Here
+      </textarea>
+      <button id="post-comment">Post</button>
+    </div>
   </div>
 </body>
 
@@ -17,19 +27,77 @@
   <p>Footer stuff</p>
 </footer>
 
-<button id="comment">Comments</button>
+
 
 <script>
-  async function commenttest() {
+  async function loadComments() {
     try {
-      let response = await fetch(`http://localhost:3000/comments?reply=false&replyto=0&orderby=likes&likes=1000&commentid=1000`, {
+      //retrieve the blog's top level comments, if they exist
+      let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=false&replyto=0&orderby=likes&likes=1000&commentid=1000`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
+
+      //grab the comment data out of the response and store them in a top level comment collection
+      let topLevelComments = [];
+      topLevelComments = await response.json();
+      console.log(topLevelComments);
+
+      //create a key value collection of the comments' replies
+
+      //traverse the top level comments collection
+      //-----use the commentid of the current top level comment to fetch that comment's replies ordered by date
+      //-----grab the replies out of the server response and load them into the key value reply collection
+      //-----create a top level comment html object and fill it out with the current top level comment's values
+      //-----traverse through the replies for that top level comment
+      //----------create an html object 
+      //----------fill the html object wtih the reply values 
+      //----------place the html object as a child of its top level comment
+
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async function createTopLevelComment() {
+    try {
+      //grab the user's top level comment content 
+      let content = document.getElementById('user-top-level-comment-content').textContent;
+
+      //set the reply value
+      let reply = false;
+
+      //set the replyto value
+      let replyto = 0;
+
+      //send the comment data to the server
+      let res = await fetch('http://localhost:3000/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, reply, replyto }) });
+
+      console.log(res);
     } catch (e) {
 
     }
   }
 
-  document.getElementById('comment').addEventListener("click", commenttest);
+  //event so that the users can create comments  
+  document.getElementById('post-comment').addEventListener('click', createTopLevelComment);
+
+  //activate the click for gathering comments
+  document.getElementById('comment').addEventListener("click", loadComments);
+
+
+  //blogid global
+  var blogid;
+
+  //gets the blogid fromthe url
+  const getBlogid = () => {
+    let url = document.URL;
+    url = url.slice(0, url.lastIndexOf('/')); ///blog/id
+    blogid = url.slice(url.lastIndexOf('/') + 1); //id
+    console.log(blogid);
+  }
+
+  //execute getBlogid when window loads
+  window.onload = getBlogid;
+
 
 </script>

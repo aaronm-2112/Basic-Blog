@@ -23,14 +23,22 @@ export default class CommentControler implements IController {
 
   registerRoutes(app: express.Application): void {
 
-    //retrive a set of comments 
-    //query parameters: reply, replyto, orderby, likes, commentid
+    //retrive a set of comments that can belong to a particular blog 
+    //or be a search for any comment without regard to what blog it belongs to.
+    //query parameters: blog, reply, replyto, orderby, likes, commentid
     //replyto is 0 when the requested comments are not replies
     //TODO: Add parameter to allow for going to the previous page.
     this.router.get('/comments', async (req: Request, res: Response) => {
       try {
+        console.log("In comments route!");
 
         //retrieve the query parameters
+
+        //blog parameter exists because comments have no alternative representation 
+        //as hierarchical relationship such as blogs/:blogid/comments 
+        //-- so could have less query paramaters if i added 
+        //that and would have a more lean /comments exclusively for getting any comments
+        let blogid: number = parseInt(req.query.blog as string);
         let reply: string = req.query.reply as string;
         let replyto: string = req.query.replyto as string;
         let orderby: string = req.query.orderby as string;
@@ -38,14 +46,24 @@ export default class CommentControler implements IController {
         let commentid: string = req.query.commentid as string;
 
         //check if query parameters are valid
-        if (reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined) {
+        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined) {
+          console.log("Yes");
           //no query parameters or bad query parameters in set return
           res.sendStatus(400); //client error in parameters
           return;
         }
 
-        //fetch the comments from the repo with the query paramaters
-        let comments: IComment[] = await this.repo.findAll((reply === "true") ?? false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid)); //test use of nullish coalescing
+        //create comments collection 
+        let comments: IComment[];
+
+        //check if the client is requesting comments for a particular blog 
+        if (blogid > 0) {
+          //fetch the comments from the repo with the query paramaters
+          comments = await this.repo.findAll(blogid, (reply === "true") ?? false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid));
+        } else {
+          // client is requesting general comments -- mark blogid as 0
+          comments = await this.repo.findAll(0, (reply === "true") ?? false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid));
+        }
 
         console.log(comments);
 
@@ -53,6 +71,7 @@ export default class CommentControler implements IController {
         res.send(comments);
       } catch (e) {
         res.sendStatus(400);
+        console.log(e);
       }
     });
 
@@ -66,8 +85,8 @@ export default class CommentControler implements IController {
     });
 
     //create a new comment resource and returnt the comment id
-    //body parameters: content, username, reply, replyto
-    this.router.post('/comments', async (req: Request, res: Response) => {
+    //body parameters: content, reply, replyto
+    this.router.post('/comments', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
 
       } catch (e) {

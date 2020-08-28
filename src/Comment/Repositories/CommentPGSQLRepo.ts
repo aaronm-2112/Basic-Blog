@@ -21,24 +21,36 @@ export default class CommentPGSQLRepo implements ICommentRepository {
   }
 
   //returns comments(replies or top level) ordered by likes or date and cid
-  async findAll(reply: boolean, replyTo: number, orderBy: string, likes: number, cid: number): Promise<Array<IComment>> {
+  async findAll(blogid: number, reply: boolean, replyTo: number, orderBy: string, likes: number, cid: number): Promise<Array<IComment>> {
     try {
       let query: string;
       let queryValues: number[] = [];
+      let parameterNumber: number = 0;
+
+
+      //check if client wants comments from a particular blog
+      if (blogid > 0) {
+        //add blogid parameter to the base query
+        query = `SELECT FROM comments * WHERE blogid = $${parameterNumber += 1} AND `;
+        //add the blogid query value
+        queryValues.push(blogid);
+      } else {
+        //construct base query without blogid parameter
+        query = `SELECT FROM comments * WHERE `;
+      }
 
       //determine if comment is a reply or a top level comment
       if (reply) {
         //check if requesting replies ordered by date
         if (orderBy === 'date') {
           //construct query that returns replies using the date as the primary means of ordering
-          query = "SELECT FROM comments * WHERE replyto = $1 AND commentid > $2 ORDER BY date ASC, commentid ASC LIMIT 10";
+          query = query + `replyto = $${parameterNumber += 1} AND commentid > $${parameterNumber += 1} ORDER BY date ASC, commentid ASC LIMIT 10`;
           //add the query values
           queryValues.push(replyTo);
-          queryValues.push(likes);
           queryValues.push(cid);
         } else {//return replies ordered by likes
           //construct query 
-          query = `SELECT * FROM comments WHERE replyto = $1 AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10`;
+          query = query + `replyto = $${parameterNumber += 1} AND (likes, commentid) < ($${parameterNumber += 1}, $${parameterNumber += 1})  ORDER BY likes DESC, commentid DESC LIMIT 10`;
           //add the query values to the query values collection
           queryValues.push(replyTo);
           queryValues.push(likes);
@@ -46,18 +58,12 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         }
       } else { //return top level comments not replies
         //construct query that return top level comments by likes
-        query = `SELECT * FROM comments WHERE reply = false AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10`;
+        query = query + `reply = false AND (likes, commentid) < ($${parameterNumber += 1}, $${parameterNumber += 1})  ORDER BY likes DESC, commentid DESC LIMIT 10`;
         queryValues.push(likes);
         queryValues.push(cid);
       }
 
-
-
-      //THIS WORKS-- get comments by likes
-      // query = `SELECT * FROM comments WHERE replyto = $1 AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10`
-      // queryValues.push(replyTo);
-      // queryValues.push(9);
-      // queryValues.push(12);
+      console.log(query);
 
       //execute the query
       let res = await this.pool.query(query, queryValues);

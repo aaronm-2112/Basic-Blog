@@ -53,29 +53,40 @@ var CommentPGSQLRepo = /** @class */ (function () {
         });
     }
     //returns comments(replies or top level) ordered by likes or date and cid
-    CommentPGSQLRepo.prototype.findAll = function (reply, replyTo, orderBy, likes, cid) {
+    CommentPGSQLRepo.prototype.findAll = function (blogid, reply, replyTo, orderBy, likes, cid) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, queryValues, res, rows, comments_1, e_1;
+            var query, queryValues, parameterNumber, res, rows, comments_1, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         query = void 0;
                         queryValues = [];
+                        parameterNumber = 0;
+                        //check if client wants comments from a particular blog
+                        if (blogid > 0) {
+                            //add blogid parameter to the base query
+                            query = "SELECT FROM comments * WHERE blogid = $" + (parameterNumber += 1) + " AND ";
+                            //add the blogid query value
+                            queryValues.push(blogid);
+                        }
+                        else {
+                            //construct base query without blogid parameter
+                            query = "SELECT FROM comments * WHERE ";
+                        }
                         //determine if comment is a reply or a top level comment
                         if (reply) {
                             //check if requesting replies ordered by date
                             if (orderBy === 'date') {
                                 //construct query that returns replies using the date as the primary means of ordering
-                                query = "SELECT FROM comments * WHERE replyto = $1 AND commentid > $2 ORDER BY date ASC, commentid ASC LIMIT 10";
+                                query = query + ("replyto = $" + (parameterNumber += 1) + " AND commentid > $" + (parameterNumber += 1) + " ORDER BY date ASC, commentid ASC LIMIT 10");
                                 //add the query values
                                 queryValues.push(replyTo);
-                                queryValues.push(likes);
                                 queryValues.push(cid);
                             }
                             else { //return replies ordered by likes
                                 //construct query 
-                                query = "SELECT * FROM comments WHERE replyto = $1 AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10";
+                                query = query + ("replyto = $" + (parameterNumber += 1) + " AND (likes, commentid) < ($" + (parameterNumber += 1) + ", $" + (parameterNumber += 1) + ")  ORDER BY likes DESC, commentid DESC LIMIT 10");
                                 //add the query values to the query values collection
                                 queryValues.push(replyTo);
                                 queryValues.push(likes);
@@ -84,10 +95,11 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         }
                         else { //return top level comments not replies
                             //construct query that return top level comments by likes
-                            query = "SELECT * FROM comments WHERE reply = false AND (likes, commentid) < ($2, $3)  ORDER BY likes DESC, commentid DESC LIMIT 10";
+                            query = query + ("reply = false AND (likes, commentid) < ($" + (parameterNumber += 1) + ", $" + (parameterNumber += 1) + ")  ORDER BY likes DESC, commentid DESC LIMIT 10");
                             queryValues.push(likes);
                             queryValues.push(cid);
                         }
+                        console.log(query);
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         res = _a.sent();
