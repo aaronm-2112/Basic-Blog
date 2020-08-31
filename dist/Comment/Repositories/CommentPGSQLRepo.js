@@ -66,20 +66,20 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         //check if client wants comments from a particular blog
                         if (blogid > 0) {
                             //add blogid parameter to the base query
-                            query = "SELECT FROM comments * WHERE blogid = $" + (parameterNumber += 1) + " AND ";
+                            query = "SELECT * FROM comments WHERE blogid = $" + (parameterNumber += 1) + " AND ";
                             //add the blogid query value
                             queryValues.push(blogid);
                         }
                         else {
                             //construct base query without blogid parameter
-                            query = "SELECT FROM comments * WHERE ";
+                            query = "SELECT * FROM comments WHERE ";
                         }
                         //determine if comment is a reply or a top level comment
                         if (reply) {
                             //check if requesting replies ordered by date
                             if (orderBy === 'date') {
                                 //construct query that returns replies using the date as the primary means of ordering
-                                query = query + ("replyto = $" + (parameterNumber += 1) + " AND commentid > $" + (parameterNumber += 1) + " ORDER BY date ASC, commentid ASC LIMIT 10");
+                                query = query + ("replyto = $" + (parameterNumber += 1) + " AND commentid > $" + (parameterNumber += 1) + " ORDER BY created ASC, commentid ASC LIMIT 10");
                                 //add the query values
                                 queryValues.push(replyTo);
                                 queryValues.push(cid);
@@ -99,6 +99,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                             queryValues.push(likes);
                             queryValues.push(cid);
                         }
+                        console.log(queryValues);
                         console.log(query);
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
@@ -140,7 +141,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "INSERT INTO comments ( username, blogid, content, reply, replyto, likes, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7)";
+                        query = "INSERT INTO comments ( username, blogid, content, reply, replyto, likes, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING commentid";
                         values = new Array();
                         values.push(comment.username);
                         values.push(comment.blogid);

@@ -41,6 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Auth_1 = __importDefault(require("../Auth/Auth"));
+var Comment_1 = __importDefault(require("./Comment"));
 var express_1 = __importDefault(require("express"));
 var CommentControler = /** @class */ (function () {
     function CommentControler(repo) {
@@ -71,7 +72,6 @@ var CommentControler = /** @class */ (function () {
                         commentid = req.query.commentid;
                         //check if query parameters are valid
                         if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined) {
-                            console.log("Yes");
                             //no query parameters or bad query parameters in set return
                             res.sendStatus(400); //client error in parameters
                             return [2 /*return*/];
@@ -113,14 +113,47 @@ var CommentControler = /** @class */ (function () {
             });
         }); });
         //create a new comment resource and returnt the comment id
-        //body parameters: content, username, reply, replyto
-        this.router.post('/comments', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        //body parameters: content, reply, replyto, blogid
+        this.router.post('/comments', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var reply, replyto, content, blogid, username, comment, commentid, e_2;
             return __generator(this, function (_a) {
-                try {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        reply = req.body.reply;
+                        replyto = parseInt(req.body.replyto);
+                        content = req.body.content;
+                        blogid = parseInt(req.body.blogid);
+                        //check if body parameters are valid
+                        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || content == undefined || isNaN(replyto)) {
+                            //no query parameters or bad query parameters in set return
+                            res.sendStatus(400); //client error in parameters
+                            return [2 /*return*/];
+                        }
+                        username = res.locals.userId;
+                        comment = new Comment_1.default();
+                        comment.username = username;
+                        comment.blogid = blogid;
+                        comment.likes = 0; //0 likes because comment is being created
+                        comment.deleted = false; //comment is being created
+                        comment.reply = reply;
+                        comment.replyto = replyto;
+                        comment.content = content;
+                        return [4 /*yield*/, this.repo.create(comment)
+                            //return the commentid
+                        ];
+                    case 1:
+                        commentid = _a.sent();
+                        //return the commentid
+                        res.send(commentid.toString());
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_2 = _a.sent();
+                        console.log(e_2);
+                        res.sendStatus(400);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
-                catch (e) {
-                }
-                return [2 /*return*/];
             });
         }); });
         //update a particular comment resource

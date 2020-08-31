@@ -4,8 +4,8 @@ import IController from '../Controllers/IController';
 import Auth from '../Auth/Auth';
 import ICommentRepository from './Repositories/ICommentRepository';
 import IComment from './IComment';
+import Comment from './Comment';
 import express, { Router, Request, Response } from "express";
-import { createCipher } from 'crypto';
 
 
 
@@ -47,7 +47,6 @@ export default class CommentControler implements IController {
 
         //check if query parameters are valid
         if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined) {
-          console.log("Yes");
           //no query parameters or bad query parameters in set return
           res.sendStatus(400); //client error in parameters
           return;
@@ -85,12 +84,45 @@ export default class CommentControler implements IController {
     });
 
     //create a new comment resource and returnt the comment id
-    //body parameters: content, reply, replyto
+    //body parameters: content, reply, replyto, blogid
     this.router.post('/comments', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
+        //retrieve the body parameters
+        let reply: boolean = req.body.reply as boolean;
+        let replyto: number = parseInt(req.body.replyto);
+        let content: string = req.body.content as string;
+        let blogid: number = parseInt(req.body.blogid);
+
+        //check if body parameters are valid
+        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || content == undefined || isNaN(replyto)) {
+          //no query parameters or bad query parameters in set return
+          res.sendStatus(400); //client error in parameters
+          return;
+        }
+
+        //retrieve the username from the authentication process
+        let username: string = res.locals.userId;
+
+        //create a comment object using the body parameters
+        let comment: IComment = new Comment();
+        comment.username = username;
+        comment.blogid = blogid;
+        comment.likes = 0;   //0 likes because comment is being created
+        comment.deleted = false; //comment is being created
+        comment.reply = reply;
+        comment.replyto = replyto;
+        comment.content = content;
+
+
+        //create the comment in the database
+        let commentid: number = await this.repo.create(comment)
+
+        //return the commentid
+        res.send(commentid.toString());
 
       } catch (e) {
-
+        console.log(e);
+        res.sendStatus(400);
       }
     });
 

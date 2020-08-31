@@ -31,12 +31,12 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       //check if client wants comments from a particular blog
       if (blogid > 0) {
         //add blogid parameter to the base query
-        query = `SELECT FROM comments * WHERE blogid = $${parameterNumber += 1} AND `;
+        query = `SELECT * FROM comments WHERE blogid = $${parameterNumber += 1} AND `;
         //add the blogid query value
         queryValues.push(blogid);
       } else {
         //construct base query without blogid parameter
-        query = `SELECT FROM comments * WHERE `;
+        query = `SELECT * FROM comments WHERE `;
       }
 
       //determine if comment is a reply or a top level comment
@@ -44,7 +44,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         //check if requesting replies ordered by date
         if (orderBy === 'date') {
           //construct query that returns replies using the date as the primary means of ordering
-          query = query + `replyto = $${parameterNumber += 1} AND commentid > $${parameterNumber += 1} ORDER BY date ASC, commentid ASC LIMIT 10`;
+          query = query + `replyto = $${parameterNumber += 1} AND commentid > $${parameterNumber += 1} ORDER BY created ASC, commentid ASC LIMIT 10`;
           //add the query values
           queryValues.push(replyTo);
           queryValues.push(cid);
@@ -63,6 +63,8 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         queryValues.push(cid);
       }
 
+
+      console.log(queryValues);
       console.log(query);
 
       //execute the query
@@ -105,7 +107,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
   async create(comment: IComment): Promise<number> {
     try {
       //create the query -- created and cid should be auto-created columns
-      let query: string = `INSERT INTO comments ( username, blogid, content, reply, replyto, likes, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+      let query: string = `INSERT INTO comments ( username, blogid, content, reply, replyto, likes, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING commentid`;
 
       //add the comment values
       let values: Array<any> = new Array();
