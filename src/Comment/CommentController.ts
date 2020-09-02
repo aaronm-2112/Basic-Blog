@@ -77,9 +77,23 @@ export default class CommentControler implements IController {
     //retrieve a particular comment resource
     this.router.get('/comments/:commentid', async (req: Request, res: Response) => {
       try {
+        //extract commentid from the request parameter
+        let cid: number = parseInt(req.params.commentid);
+
+        //verify the commentid is valid
+        if (cid <= 0 || isNaN(cid) || cid === undefined) {
+          res.sendStatus(400);
+          return;
+        }
+
+        //query for the comment in the repo using the commentid
+        let comment: IComment = await this.repo.find(cid);
+
+        //return the comment data back to the user
+        res.send(comment);
 
       } catch (e) {
-
+        res.sendStatus(400);
       }
     });
 

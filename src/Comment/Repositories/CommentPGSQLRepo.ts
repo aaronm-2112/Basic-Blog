@@ -136,4 +136,39 @@ export default class CommentPGSQLRepo implements ICommentRepository {
     }
   }
 
+  async find(commentid: number): Promise<IComment> {
+    try {
+      //create a query to search by id
+      let query: string = `SELECT * FROM comments WHERE commentid = $1`;
+
+      //create the query values
+      let queryValues: number[] = [];
+      queryValues.push(commentid);
+
+      //execute the query
+      let result = await this.pool.query(query, queryValues);
+
+      //extract the rows from the result
+      let rows: any[] = result.rows;
+
+      //traverse the result row and fill in comment values
+      let comment: IComment = new Comment();
+      rows.forEach(row => {
+        comment.commentid = row.commentid;
+        comment.username = row.username;
+        comment.blogid = row.blogid;
+        comment.content = row.content;
+        comment.reply = row.reply;
+        comment.replyto = row.replyto;
+        comment.likes = row.likes;
+        comment.deleted = row.deleted;
+        comment.created = row.created;
+      });
+
+      return comment;
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
 }

@@ -104,18 +104,35 @@ var CommentControler = /** @class */ (function () {
         }); });
         //retrieve a particular comment resource
         this.router.get('/comments/:commentid', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var cid, comment, e_2;
             return __generator(this, function (_a) {
-                try {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        cid = parseInt(req.params.commentid);
+                        //verify the commentid is valid
+                        if (cid <= 0 || isNaN(cid) || cid === undefined) {
+                            res.sendStatus(400);
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, this.repo.find(cid)];
+                    case 1:
+                        comment = _a.sent();
+                        //return the comment data back to the user
+                        res.send(comment);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_2 = _a.sent();
+                        res.sendStatus(400);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
-                catch (e) {
-                }
-                return [2 /*return*/];
             });
         }); });
         //create a new comment resource and returnt the comment id
         //body parameters: content, reply, replyto, blogid
         this.router.post('/comments', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var reply, replyto, content, blogid, username, comment, commentid, e_2;
+            var reply, replyto, content, blogid, username, comment, commentid, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -148,8 +165,8 @@ var CommentControler = /** @class */ (function () {
                         res.send(commentid.toString());
                         return [3 /*break*/, 3];
                     case 2:
-                        e_2 = _a.sent();
-                        console.log(e_2);
+                        e_3 = _a.sent();
+                        console.log(e_3);
                         res.sendStatus(400);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];

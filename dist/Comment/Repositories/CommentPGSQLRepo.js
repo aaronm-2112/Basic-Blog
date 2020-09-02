@@ -166,6 +166,41 @@ var CommentPGSQLRepo = /** @class */ (function () {
             });
         });
     };
+    CommentPGSQLRepo.prototype.find = function (commentid) {
+        return __awaiter(this, void 0, void 0, function () {
+            var query, queryValues, result, rows, comment_1, e_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        query = "SELECT * FROM comments WHERE commentid = $1";
+                        queryValues = [];
+                        queryValues.push(commentid);
+                        return [4 /*yield*/, this.pool.query(query, queryValues)];
+                    case 1:
+                        result = _a.sent();
+                        rows = result.rows;
+                        comment_1 = new Comment_1.default();
+                        rows.forEach(function (row) {
+                            comment_1.commentid = row.commentid;
+                            comment_1.username = row.username;
+                            comment_1.blogid = row.blogid;
+                            comment_1.content = row.content;
+                            comment_1.reply = row.reply;
+                            comment_1.replyto = row.replyto;
+                            comment_1.likes = row.likes;
+                            comment_1.deleted = row.deleted;
+                            comment_1.created = row.created;
+                        });
+                        return [2 /*return*/, comment_1];
+                    case 2:
+                        e_3 = _a.sent();
+                        throw new Error(e_3);
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
     return CommentPGSQLRepo;
 }());
 exports.default = CommentPGSQLRepo;

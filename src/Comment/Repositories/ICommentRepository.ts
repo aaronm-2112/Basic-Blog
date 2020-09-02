@@ -3,7 +3,11 @@
 import IComment from '../IComment';
 
 export default interface ICommentRepository {
-  findAll(blogid: number, reply: boolean, replyTo: number, orderBy: string, likes: number, cid: number): Promise<Array<IComment>>; //returns top level comments ordered by likes, or date
-  //findAllByDate(): Array<IComment>; //returns comments(top level or replies) ordered by date
+  //returns top level comments ordered by likes, or date
+  //supports pagination using likes, cid, and/or created columns
+  //TODO: Include previous page functionality
+  findAll(blogid: number, reply: boolean, replyTo: number, orderBy: string, likes: number, cid: number): Promise<Array<IComment>>;
   create(comment: IComment): Promise<number>; //create comment return the cid
+  //find a single comment using its commentid
+  find(commentid: number): Promise<IComment>;
 }
