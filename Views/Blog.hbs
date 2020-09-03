@@ -38,24 +38,26 @@
     let url = document.URL;
     url = url.slice(0, url.lastIndexOf('/')); ///blog/id
     blogid = url.slice(url.lastIndexOf('/') + 1); //id
-    console.log(blogid);
+
   }
 
   //execute getBlogid when window loads
   window.onload = getBlogid;
 
   //Loads all comments and replies -- happens when user clicks next or previous on the top level comment buttons
-  async function loadAllComments() {
+  //has optional pagination parameters: likes = 0, and commentid = 0, flip = "next" used when called from next or prev pagination buttons
+  //TODO: Find workaround for placing mouseEvent parameter in the parameter list
+  async function loadAllComments(mouseEvent = 0, likes = 1000, commentid = 1000, flip = "next") {
     try {
+      console.log(mouseEvent);
       //retrieve the blog's top level comments, if they exist
-      let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=false&replyto=0&orderby=likes&likes=1000&commentid=1000`, {
+      let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=false&replyto=0&orderby=likes&likes=${likes}&commentid=${commentid}`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
 
       //grab the comment data out of the response and store them in a top level comment collection
       let topLevelComments = [];
       topLevelComments = await response.json();
-      console.log(topLevelComments);
 
       let bid = blogid.toString();
       let cid = 0;
@@ -77,9 +79,24 @@
         let replySection = displayComment(topLevelComments[i]);
         //-----traverse through the replies for that top level comment
         for (let j = 0; j < commentReplies.length; j++) {
-          displayReply(commentReplies[i], replySection);
+          displayReply(commentReplies[j], replySection, topLevelComments[i].commentid);
         }
       }
+
+      //add the pagination buttons for the top level comments
+      let btnNext = document.createElement('button');
+      btnNext.setAttribute("class", "btn-top-level-next");
+      btnNext.textContent = "Next";
+      let btnPrev = document.createElement('button');
+      btnPrev.textContent = "Previous";
+      btnPrev.setAttribute("class", "btn-top-level-prev");
+
+      //add the buttons
+      let commentSection = document.getElementById('comments-section');
+
+      commentSection.appendChild(btnPrev);
+      commentSection.appendChild(btnNext);
+
 
     } catch (e) {
       console.log(e);
@@ -92,7 +109,7 @@
     //get the reply section we want to paginate to new replies within
     let topLevelCommentSection = document.getElementById(topLevelCommentid);
     let topLevelSectionChildren = topLevelCommentSection.children;
-    let replySection = topLevelSectionChildren[3];
+    let replySection = topLevelSectionChildren[3].children;
 
     let replyid = "";
 
@@ -100,9 +117,11 @@
     if (flip === 'next') {
       //if so get the last reply's commentid  by traversing to the last element in the reply section
       for (let i = 0; i < replySection.length; i++) { //pagination-div
-        if (i == replySeciton.length - 1 && replySection[i].id != "pagination-div") {
+        console.log("Looping through replies")
+        if (i == replySection.length - 1 && replySection[i].id != "pagination-div") {
           replyid = replySection[i].id;
           replyid = replyid.slice(replyid.lastIndexOf('-') + 1);
+          console.log("It actually worked");
           console.log(replyid);
         }
       }
@@ -116,11 +135,33 @@
       }
     }
 
-    //clear the current replies in that reply section
+    //query all the replies in the reply section
+    let replies = document.getElementsByClassName(`reply-section-comment-${topLevelCommentid}`);
+    console.log(replies);
+    let i = replies.length - 1;
+    //traverse the replies and remove them from the DOM -- need to go in reverse b/c the size of the list decreases as elements are removed
+    while (i >= 0) {
+      replies[i].remove();
+      i--;
+    }
 
     //fetch the next/previous 10 replies
+    let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${topLevelCommentid}&orderby=date&likes=0&commentid=${replyid}`, {
+      method: 'GET', headers: { 'Content-Type': 'application/json' }
+    });
 
-    //place those replies into the reply section
+    //parse the response and place the replies into a collection
+    let newReplies = await response.json();
+    console.log(newReplies);
+
+    //update reply section to an htmlCollection 
+    replySection = topLevelSectionChildren[3]
+
+    //traverse the collection 
+    newReplies.forEach(reply => {
+      //place each reply into the reply section
+      displayReply(reply, replySection, topLevelCommentid);
+    })
 
     //determine which pagination buttons to hide/unhide
   }
@@ -131,7 +172,7 @@
     try {
       //grab the user's top level comment content 
       let content = document.getElementById('user-top-level-comment-content').value;
-      console.log(content);
+
       //set the reply value
       let reply = false;
 
@@ -154,7 +195,7 @@
       //display the user's comment at the botom of the comment section
       displayComment({});
 
-      console.log(cid);
+
     } catch (e) {
       console.log(e);
     }
@@ -243,10 +284,11 @@
 
   //display the reply given comment data and a replysection
   //TODO: Test when adding a new reply!
-  function displayReply(comment = {}, replySection = {}) {
+  function displayReply(comment = {}, replySection = {}, replyto) {
+    console.log(replyto);
     //----------create an html object 
     let div = document.createElement('div');
-    div.setAttribute("class", 'reply-section-comment');
+    div.setAttribute("class", `reply-section-comment-${replyto}`);
     div.setAttribute('style', "border: solid 1px; ");
     div.setAttribute('id', `reply-section-comment-${comment.commentid}`);
     //----------fill the html object wtih the reply values 
@@ -277,6 +319,7 @@
       if (e.target && e.target.id.includes('add-reply')) { //user wants to create reply
         //identify which comment the reply belongs to 
         let commentid = e.target.id.slice(e.target.id.lastIndexOf('-') + 1); //because replies ids are: add-reply-commentid and comment section ids are: id: commentid
+        console.log(commentid);
 
         //grab the top-level-comment html element with the same commentid -- this is where the reply is nested
         let topLevelCommentSection = document.getElementById(commentid);
@@ -300,16 +343,15 @@
 
         //extract the comment from the json response
         let userReply = await res.json();
-        console.log(userReply);
 
         //display the comment at the bottom of the reply section
-        displayReply(userReply, replySection);
+        displayReply(userReply, replySection, commentid);
       } else if (e.target && e.target.id.includes('btn-replies')) {
-        console.log("Here");
         //identify which top level comment the replies to paginate through belong to
         let commentid = e.target.id.slice(e.target.id.lastIndexOf('-') + 1);
-        console.log(commentid);
         paginateReplies(commentid, "next");
+      } else if (e.target && e.target.id.includes('btn-top-level')) {//activates when user clicks top level comment pagination btns
+
       }
     } catch (err) {
       console.log(err);
