@@ -57,7 +57,7 @@ var CommentControler = /** @class */ (function () {
         //replyto is 0 when the requested comments are not replies
         //TODO: Add parameter to allow for going to the previous page.
         this.router.get('/comments', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blogid, reply, replyto, orderby, likes, commentid, comments, e_1;
+            var blogid, reply, replyto, orderby, likes, commentid, flip, comments, e_1;
             var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -70,20 +70,21 @@ var CommentControler = /** @class */ (function () {
                         orderby = req.query.orderby;
                         likes = req.query.likes;
                         commentid = req.query.commentid;
+                        flip = req.query.flip;
                         //check if query parameters are valid
-                        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined) {
+                        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined || flip === undefined) {
                             //no query parameters or bad query parameters in set return
                             res.sendStatus(400); //client error in parameters
                             return [2 /*return*/];
                         }
                         comments = void 0;
                         if (!(blogid > 0)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.repo.findAll(blogid, (_a = (reply === "true")) !== null && _a !== void 0 ? _a : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid))];
+                        return [4 /*yield*/, this.repo.findAll(blogid, (_a = (reply === "true")) !== null && _a !== void 0 ? _a : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid), flip)];
                     case 1:
                         //fetch the comments from the repo with the query paramaters
                         comments = _c.sent();
                         return [3 /*break*/, 4];
-                    case 2: return [4 /*yield*/, this.repo.findAll(0, (_b = (reply === "true")) !== null && _b !== void 0 ? _b : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid))];
+                    case 2: return [4 /*yield*/, this.repo.findAll(0, (_b = (reply === "true")) !== null && _b !== void 0 ? _b : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid), flip)];
                     case 3:
                         // client is requesting general comments -- mark blogid as 0
                         comments = _c.sent();

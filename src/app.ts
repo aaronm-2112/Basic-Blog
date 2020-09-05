@@ -92,6 +92,10 @@ blogcontroller.registerRoutes(app);
 
 //create the comment repo
 let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
+// commentRepo.test(1, false).then(res => {
+//   console.log(res);
+// })
+
 //register the comment routes
 let commentcontroller: IController = new CommentController(commentRepo);
 commentcontroller.registerRoutes(app);

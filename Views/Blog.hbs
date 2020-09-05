@@ -49,28 +49,31 @@
   //TODO: Find workaround for placing mouseEvent parameter in the parameter list
   async function loadAllComments(mouseEvent = 0, likes = 1000, commentid = 1000, flip = "next") {
     try {
-      console.log(mouseEvent);
+      //clear the comments if any exist
+      clearTopLevelComments();
+
+      // console.log(mouseEvent);
       //retrieve the blog's top level comments, if they exist
-      let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=false&replyto=0&orderby=likes&likes=${likes}&commentid=${commentid}`, {
+      let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=false&replyto=0&orderby=likes&likes=${likes}&commentid=${commentid}&flip=${flip}`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
 
       //grab the comment data out of the response and store them in a top level comment collection
       let topLevelComments = [];
       topLevelComments = await response.json();
+      console.log(topLevelComments);
 
       let bid = blogid.toString();
       let cid = 0;
-
 
       //create a key value collection of the comments' replies
       let topLevelCommentReplies = {};
       //traverse the top level comments collection
       for (let i = 0; i < topLevelComments.length; i++) {
         cid = topLevelComments[i].commentid.toString();
-        //-----use the commentid of the current top level comment to fetch that comment's replies ordered by date
+        //-----use the commentid as replyto of the current top level comment to fetch that comment's replies ordered by date
         let res =
-          await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${cid}&orderby=date&likes=0&commentid=0`, {
+          await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${cid}&orderby=date&likes=0&commentid=0&flip=${flip}`, {
             method: 'GET', headers: { 'Content-Type': 'application/json' }
           });
         //-----grab the replies out of the server response and load them into the key value reply collection
@@ -83,24 +86,41 @@
         }
       }
 
-      //add the pagination buttons for the top level comments
-      let btnNext = document.createElement('button');
-      btnNext.setAttribute("class", "btn-top-level-next");
-      btnNext.textContent = "Next";
-      let btnPrev = document.createElement('button');
-      btnPrev.textContent = "Previous";
-      btnPrev.setAttribute("class", "btn-top-level-prev");
+      //check if pagination buttons are present
+      if (document.querySelector('#btn-top-level-next') === null) {
+        //add the pagination buttons for the top level comments
+        let btnNext = document.createElement('button');
+        btnNext.setAttribute("id", "btn-top-level-next");
+        btnNext.textContent = "Next";
+        let btnPrev = document.createElement('button');
+        btnPrev.textContent = "Previous";
+        btnPrev.setAttribute("id", "btn-top-level-prev");
 
-      //add the buttons
-      let commentSection = document.getElementById('comments-section');
+        //add the buttons
+        let commentSection = document.getElementById('comments-section');
 
-      commentSection.appendChild(btnPrev);
-      commentSection.appendChild(btnNext);
+        commentSection.appendChild(btnPrev);
+        commentSection.appendChild(btnNext);
+      }
 
 
     } catch (e) {
       console.log(e);
     }
+  }
+
+
+  //removes all top level comments and their replies from the page
+  function clearTopLevelComments() {
+    //check if any top level comments exist
+    let comments = document.querySelectorAll('.top-level-comment');
+    if (comments.length) {
+      //----if so traverse the comments in reverse order
+      for (let i = comments.length - 1; i >= 0; i--) {
+        //-------clear each comment from the DOM
+        comments[i].remove();
+      }
+    } //else return
   }
 
   //paginate through the replies for a particular top level comment
@@ -146,7 +166,7 @@
     }
 
     //fetch the next/previous 10 replies
-    let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${topLevelCommentid}&orderby=date&likes=0&commentid=${replyid}`, {
+    let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${topLevelCommentid}&orderby=date&likes=0&commentid=${replyid}&flip=${flip}`, {
       method: 'GET', headers: { 'Content-Type': 'application/json' }
     });
 
@@ -223,6 +243,11 @@
     let content = document.createElement('p');
     content.textContent = comment.content;
 
+    //create the likes
+    let likes = document.createElement('p');
+    likes.setAttribute("class", 'likes');
+    likes.textContent = `Likes: ${comment.likes}`;
+
     //create a reply section for the comment
     let replySection = document.createElement('div');
     replySection.setAttribute('class', 'reply-section');
@@ -230,7 +255,7 @@
 
     //create a reply textarea
     let replyTextArea = document.createElement('textarea');
-    replyTextArea.setAttribute("class", "reply")
+    replyTextArea.setAttribute("class", "reply");
     replyTextArea.addEventListener("input", (e) => {
       replyTextArea.textContent = e.target.value;
     });
@@ -245,6 +270,7 @@
     div.appendChild(uname);
     div.appendChild(date);
     div.appendChild(content);
+    div.appendChild(likes);
     div.appendChild(replySection);
 
     //add the reply box to the reply section
@@ -351,7 +377,46 @@
         let commentid = e.target.id.slice(e.target.id.lastIndexOf('-') + 1);
         paginateReplies(commentid, "next");
       } else if (e.target && e.target.id.includes('btn-top-level')) {//activates when user clicks top level comment pagination btns
+        //extract the final text from the target id
+        let flip = e.target.id.slice(e.target.id.lastIndexOf('-') + 1);
 
+        //get the top level comments
+        let topLevelComments = document.querySelectorAll('.top-level-comment');
+        console.log(topLevelComments);
+
+        //likes and commentid
+        let likes;
+        let commentid;
+
+        //check if the final text is next
+        if (flip === "next") {
+          //get the last comment
+          let lastComment = topLevelComments[topLevelComments.length - 1];
+
+          //set the commentid variable to the last comment's value
+          commentid = lastComment.id;
+
+          //get the last comment's elements
+          let lastCommentElements = lastComment.childNodes;
+
+          //traverse the elements
+          lastCommentElements.forEach(element => {
+            //check if the element's className is likes
+            if (element.className == 'likes') {
+              //if so set the likes variable to the last comment's value
+              let likesElement = element.innerText;
+              likes = likesElement.slice(likesElement.lastIndexOf(':') + 2);
+            }
+          });
+        } else {
+          //------set flip to "prev"
+          //------set the likes variable to the first comment's value
+          //------set the commentid variable to the first comment's value
+        }
+
+
+        //call loadAllComments(mouseEvent, likes, commentid, flip)
+        loadAllComments("", likes, commentid, flip);
       }
     } catch (err) {
       console.log(err);

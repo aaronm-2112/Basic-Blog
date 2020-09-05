@@ -70,6 +70,9 @@ var blogcontroller = new BlogController_1.default(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
 //create the comment repo
 var commentRepo = new CommentPGSQLRepo_1.default();
+// commentRepo.test(1, false).then(res => {
+//   console.log(res);
+// })
 //register the comment routes
 var commentcontroller = new CommentController_1.default(commentRepo);
 commentcontroller.registerRoutes(app);

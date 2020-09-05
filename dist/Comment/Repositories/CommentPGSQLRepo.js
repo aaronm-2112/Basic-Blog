@@ -53,7 +53,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
         });
     }
     //returns comments(replies or top level) ordered by likes or date and cid
-    CommentPGSQLRepo.prototype.findAll = function (blogid, reply, replyTo, orderBy, likes, cid) {
+    CommentPGSQLRepo.prototype.findAll = function (blogid, reply, replyTo, orderBy, likes, cid, flip) {
         return __awaiter(this, void 0, void 0, function () {
             var query, queryValues, parameterNumber, res, rows, comments_1, e_1;
             return __generator(this, function (_a) {
@@ -78,8 +78,15 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         if (reply) {
                             //check if requesting replies ordered by date
                             if (orderBy === 'date') {
-                                //construct query that returns replies using the date as the primary means of ordering
-                                query = query + ("replyto = $" + (parameterNumber += 1) + " AND commentid > $" + (parameterNumber += 1) + " ORDER BY created ASC, commentid ASC LIMIT 10");
+                                //check if flip is next
+                                if (flip === 'next') {
+                                    //-----query returns 10 replies newer than that of the given commentid - which acts as the keyset pagination key in this query
+                                    query = query + ("replyto = $" + (parameterNumber += 1) + " AND commentid > $" + (parameterNumber += 1) + " ORDER BY created ASC, commentid ASC LIMIT 10");
+                                }
+                                else {
+                                    //------query returns 10 replies older than that of the given commentid
+                                    query = query + ("replyto = $" + (parameterNumber += 1) + " AND commentid < $" + (parameterNumber += 1) + " ORDER BY created ASC, commentid ASC LIMIT 10");
+                                }
                                 //add the query values
                                 queryValues.push(replyTo);
                                 queryValues.push(cid);
@@ -196,6 +203,48 @@ var CommentPGSQLRepo = /** @class */ (function () {
                     case 2:
                         e_3 = _a.sent();
                         throw new Error(e_3);
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    CommentPGSQLRepo.prototype.test = function (blogid, reply) {
+        return __awaiter(this, void 0, void 0, function () {
+            var query, queryValues, res, rows, comments_2, e_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        query = "SELECT * FROM comments WHERE blogid = $1 AND reply = $2";
+                        queryValues = [];
+                        queryValues.push(blogid);
+                        queryValues.push(reply);
+                        return [4 /*yield*/, this.pool.query(query, queryValues)];
+                    case 1:
+                        res = _a.sent();
+                        rows = res.rows;
+                        comments_2 = [];
+                        //fill comments with row values
+                        rows.forEach(function (row) {
+                            //populate a comment object
+                            var comment = new Comment_1.default();
+                            comment.commentid = row.commentid;
+                            comment.username = row.username;
+                            comment.blogid = row.blogid;
+                            comment.content = row.content;
+                            comment.reply = row.reply;
+                            comment.replyto = row.replyto;
+                            comment.likes = row.likes;
+                            comment.deleted = row.deleted;
+                            comment.created = row.created;
+                            //add the comment object to the comments collection
+                            comments_2.push(comment);
+                        });
+                        //return the results
+                        return [2 /*return*/, comments_2];
+                    case 2:
+                        e_4 = _a.sent();
+                        throw new Error(e_4);
                     case 3: return [2 /*return*/];
                 }
             });
