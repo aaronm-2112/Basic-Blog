@@ -30,8 +30,6 @@ export default class CommentControler implements IController {
     //TODO: Add parameter to allow for going to the previous page.
     this.router.get('/comments', async (req: Request, res: Response) => {
       try {
-        console.log("In comments route!");
-
         //retrieve the query parameters
 
         //blog parameter exists because comments have no alternative representation 
@@ -43,11 +41,12 @@ export default class CommentControler implements IController {
         let replyto: string = req.query.replyto as string;
         let orderby: string = req.query.orderby as string;
         let likes: string = req.query.likes as string;
-        let commentid: string = req.query.commentid as string;
+        let commentid: number = parseInt(req.query.commentid as string)
         let flip: string = req.query.flip as string;
 
+
         //check if query parameters are valid
-        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined || flip === undefined) {
+        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined || flip === undefined, isNaN(commentid)) {
           //no query parameters or bad query parameters in set return
           res.sendStatus(400); //client error in parameters
           return;
@@ -59,13 +58,11 @@ export default class CommentControler implements IController {
         //check if the client is requesting comments for a particular blog 
         if (blogid > 0) {
           //fetch the comments from the repo with the query paramaters
-          comments = await this.repo.findAll(blogid, (reply === "true") ?? false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid), flip);
+          comments = await this.repo.findAll(blogid, (reply === "true") ?? false, parseInt(replyto), orderby, parseInt(likes), commentid, flip);
         } else {
           // client is requesting general comments -- mark blogid as 0
-          comments = await this.repo.findAll(0, (reply === "true") ?? false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid), flip);
+          comments = await this.repo.findAll(0, (reply === "true") ?? false, parseInt(replyto), orderby, parseInt(likes), commentid, flip);
         }
-
-        console.log(comments);
 
         //return the comments 
         res.send(comments);

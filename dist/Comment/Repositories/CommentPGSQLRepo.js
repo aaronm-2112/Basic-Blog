@@ -100,9 +100,17 @@ var CommentPGSQLRepo = /** @class */ (function () {
                                 queryValues.push(cid);
                             }
                         }
-                        else { //return top level comments not replies
-                            //construct query that return top level comments by likes
-                            query = query + ("reply = false AND (likes, commentid) < ($" + (parameterNumber += 1) + ", $" + (parameterNumber += 1) + ")  ORDER BY likes DESC, commentid DESC LIMIT 10");
+                        else { //return top level comments 
+                            //check if flip is next or prev
+                            if (flip === 'next') {
+                                //construct query that return top level comments by likes
+                                query = query + ("reply = false AND (likes, commentid) < ($" + (parameterNumber += 1) + ", $" + (parameterNumber += 1) + ")  ORDER BY likes DESC, commentid DESC LIMIT 10");
+                            }
+                            else {
+                                //query returning data on the previous page
+                                query = query + ("reply = false AND (likes, commentid) > ($" + (parameterNumber += 1) + ", $" + (parameterNumber += 1) + ")  ORDER BY likes DESC, commentid DESC LIMIT 10");
+                            }
+                            //add the query values
                             queryValues.push(likes);
                             queryValues.push(cid);
                         }
@@ -128,7 +136,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                             comment.created = row.created;
                             //add the comment object to the comments collection
                             comments_1.push(comment);
-                            console.log(row);
+                            // console.log(row);
                         });
                         //return the results
                         return [2 /*return*/, comments_1];

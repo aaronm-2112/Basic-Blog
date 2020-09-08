@@ -63,34 +63,32 @@ var CommentControler = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 5, , 6]);
-                        console.log("In comments route!");
                         blogid = parseInt(req.query.blog);
                         reply = req.query.reply;
                         replyto = req.query.replyto;
                         orderby = req.query.orderby;
                         likes = req.query.likes;
-                        commentid = req.query.commentid;
+                        commentid = parseInt(req.query.commentid);
                         flip = req.query.flip;
                         //check if query parameters are valid
-                        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined || flip === undefined) {
+                        if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined || flip === undefined, isNaN(commentid)) {
                             //no query parameters or bad query parameters in set return
                             res.sendStatus(400); //client error in parameters
                             return [2 /*return*/];
                         }
                         comments = void 0;
                         if (!(blogid > 0)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.repo.findAll(blogid, (_a = (reply === "true")) !== null && _a !== void 0 ? _a : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid), flip)];
+                        return [4 /*yield*/, this.repo.findAll(blogid, (_a = (reply === "true")) !== null && _a !== void 0 ? _a : false, parseInt(replyto), orderby, parseInt(likes), commentid, flip)];
                     case 1:
                         //fetch the comments from the repo with the query paramaters
                         comments = _c.sent();
                         return [3 /*break*/, 4];
-                    case 2: return [4 /*yield*/, this.repo.findAll(0, (_b = (reply === "true")) !== null && _b !== void 0 ? _b : false, parseInt(replyto), orderby, parseInt(likes), parseInt(commentid), flip)];
+                    case 2: return [4 /*yield*/, this.repo.findAll(0, (_b = (reply === "true")) !== null && _b !== void 0 ? _b : false, parseInt(replyto), orderby, parseInt(likes), commentid, flip)];
                     case 3:
                         // client is requesting general comments -- mark blogid as 0
                         comments = _c.sent();
                         _c.label = 4;
                     case 4:
-                        console.log(comments);
                         //return the comments 
                         res.send(comments);
                         return [3 /*break*/, 6];

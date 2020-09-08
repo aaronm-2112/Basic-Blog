@@ -63,9 +63,17 @@ export default class CommentPGSQLRepo implements ICommentRepository {
           queryValues.push(likes);
           queryValues.push(cid);
         }
-      } else { //return top level comments not replies
-        //construct query that return top level comments by likes
-        query = query + `reply = false AND (likes, commentid) < ($${parameterNumber += 1}, $${parameterNumber += 1})  ORDER BY likes DESC, commentid DESC LIMIT 10`;
+      } else { //return top level comments 
+        //check if flip is next or prev
+        if (flip === 'next') {
+          //construct query that return top level comments by likes
+          query = query + `reply = false AND (likes, commentid) < ($${parameterNumber += 1}, $${parameterNumber += 1})  ORDER BY likes DESC, commentid DESC LIMIT 10`;
+        } else {
+          //query returning data on the previous page
+          query = query + `reply = false AND (likes, commentid) > ($${parameterNumber += 1}, $${parameterNumber += 1})  ORDER BY likes DESC, commentid DESC LIMIT 10`;
+
+        }
+        //add the query values
         queryValues.push(likes);
         queryValues.push(cid);
       }
@@ -99,7 +107,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
 
         //add the comment object to the comments collection
         comments.push(comment);
-        console.log(row);
+        // console.log(row);
       });
 
 

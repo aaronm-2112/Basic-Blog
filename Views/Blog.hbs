@@ -61,6 +61,7 @@
       //grab the comment data out of the response and store them in a top level comment collection
       let topLevelComments = [];
       topLevelComments = await response.json();
+      console.log("Top level comments:");
       console.log(topLevelComments);
 
       let bid = blogid.toString();
@@ -69,15 +70,20 @@
       //create a key value collection of the comments' replies
       let topLevelCommentReplies = {};
       //traverse the top level comments collection
+      console.log("About to gather replies");
       for (let i = 0; i < topLevelComments.length; i++) {
+        console.log("Gathering replies");
         cid = topLevelComments[i].commentid.toString();
+        //console.log(`Values for reply gathering are blogid: ${blogid}, replyto: ${replyto}, flip: ${flip} `);
         //-----use the commentid as replyto of the current top level comment to fetch that comment's replies ordered by date
         let res =
-          await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${cid}&orderby=date&likes=0&commentid=0&flip=${flip}`, {
+          await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${cid}&orderby=date&likes=0&commentid=0&flip=next`, {
             method: 'GET', headers: { 'Content-Type': 'application/json' }
           });
         //-----grab the replies out of the server response and load them into the key value reply collection
         let commentReplies = await res.json();
+        console.log("Replies:")
+        console.log(commentReplies);
         //-----create a comment and return the HTML reply section created for it --this houses all replies to the comment
         let replySection = displayComment(topLevelComments[i]);
         //-----traverse through the replies for that top level comment
@@ -126,64 +132,72 @@
   //paginate through the replies for a particular top level comment
   //TODO: Add code to make grabbing the first and last reply safe
   async function paginateReplies(topLevelCommentid, flip) {
-    //get the reply section we want to paginate to new replies within
-    let topLevelCommentSection = document.getElementById(topLevelCommentid);
-    let topLevelSectionChildren = topLevelCommentSection.children;
-    let replySection = topLevelSectionChildren[3].children;
+    try {
 
-    let replyid = "";
+      //get the reply section we want to paginate to new replies within
+      let topLevelCommentSection = document.getElementById(topLevelCommentid);
+      let topLevelSectionChildren = topLevelCommentSection.children;
+      let replySection = topLevelSectionChildren[4].children;
 
-    //check if flip value is next
-    if (flip === 'next') {
-      //if so get the last reply's commentid  by traversing to the last element in the reply section
-      for (let i = 0; i < replySection.length; i++) { //pagination-div
-        console.log("Looping through replies")
-        if (i == replySection.length - 1 && replySection[i].id != "pagination-div") {
-          replyid = replySection[i].id;
-          replyid = replyid.slice(replyid.lastIndexOf('-') + 1);
-          console.log("It actually worked");
-          console.log(replyid);
+      let replyid = "adsads";
+
+      //check if flip value is next
+      if (flip === 'next') {
+        //if so get the last reply's commentid  by traversing to the last element in the reply section
+        for (let i = 0; i < replySection.length; i++) { //pagination-div
+          if (i == replySection.length - 1 && replySection[i].id != "pagination-div") {
+            replyid = replySection[i].id;
+            replyid = replyid.slice(replyid.lastIndexOf('-') + 1);
+          }
+        }
+      } else { //user wants the previous pages results
+        //------get the first reply's commentid
+        //traverse the replysection
+        for (let i = 0; i < replySection.length; i++) { //pagination-div
+          //check if the element has an id
+          if (replySection[i].hasAttribute('id')) {
+            //check if the element's id is reply-section-comment
+            if (replySection[i].id.includes("reply-section-comment")) {
+              //set the id as the replyid 
+              replyid = replySection[i].id;
+              replyid = replyid.slice(replyid.lastIndexOf('-') + 1);
+              break;
+            }
+          }
         }
       }
-    } else { //user wants the previous pages results
-      //------get the first reply's commentid
-      //check if at pagination div and if any replies exist after it
-      if (replySection.class == "pagination-div" && i < replySection.length - 1) {
-        replyid = replySection[i + 1].id;
-        replyid = replyid.slice(replyid.lastIndexOf('-') + 1);
-        console.log(replyid);
+
+      //query all the replies in the reply section
+      let replies = document.getElementsByClassName(`reply-section-comment-${topLevelCommentid}`);
+      let i = replies.length - 1;
+      //traverse the replies and remove them from the DOM -- need to go in reverse b/c the size of the list decreases as elements are removed
+      while (i >= 0) {
+        replies[i].remove();
+        i--;
       }
+
+      //fetch the next/previous 10 replies
+      let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${topLevelCommentid}&orderby=date&likes=0&commentid=${replyid}&flip=${flip}`, {
+        method: 'GET', headers: { 'Content-Type': 'application/json' }
+      });
+
+      //parse the response and place the replies into a collection
+      let newReplies = await response.json();
+
+      //update reply section to an htmlCollection 
+      replySection = topLevelSectionChildren[4]
+
+      //traverse the collection 
+      newReplies.forEach(reply => {
+        //place each reply into the reply section
+        displayReply(reply, replySection, topLevelCommentid);
+      })
+
+      //determine which pagination buttons to hide/unhide
+
+    } catch (e) {
+      console.log(e);
     }
-
-    //query all the replies in the reply section
-    let replies = document.getElementsByClassName(`reply-section-comment-${topLevelCommentid}`);
-    console.log(replies);
-    let i = replies.length - 1;
-    //traverse the replies and remove them from the DOM -- need to go in reverse b/c the size of the list decreases as elements are removed
-    while (i >= 0) {
-      replies[i].remove();
-      i--;
-    }
-
-    //fetch the next/previous 10 replies
-    let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${topLevelCommentid}&orderby=date&likes=0&commentid=${replyid}&flip=${flip}`, {
-      method: 'GET', headers: { 'Content-Type': 'application/json' }
-    });
-
-    //parse the response and place the replies into a collection
-    let newReplies = await response.json();
-    console.log(newReplies);
-
-    //update reply section to an htmlCollection 
-    replySection = topLevelSectionChildren[3]
-
-    //traverse the collection 
-    newReplies.forEach(reply => {
-      //place each reply into the reply section
-      displayReply(reply, replySection, topLevelCommentid);
-    })
-
-    //determine which pagination buttons to hide/unhide
   }
 
   //Creates a new top level comment(not a reply) in the blog's comment section
@@ -192,6 +206,8 @@
     try {
       //grab the user's top level comment content 
       let content = document.getElementById('user-top-level-comment-content').value;
+
+      console.log(content);
 
       //set the reply value
       let reply = false;
@@ -372,10 +388,20 @@
 
         //display the comment at the bottom of the reply section
         displayReply(userReply, replySection, commentid);
+
+
       } else if (e.target && e.target.id.includes('btn-replies')) {
         //identify which top level comment the replies to paginate through belong to
         let commentid = e.target.id.slice(e.target.id.lastIndexOf('-') + 1);
-        paginateReplies(commentid, "next");
+
+        //determine if page flip is "next" or "previous" are the id names btn-replies-next|| btn-replies-prev 
+        let flip;
+        e.target.id.includes("next") ? flip = "next" : flip = "prev";
+
+        //paginate
+        paginateReplies(commentid, flip);
+
+
       } else if (e.target && e.target.id.includes('btn-top-level')) {//activates when user clicks top level comment pagination btns
         //extract the final text from the target id
         let flip = e.target.id.slice(e.target.id.lastIndexOf('-') + 1);
@@ -409,9 +435,21 @@
             }
           });
         } else {
-          //------set flip to "prev"
-          //------set the likes variable to the first comment's value
+          //get the first comment
+          let firstComment = topLevelComments[0];
+
+          let firstCommentElements = firstComment.childNodes;
+
+          firstCommentElements.forEach(element => {
+            if (element.className == 'likes') {
+              //if so set the likes variable to the first comment's value
+              let likesElement = element.innerText;
+              likes = likesElement.slice(likesElement.lastIndexOf(':') + 2);
+            }
+          });
+
           //------set the commentid variable to the first comment's value
+          commentid = firstComment.id;
         }
 
 
