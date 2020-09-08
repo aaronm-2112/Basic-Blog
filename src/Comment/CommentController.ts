@@ -27,7 +27,6 @@ export default class CommentControler implements IController {
     //or be a search for any comment without regard to what blog it belongs to.
     //query parameters: blog, reply, replyto, orderby, likes, commentid
     //replyto is 0 when the requested comments are not replies
-    //TODO: Add parameter to allow for going to the previous page.
     this.router.get('/comments', async (req: Request, res: Response) => {
       try {
         //retrieve the query parameters
@@ -138,10 +137,25 @@ export default class CommentControler implements IController {
       }
     });
 
-    //update a particular comment resource
-    //body parameters: content, deleted, etc more detail when i get to it
-    this.router.patch('comments/:commentid', async (req: Request, res: Response) => {
+    //update a particular comment resource - used for adding likes to a comment, editing comment text, marking as deleted
+    //body parameters: content, like, deleted, username
+    //TODO: Add comment deletion functionality
+    this.router.patch('comments/:commentid', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
+        //retrieve the username
+
+        //check if the comment does not belongs to that user
+        //---return authenticaiton error if so
+
+        //retrieve the body parameters
+
+        //retrieve the comment designated by the commentid from the repo
+
+        //determine which comment properties have changed(define a comment method to do this)
+
+        //update the comment with the comment repo
+
+        //send back successful status code 200
 
       } catch (e) {
 

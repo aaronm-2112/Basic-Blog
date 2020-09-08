@@ -13,5 +13,8 @@ export default interface IComment {
   setCreatedDate(date: Date): void; //may just happen in constructor
   getCreatedDate(): Date;
 
+  //check comment properties against incoming values and update if any changes
+  updateComment(content: string, username: string, deleted: boolean, like: boolean): void;
+
 
 }
