@@ -139,26 +139,72 @@ export default class CommentControler implements IController {
 
     //update a particular comment resource - used for adding likes to a comment, editing comment text, marking as deleted
     //body parameters: content, like, deleted, username
+    //Feels like a mixture of PUT and PATCH b/c the entire comment resource is being updated, howewver it is guranteed to only change 
+    //the values the client passes into the body and is a cleaner implementation than my patches in the User and Blog controllers.
     //TODO: Add comment deletion functionality
-    this.router.patch('comments/:commentid', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+    this.router.patch('/comments/:commentid', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-        //retrieve the username
+        console.log("In comment pathc");
+        //retrieve the commentid
+        let cid: number = parseInt(req.params.commentid as string);
 
-        //check if the comment does not belongs to that user
-        //---return authenticaiton error if so
+        //check if comment is NaN
+        if (isNaN(cid)) {
+          //send back 400 
+          res.sendStatus(400);
+          //stop function execution
+          return;
+        }
+
+        //retrieve the comment using the commentid
+        let comment: IComment = await this.repo.find(cid);
+
+        //retrieve the username
+        let username: string = res.locals.userId;
 
         //retrieve the body parameters
+        let content: string = req.body.content;
+        let deleted: string = req.body.deleted;
+        let like: string = req.body.like;
 
-        //retrieve the comment designated by the commentid from the repo
+        console.log(content);
+        console.log(deleted);
+        console.log(like);
 
         //determine which comment properties have changed(define a comment method to do this)
+        if (content !== undefined) {
+          comment.content = content;
+          //check if the comment's username doesn't match the incoming username
+          if (comment.username !== username) {
+            //---return authenticaiton error if so
+            res.sendStatus(403);
+            return;
+          }
+        }
+
+        if (deleted !== undefined) {
+          comment.deleted = (deleted === "true" ?? false);
+          //check if the comment's username doesn't match the incoming username
+          if (comment.username !== username) {
+            //---return authenticaiton error if so
+            res.sendStatus(403);
+            return;
+          }
+        }
+
+        if (like !== undefined) {
+          comment.likes += 1;
+        }
 
         //update the comment with the comment repo
+        await this.repo.update(comment);
 
         //send back successful status code 200
+        res.sendStatus(200);
 
       } catch (e) {
-
+        res.sendStatus(400);
+        console.error(e);
       }
     });
 

@@ -33,8 +33,11 @@ export default class Comment implements IComment {
   }
 
   //check comment properties against incoming values and update if any changes
-  updateComment(content: string, username: string, deleted: boolean, like: boolean): void {
-
+  updateComment(content: string = "", username: string = "", deleted: boolean = false, like: boolean = false): void {
+    if (this.content !== content) this.content = content;
+    if (this.username !== username) this.username = username;
+    if (this.deleted !== deleted) this.deleted = deleted;
+    if (like) this.likes += 1;
   }
 
 

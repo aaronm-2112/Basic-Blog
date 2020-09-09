@@ -58,53 +58,46 @@ var BlogController = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        console.log("Root blog route");
-                        _b.label = 1;
-                    case 1:
-                        _b.trys.push([1, 9, , 10]);
+                        _b.trys.push([0, 8, , 9]);
                         searchBy = req.query.param;
                         value = req.query.value;
                         blogid = req.query.key;
                         keyCondition = req.query.keyCondition;
-                        console.log(searchBy);
-                        console.log(value);
-                        console.log(blogid);
-                        console.log(keyCondition);
-                        if (!(value !== "" && value !== undefined)) return [3 /*break*/, 8];
+                        if (!(value !== "" && value !== undefined)) return [3 /*break*/, 7];
                         blogs = void 0;
                         _a = searchBy;
                         switch (_a) {
-                            case BlogSearchCriteria_1.searchParameters.Username: return [3 /*break*/, 2];
-                            case BlogSearchCriteria_1.searchParameters.Title: return [3 /*break*/, 4];
+                            case BlogSearchCriteria_1.searchParameters.Username: return [3 /*break*/, 1];
+                            case BlogSearchCriteria_1.searchParameters.Title: return [3 /*break*/, 3];
                         }
+                        return [3 /*break*/, 5];
+                    case 1: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Username, value, blogid, keyCondition)];
+                    case 2:
+                        //search the blog repo using the query parameter
+                        blogs = _b.sent();
                         return [3 /*break*/, 6];
-                    case 2: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Username, value, blogid, keyCondition)];
-                    case 3:
+                    case 3: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Title, value, blogid, keyCondition)];
+                    case 4:
                         //search the blog repo using the query parameter
                         blogs = _b.sent();
-                        return [3 /*break*/, 7];
-                    case 4: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Title, value, blogid, keyCondition)];
+                        return [3 /*break*/, 6];
                     case 5:
-                        //search the blog repo using the query parameter
-                        blogs = _b.sent();
-                        return [3 /*break*/, 7];
-                    case 6:
                         //invalid search parameter -- result not found
                         res.sendStatus(404);
                         return [2 /*return*/];
-                    case 7:
+                    case 6:
                         //return the results to the user 
                         res.send(blogs);
                         return [2 /*return*/];
-                    case 8:
+                    case 7:
                         res.render('CreateBlog');
-                        return [3 /*break*/, 10];
-                    case 9:
+                        return [3 /*break*/, 9];
+                    case 8:
                         e_1 = _b.sent();
                         res.sendStatus(400);
                         console.log(e_1);
                         throw new Error(e_1);
-                    case 10: return [2 /*return*/];
+                    case 9: return [2 /*return*/];
                 }
             });
         }); });
@@ -115,14 +108,10 @@ var BlogController = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log("In this route");
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        console.log("In get blog route");
+                        _a.trys.push([0, 2, , 3]);
                         blogID = req.params.blogID;
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogID)];
-                    case 2:
+                    case 1:
                         blog = _a.sent();
                         imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleimagepath);
                         //check the value of edit
@@ -164,13 +153,13 @@ var BlogController = /** @class */ (function () {
                                 content: blog.content
                             });
                         }
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 3];
+                    case 2:
                         e_2 = _a.sent();
                         res.sendStatus(400);
                         console.log(e_2);
                         throw new Error(e_2);
-                    case 4: return [2 /*return*/];
+                    case 3: return [2 /*return*/];
                 }
             });
         }); });

@@ -23,18 +23,12 @@ export default class BlogController implements IController {
 
     //returns blog creation view
     this.router.get('/blog', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
-      console.log("Root blog route");
       try {
         //grab the query string from the parameters
         let searchBy: string = req.query.param as string;
         let value: string = req.query.value as string;
         let blogid: string = req.query.key as string;
         let keyCondition: string = req.query.keyCondition as string; //should be > or < 
-
-        console.log(searchBy);
-        console.log(value);
-        console.log(blogid);
-        console.log(keyCondition);
 
         //check if the query string exists
         if (value !== "" && value !== undefined) {
@@ -73,10 +67,8 @@ export default class BlogController implements IController {
     //return a specific blog for viewing/editing or a list of blogs based off a query term
     //TODO: update the edit parameter and turn it into a query parameter -- This is more RESTful
     this.router.get('/blog/:blogID/:edit', async (req: Request, res: Response) => {
-      console.log("In this route");
-      try {
-        console.log("In get blog route");
 
+      try {
         //retrieve the blogID from the request parameter
         let blogID: string = req.params.blogID;
 

@@ -78,10 +78,6 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         queryValues.push(cid);
       }
 
-
-      console.log(queryValues);
-      console.log(query);
-
       //execute the query
       let res = await this.pool.query(query, queryValues);
 
@@ -107,9 +103,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
 
         //add the comment object to the comments collection
         comments.push(comment);
-        // console.log(row);
       });
-
 
       //return the results
       return comments;
@@ -181,6 +175,40 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       });
 
       return comment;
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async update(comment: IComment): Promise<void> {
+    try {
+      //create the update query
+      let query: string = `UPDATE comments SET 
+                                  username = $1, 
+                                  blogid = $2,  
+                                  content = $3,
+                                  reply = $4,
+                                  replyto = $5,
+                                  likes = $6,
+                                  deleted = $7,
+                                  created = $8
+                                  WHERE commentid = $9`;
+
+      //fill the query values
+      let queryValues: any[] = [];
+      queryValues.push(comment.username);
+      queryValues.push(comment.blogid);
+      queryValues.push(comment.content);
+      queryValues.push(comment.reply);
+      queryValues.push(comment.replyto);
+      queryValues.push(comment.likes);
+      queryValues.push(comment.deleted);
+      queryValues.push(comment.created);
+      queryValues.push(comment.commentid);
+
+      //execute the query
+      await this.pool.query(query, queryValues);
+
     } catch (e) {
       throw new Error(e);
     }

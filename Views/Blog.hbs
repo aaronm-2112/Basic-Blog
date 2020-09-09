@@ -52,7 +52,6 @@
       //clear the comments if any exist
       clearTopLevelComments();
 
-      // console.log(mouseEvent);
       //retrieve the blog's top level comments, if they exist
       let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=false&replyto=0&orderby=likes&likes=${likes}&commentid=${commentid}&flip=${flip}`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
@@ -61,8 +60,6 @@
       //grab the comment data out of the response and store them in a top level comment collection
       let topLevelComments = [];
       topLevelComments = await response.json();
-      console.log("Top level comments:");
-      console.log(topLevelComments);
 
       let bid = blogid.toString();
       let cid = 0;
@@ -70,11 +67,11 @@
       //create a key value collection of the comments' replies
       let topLevelCommentReplies = {};
       //traverse the top level comments collection
-      console.log("About to gather replies");
+
       for (let i = 0; i < topLevelComments.length; i++) {
-        console.log("Gathering replies");
+
         cid = topLevelComments[i].commentid.toString();
-        //console.log(`Values for reply gathering are blogid: ${blogid}, replyto: ${replyto}, flip: ${flip} `);
+
         //-----use the commentid as replyto of the current top level comment to fetch that comment's replies ordered by date
         let res =
           await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${cid}&orderby=date&likes=0&commentid=0&flip=next`, {
@@ -82,8 +79,6 @@
           });
         //-----grab the replies out of the server response and load them into the key value reply collection
         let commentReplies = await res.json();
-        console.log("Replies:")
-        console.log(commentReplies);
         //-----create a comment and return the HTML reply section created for it --this houses all replies to the comment
         let replySection = displayComment(topLevelComments[i]);
         //-----traverse through the replies for that top level comment
@@ -262,6 +257,7 @@
     //create the likes
     let likes = document.createElement('p');
     likes.setAttribute("class", 'likes');
+    likes.setAttribute("id", `likes-${comment.commentid}`);
     likes.textContent = `Likes: ${comment.likes}`;
 
     //create a reply section for the comment
@@ -455,6 +451,28 @@
 
         //call loadAllComments(mouseEvent, likes, commentid, flip)
         loadAllComments("", likes, commentid, flip);
+      } else if (e.target && e.target.id.includes('likes')) {
+        //get the top level commentid from the like id
+        let cid = e.target.id.slice(e.target.id.lastIndexOf('-') + 1);
+
+        //increase the displayed likes for this comment by one
+        let likesElement = e.target.innerText;
+        let likes = parseInt(likesElement.slice(likesElement.lastIndexOf(':') + 2));
+        e.target.innerText = `Likes: ${likes += 1}`;
+
+        //update the comment's data
+        let res = await fetch(`http://localhost:3000/comments/${cid}`,
+          {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ like: true })
+          });
+
+        if (res.status != 200) {
+          console.log("Error updating");
+          return;
+        }
+
+
       }
     } catch (err) {
       console.log(err);

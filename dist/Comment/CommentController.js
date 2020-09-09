@@ -55,7 +55,6 @@ var CommentControler = /** @class */ (function () {
         //or be a search for any comment without regard to what blog it belongs to.
         //query parameters: blog, reply, replyto, orderby, likes, commentid
         //replyto is 0 when the requested comments are not replies
-        //TODO: Add parameter to allow for going to the previous page.
         this.router.get('/comments', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogid, reply, replyto, orderby, likes, commentid, flip, comments, e_1;
             var _a, _b;
@@ -172,15 +171,74 @@ var CommentControler = /** @class */ (function () {
                 }
             });
         }); });
-        //update a particular comment resource
-        //body parameters: content, deleted, etc more detail when i get to it
-        this.router.patch('comments/:commentid', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                try {
+        //update a particular comment resource - used for adding likes to a comment, editing comment text, marking as deleted
+        //body parameters: content, like, deleted, username
+        //Feels like a mixture of PUT and PATCH b/c the entire comment resource is being updated, howewver it is guranteed to only change 
+        //the values the client passes into the body and is a cleaner implementation than my patches in the User and Blog controllers.
+        //TODO: Add comment deletion functionality
+        this.router.patch('/comments/:commentid', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var cid, comment, username, content, deleted, like, e_4;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 3, , 4]);
+                        console.log("In comment pathc");
+                        cid = parseInt(req.params.commentid);
+                        //check if comment is NaN
+                        if (isNaN(cid)) {
+                            //send back 400 
+                            res.sendStatus(400);
+                            //stop function execution
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, this.repo.find(cid)];
+                    case 1:
+                        comment = _b.sent();
+                        username = res.locals.userId;
+                        content = req.body.content;
+                        deleted = req.body.deleted;
+                        like = req.body.like;
+                        console.log(content);
+                        console.log(deleted);
+                        console.log(like);
+                        //determine which comment properties have changed(define a comment method to do this)
+                        if (content !== undefined) {
+                            comment.content = content;
+                            //check if the comment's username doesn't match the incoming username
+                            if (comment.username !== username) {
+                                //---return authenticaiton error if so
+                                res.sendStatus(403);
+                                return [2 /*return*/];
+                            }
+                        }
+                        if (deleted !== undefined) {
+                            comment.deleted = ((_a = deleted === "true") !== null && _a !== void 0 ? _a : false);
+                            //check if the comment's username doesn't match the incoming username
+                            if (comment.username !== username) {
+                                //---return authenticaiton error if so
+                                res.sendStatus(403);
+                                return [2 /*return*/];
+                            }
+                        }
+                        if (like !== undefined) {
+                            comment.likes += 1;
+                        }
+                        //update the comment with the comment repo
+                        return [4 /*yield*/, this.repo.update(comment)];
+                    case 2:
+                        //update the comment with the comment repo
+                        _b.sent();
+                        //send back successful status code 200
+                        res.sendStatus(200);
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_4 = _b.sent();
+                        res.sendStatus(400);
+                        console.error(e_4);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
-                catch (e) {
-                }
-                return [2 /*return*/];
             });
         }); });
         //register the route

@@ -114,8 +114,6 @@ var CommentPGSQLRepo = /** @class */ (function () {
                             queryValues.push(likes);
                             queryValues.push(cid);
                         }
-                        console.log(queryValues);
-                        console.log(query);
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         res = _a.sent();
@@ -136,7 +134,6 @@ var CommentPGSQLRepo = /** @class */ (function () {
                             comment.created = row.created;
                             //add the comment object to the comments collection
                             comments_1.push(comment);
-                            // console.log(row);
                         });
                         //return the results
                         return [2 /*return*/, comments_1];
@@ -216,9 +213,41 @@ var CommentPGSQLRepo = /** @class */ (function () {
             });
         });
     };
+    CommentPGSQLRepo.prototype.update = function (comment) {
+        return __awaiter(this, void 0, void 0, function () {
+            var query, queryValues, e_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        query = "UPDATE comments SET \n                                  username = $1, \n                                  blogid = $2,  \n                                  content = $3,\n                                  reply = $4,\n                                  replyto = $5,\n                                  likes = $6,\n                                  deleted = $7,\n                                  created = $8\n                                  WHERE commentid = $9";
+                        queryValues = [];
+                        queryValues.push(comment.username);
+                        queryValues.push(comment.blogid);
+                        queryValues.push(comment.content);
+                        queryValues.push(comment.reply);
+                        queryValues.push(comment.replyto);
+                        queryValues.push(comment.likes);
+                        queryValues.push(comment.deleted);
+                        queryValues.push(comment.created);
+                        queryValues.push(comment.commentid);
+                        //execute the query
+                        return [4 /*yield*/, this.pool.query(query, queryValues)];
+                    case 1:
+                        //execute the query
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_4 = _a.sent();
+                        throw new Error(e_4);
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
     CommentPGSQLRepo.prototype.test = function (blogid, reply) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, queryValues, res, rows, comments_2, e_4;
+            var query, queryValues, res, rows, comments_2, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -251,8 +280,8 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         //return the results
                         return [2 /*return*/, comments_2];
                     case 2:
-                        e_4 = _a.sent();
-                        throw new Error(e_4);
+                        e_5 = _a.sent();
+                        throw new Error(e_5);
                     case 3: return [2 /*return*/];
                 }
             });

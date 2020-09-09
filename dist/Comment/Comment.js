@@ -19,6 +19,21 @@ var Comment = /** @class */ (function () {
     Comment.prototype.getCreatedDate = function () {
         return this.created;
     };
+    //check comment properties against incoming values and update if any changes
+    Comment.prototype.updateComment = function (content, username, deleted, like) {
+        if (content === void 0) { content = ""; }
+        if (username === void 0) { username = ""; }
+        if (deleted === void 0) { deleted = false; }
+        if (like === void 0) { like = false; }
+        if (this.content !== content)
+            this.content = content;
+        if (this.username !== username)
+            this.username = username;
+        if (this.deleted !== deleted)
+            this.deleted = deleted;
+        if (like)
+            this.likes += 1;
+    };
     return Comment;
 }());
 exports.default = Comment;
