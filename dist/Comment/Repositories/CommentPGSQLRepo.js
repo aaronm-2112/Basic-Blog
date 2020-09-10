@@ -130,6 +130,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                             comment.reply = row.reply;
                             comment.replyto = row.replyto;
                             comment.likes = row.likes;
+                            comment.likedby = row.likedby;
                             comment.deleted = row.deleted;
                             comment.created = row.created;
                             //add the comment object to the comments collection
@@ -153,7 +154,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "INSERT INTO comments ( username, blogid, content, reply, replyto, likes, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING commentid";
+                        query = "INSERT INTO comments ( username, blogid, content, reply, replyto, likes, likedby, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING commentid";
                         values = new Array();
                         values.push(comment.username);
                         values.push(comment.blogid);
@@ -161,6 +162,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         values.push(comment.reply);
                         values.push(comment.replyto);
                         values.push(comment.likes);
+                        values.push(comment.likedby);
                         values.push(comment.deleted);
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 1:
@@ -201,6 +203,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                             comment_1.reply = row.reply;
                             comment_1.replyto = row.replyto;
                             comment_1.likes = row.likes;
+                            comment_1.likedby = row.likedby;
                             comment_1.deleted = row.deleted;
                             comment_1.created = row.created;
                         });
@@ -220,7 +223,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "UPDATE comments SET \n                                  username = $1, \n                                  blogid = $2,  \n                                  content = $3,\n                                  reply = $4,\n                                  replyto = $5,\n                                  likes = $6,\n                                  deleted = $7,\n                                  created = $8\n                                  WHERE commentid = $9";
+                        query = "UPDATE comments SET \n                                  username = $1, \n                                  blogid = $2,  \n                                  content = $3,\n                                  reply = $4,\n                                  replyto = $5,\n                                  likes = $6,\n                                  likedby = $7,\n                                  deleted = $8,\n                                  created = $9\n                                  WHERE commentid = $10";
                         queryValues = [];
                         queryValues.push(comment.username);
                         queryValues.push(comment.blogid);
@@ -228,6 +231,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         queryValues.push(comment.reply);
                         queryValues.push(comment.replyto);
                         queryValues.push(comment.likes);
+                        queryValues.push(comment.likedby);
                         queryValues.push(comment.deleted);
                         queryValues.push(comment.created);
                         queryValues.push(comment.commentid);

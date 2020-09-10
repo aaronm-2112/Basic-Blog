@@ -110,7 +110,7 @@ function createDB() {
                     // console.log(pgRes);
                     //DROP TABLE comments
                     pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, replyto integer not null, likes integer not null, deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));")];
+                    return [4 /*yield*/, client.query("CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, replyto integer not null, likes integer not null, likedby text[], deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));")];
                 case 9:
                     //TABLE comments --TODO: No reply instead only use replyto?
                     pgRes = _a.sent();

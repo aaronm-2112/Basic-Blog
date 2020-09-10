@@ -195,6 +195,7 @@ var CommentControler = /** @class */ (function () {
                         return [4 /*yield*/, this.repo.find(cid)];
                     case 1:
                         comment = _b.sent();
+                        console.log(comment);
                         username = res.locals.userId;
                         content = req.body.content;
                         deleted = req.body.deleted;
@@ -207,7 +208,7 @@ var CommentControler = /** @class */ (function () {
                             comment.content = content;
                             //check if the comment's username doesn't match the incoming username
                             if (comment.username !== username) {
-                                //---return authenticaiton error if so
+                                //---return forbidden error if so
                                 res.sendStatus(403);
                                 return [2 /*return*/];
                             }
@@ -216,13 +217,22 @@ var CommentControler = /** @class */ (function () {
                             comment.deleted = ((_a = deleted === "true") !== null && _a !== void 0 ? _a : false);
                             //check if the comment's username doesn't match the incoming username
                             if (comment.username !== username) {
-                                //---return authenticaiton error if so
+                                //---return forbidden error if so
                                 res.sendStatus(403);
                                 return [2 /*return*/];
                             }
                         }
-                        if (like !== undefined) {
-                            comment.likes += 1;
+                        if (like !== undefined && like !== "false") {
+                            if (!comment.alreadyLiked(username)) {
+                                console.log("Success");
+                                comment.likes += 1;
+                                comment.likedby.push(username);
+                            }
+                            else {
+                                //return forbidden error if so
+                                res.sendStatus(403);
+                                return [2 /*return*/];
+                            }
                         }
                         //update the comment with the comment repo
                         return [4 /*yield*/, this.repo.update(comment)];

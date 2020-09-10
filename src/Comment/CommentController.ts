@@ -141,10 +141,8 @@ export default class CommentControler implements IController {
     //body parameters: content, like, deleted, username
     //Feels like a mixture of PUT and PATCH b/c the entire comment resource is being updated, howewver it is guranteed to only change 
     //the values the client passes into the body and is a cleaner implementation than my patches in the User and Blog controllers.
-    //TODO: Add comment deletion functionality
     this.router.patch('/comments/:commentid', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-        console.log("In comment pathc");
         //retrieve the commentid
         let cid: number = parseInt(req.params.commentid as string);
 
@@ -167,33 +165,34 @@ export default class CommentControler implements IController {
         let deleted: string = req.body.deleted;
         let like: string = req.body.like;
 
-        console.log(content);
-        console.log(deleted);
-        console.log(like);
-
-        //determine which comment properties have changed(define a comment method to do this)
+        //check if content is not undefined
         if (content !== undefined) {
-          comment.content = content;
-          //check if the comment's username doesn't match the incoming username
-          if (comment.username !== username) {
-            //---return authenticaiton error if so
+          //edit the comment content
+          if (!comment.editContent(username, content)) {
+            //if editing failed return forbidden status code
             res.sendStatus(403);
             return;
           }
         }
 
-        if (deleted !== undefined) {
-          comment.deleted = (deleted === "true" ?? false);
-          //check if the comment's username doesn't match the incoming username
-          if (comment.username !== username) {
-            //---return authenticaiton error if so
+        //determine if user wants to mark the incoming comment as deleted
+        if (deleted !== undefined && deleted !== "false") {
+          //attempt to mark the comment as deleted
+          if (!comment.markDeleted(username)) {
+            //user does not own the comment and cannot mark it as deleted
             res.sendStatus(403);
             return;
           }
         }
 
-        if (like !== undefined) {
-          comment.likes += 1;
+        //determine if user wants to add a like to the comment
+        if (like !== undefined && like !== "false") {
+          //check if adding the like was not successful
+          if (!comment.addLike(username)) {
+            //return forbidden error if user could not add a like
+            res.sendStatus(403);
+            return;
+          }
         }
 
         //update the comment with the comment repo

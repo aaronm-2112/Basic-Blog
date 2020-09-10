@@ -222,11 +222,12 @@
       let cid = await res.json();
 
       //retrieve the comment the user created
+      res = await fetch(`http://localhost:3000/comments/${cid}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+
+      let comment = await res.json();
 
       //display the user's comment at the botom of the comment section
-      displayComment({});
-
-
+      displayComment(comment);
     } catch (e) {
       console.log(e);
     }
@@ -357,7 +358,6 @@
       if (e.target && e.target.id.includes('add-reply')) { //user wants to create reply
         //identify which comment the reply belongs to 
         let commentid = e.target.id.slice(e.target.id.lastIndexOf('-') + 1); //because replies ids are: add-reply-commentid and comment section ids are: id: commentid
-        console.log(commentid);
 
         //grab the top-level-comment html element with the same commentid -- this is where the reply is nested
         let topLevelCommentSection = document.getElementById(commentid);
@@ -365,12 +365,14 @@
         //extract the reply section html element from the top level comment section
         let topLevelSectionChildren = topLevelCommentSection.children;
 
-        let replySection = topLevelSectionChildren[3];
+        let replySection = topLevelSectionChildren[4];
+        console.log(replySection);
 
         //add the reply to the database
         let reply = true;
         let replyto = commentid;
         let content = replySection.firstChild.value;
+
         let res = await fetch('http://localhost:3000/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, reply, replyto, blogid }) });
 
         //get the repliy's cid
@@ -448,9 +450,10 @@
           commentid = firstComment.id;
         }
 
-
         //call loadAllComments(mouseEvent, likes, commentid, flip)
         loadAllComments("", likes, commentid, flip);
+
+
       } else if (e.target && e.target.id.includes('likes')) {
         //get the top level commentid from the like id
         let cid = e.target.id.slice(e.target.id.lastIndexOf('-') + 1);
@@ -458,7 +461,7 @@
         //increase the displayed likes for this comment by one
         let likesElement = e.target.innerText;
         let likes = parseInt(likesElement.slice(likesElement.lastIndexOf(':') + 2));
-        e.target.innerText = `Likes: ${likes += 1}`;
+
 
         //update the comment's data
         let res = await fetch(`http://localhost:3000/comments/${cid}`,
@@ -472,7 +475,8 @@
           return;
         }
 
-
+        //update the like display
+        e.target.innerText = `Likes: ${likes += 1}`;
       }
     } catch (err) {
       console.log(err);

@@ -77,7 +77,7 @@ export async function createDB() {
     pgRes = await client.query(`DROP TABLE comments`);
 
     //TABLE comments --TODO: No reply instead only use replyto?
-    pgRes = await client.query(`CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, replyto integer not null, likes integer not null, deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));`)
+    pgRes = await client.query(`CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, replyto integer not null, likes integer not null, likedby text[], deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));`)
 
     console.log(pgRes);
 

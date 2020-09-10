@@ -98,6 +98,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         comment.reply = row.reply;
         comment.replyto = row.replyto;
         comment.likes = row.likes;
+        comment.likedby = row.likedby;
         comment.deleted = row.deleted;
         comment.created = row.created;
 
@@ -116,7 +117,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
   async create(comment: IComment): Promise<number> {
     try {
       //create the query -- created and cid should be auto-created columns
-      let query: string = `INSERT INTO comments ( username, blogid, content, reply, replyto, likes, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING commentid`;
+      let query: string = `INSERT INTO comments ( username, blogid, content, reply, replyto, likes, likedby, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING commentid`;
 
       //add the comment values
       let values: Array<any> = new Array();
@@ -126,6 +127,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       values.push(comment.reply);
       values.push(comment.replyto);
       values.push(comment.likes);
+      values.push(comment.likedby);
       values.push(comment.deleted);
 
       //execute the insertion
@@ -170,6 +172,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         comment.reply = row.reply;
         comment.replyto = row.replyto;
         comment.likes = row.likes;
+        comment.likedby = row.likedby;
         comment.deleted = row.deleted;
         comment.created = row.created;
       });
@@ -190,9 +193,10 @@ export default class CommentPGSQLRepo implements ICommentRepository {
                                   reply = $4,
                                   replyto = $5,
                                   likes = $6,
-                                  deleted = $7,
-                                  created = $8
-                                  WHERE commentid = $9`;
+                                  likedby = $7,
+                                  deleted = $8,
+                                  created = $9
+                                  WHERE commentid = $10`;
 
       //fill the query values
       let queryValues: any[] = [];
@@ -202,6 +206,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       queryValues.push(comment.reply);
       queryValues.push(comment.replyto);
       queryValues.push(comment.likes);
+      queryValues.push(comment.likedby);
       queryValues.push(comment.deleted);
       queryValues.push(comment.created);
       queryValues.push(comment.commentid);

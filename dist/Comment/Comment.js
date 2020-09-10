@@ -10,6 +10,7 @@ var Comment = /** @class */ (function () {
         this.reply = false;
         this.replyto = 0;
         this.likes = 0;
+        this.likedby = [];
         this.deleted = false;
         this.created = new Date();
     }
@@ -33,6 +34,13 @@ var Comment = /** @class */ (function () {
             this.deleted = deleted;
         if (like)
             this.likes += 1;
+    };
+    //determine if a user already liked this comment
+    Comment.prototype.alreadyLiked = function (username) {
+        var liked = this.likedby.some(function (user) {
+            return user === username;
+        });
+        return liked;
     };
     return Comment;
 }());
