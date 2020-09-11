@@ -24,11 +24,25 @@ var Directory = /** @class */ (function () {
     }
     //direct express middleware to render the paths using handlebars
     Directory.prototype.registerRoutes = function (app) {
-        // //render root path -- for now make unguarded version of homepage
-        // this.unguardedRouter.get(`${this.paths.root}`, (req: Request, res: Response) => {
-        //   res.redirect('http://localhost:3000/homepage');
-        // })
         var _this = this;
+        //render root path -- for now make unguarded version of homepage
+        //TODO: Show alternate version if not authenticated!
+        this.router.get("" + this.paths.root, function (req, res) {
+            //get the userID from the cookie
+            var userID = { id: "" };
+            //extract the userid from the jwt 
+            _this.auth.setSubject(req.cookies["jwt"], userID);
+            console.log(userID);
+            //check if any userid was extracted from the jwt
+            if (userID.id.length) {
+                //if so render the logged in homepage
+                res.render('Homepage');
+            }
+            else {
+                //render the homepage that allows the user to sign up or log in
+                res.render('HomepageAnonymous');
+            }
+        });
         this.router.get("" + this.paths.homepage, this.auth.authenitcateJWT, function (req, res) {
             console.log("In homepage route");
             res.render('Homepage');

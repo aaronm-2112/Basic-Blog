@@ -7,11 +7,8 @@ import * as express from 'express';
 import IController from "../Controllers/IController";
 import { compareUserPassword } from '../Common/salt';
 import IBlogRepository from "../Blog/Repositories/IBlogRepository";
-import BlogSQLiteRepo from "../Blog/Repositories/BlogSQLiteRepo";
 import IBlog from '../Blog/IBlog';
 import { searchParameters } from "../Blog/BlogSearchCriteria";
-import path from 'path';
-
 
 //Purpose: Handle all user view behaviour.
 //Rather than use a service for representing a compound model I chose to place two repos in the UserControler.

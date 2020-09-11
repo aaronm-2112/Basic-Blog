@@ -175,15 +175,12 @@ var CommentControler = /** @class */ (function () {
         //body parameters: content, like, deleted, username
         //Feels like a mixture of PUT and PATCH b/c the entire comment resource is being updated, howewver it is guranteed to only change 
         //the values the client passes into the body and is a cleaner implementation than my patches in the User and Blog controllers.
-        //TODO: Add comment deletion functionality
         this.router.patch('/comments/:commentid', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var cid, comment, username, content, deleted, like, e_4;
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _b.trys.push([0, 3, , 4]);
-                        console.log("In comment pathc");
+                        _a.trys.push([0, 3, , 4]);
                         cid = parseInt(req.params.commentid);
                         //check if comment is NaN
                         if (isNaN(cid)) {
@@ -194,42 +191,34 @@ var CommentControler = /** @class */ (function () {
                         }
                         return [4 /*yield*/, this.repo.find(cid)];
                     case 1:
-                        comment = _b.sent();
-                        console.log(comment);
+                        comment = _a.sent();
                         username = res.locals.userId;
                         content = req.body.content;
                         deleted = req.body.deleted;
                         like = req.body.like;
-                        console.log(content);
-                        console.log(deleted);
-                        console.log(like);
-                        //determine which comment properties have changed(define a comment method to do this)
+                        //check if content is not undefined
                         if (content !== undefined) {
-                            comment.content = content;
-                            //check if the comment's username doesn't match the incoming username
-                            if (comment.username !== username) {
-                                //---return forbidden error if so
+                            //edit the comment content
+                            if (!comment.editContent(username, content)) {
+                                //if editing failed return forbidden status code
                                 res.sendStatus(403);
                                 return [2 /*return*/];
                             }
                         }
-                        if (deleted !== undefined) {
-                            comment.deleted = ((_a = deleted === "true") !== null && _a !== void 0 ? _a : false);
-                            //check if the comment's username doesn't match the incoming username
-                            if (comment.username !== username) {
-                                //---return forbidden error if so
+                        //determine if user wants to mark the incoming comment as deleted
+                        if (deleted !== undefined && deleted !== "false") {
+                            //attempt to mark the comment as deleted
+                            if (!comment.markDeleted(username)) {
+                                //user does not own the comment and cannot mark it as deleted
                                 res.sendStatus(403);
                                 return [2 /*return*/];
                             }
                         }
+                        //determine if user wants to add a like to the comment
                         if (like !== undefined && like !== "false") {
-                            if (!comment.alreadyLiked(username)) {
-                                console.log("Success");
-                                comment.likes += 1;
-                                comment.likedby.push(username);
-                            }
-                            else {
-                                //return forbidden error if so
+                            //check if adding the like was not successful
+                            if (!comment.addLike(username)) {
+                                //return forbidden error if user could not add a like
                                 res.sendStatus(403);
                                 return [2 /*return*/];
                             }
@@ -238,12 +227,12 @@ var CommentControler = /** @class */ (function () {
                         return [4 /*yield*/, this.repo.update(comment)];
                     case 2:
                         //update the comment with the comment repo
-                        _b.sent();
+                        _a.sent();
                         //send back successful status code 200
                         res.sendStatus(200);
                         return [3 /*break*/, 4];
                     case 3:
-                        e_4 = _b.sent();
+                        e_4 = _a.sent();
                         res.sendStatus(400);
                         console.error(e_4);
                         return [3 /*break*/, 4];

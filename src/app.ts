@@ -5,28 +5,22 @@ import cors from 'cors';
 import path from 'path';
 import hbs from 'hbs'; //templating engine
 import Directory from './Directory/directory';
-import UserRepository from './User/Repositories/SqliteRepository';
 import IUserRepository from './User/Repositories/IRepository';
 import UserController from './User/UserController';
 import { createDB } from './dbinit';
 import IBlogRepository from './Blog/Repositories/IBlogRepository';
-import BlogSQLiteRepo from './Blog/Repositories/BlogSQLiteRepo';
 import IController from './Controllers/IController';
 import BlogController from './Blog/BlogController';
 import Upload from './Common/Resources/Uploads';
-import IUser from './User/IUser';
-import User from './User/User';
 import UserPGSQLRepo from './User/Repositories/PGSQLRepo';
 import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
-import IBlog from './Blog/IBlog';
-import Blog from './Blog/Blog';
-import IComment from './Comment/IComment';
-import Comment from './Comment/Comment';
 import CommentPGSQLRepo from './Comment/Repositories/CommentPGSQLRepo';
 import CommentController from './Comment/CommentController';
 
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
+//TODO: Add indices to the database properties being used for keyset pagination.
+
 
 //Used for development database changes. 
 // createDB().then(() => {
@@ -48,6 +42,8 @@ app.use(bodyParser.urlencoded({
 //To operate with images (or other static files) with Node.js configure static paths
 app.use('/uploads', express.static('uploads'));
 
+// Express Middleware for serving static scripts
+app.use('/scripts', express.static('scripts'));
 
 //tell app to use the cookie parser
 app.use(cookieParser());
@@ -64,6 +60,8 @@ app.use(cors({
 app.set('view engine', 'hbs');
 
 
+
+
 //Define path to the directory of the application's views
 let viewsPath: string = path.join(__dirname, '../Views');
 //Direct express to use files in the views directory -- TODO: Better explanation. 
@@ -78,7 +76,6 @@ let staticDirectory: Directory = new Directory();
 staticDirectory.registerRoutes(app); //TODO: Rename method
 
 //register the user routes -- (could also have set up controllers which have the routes baked in)
-let userRepo: IUserRepository = new UserRepository();
 let userRepoPostgre: IUserRepository = new UserPGSQLRepo();
 //let blogRepo: IBlogRepository = new BlogSQLiteRepo();
 let blogRepoPostgre: IBlogRepository = new BlogPGSQLRepo();
@@ -86,16 +83,11 @@ let usercont: UserController = new UserController(userRepoPostgre, blogRepoPostg
 usercont.registerRoutes(app);
 
 //register the blog routes 
-//let blogrepo: IBlogRepository = new BlogSQLiteRepo();
 let blogcontroller: IController = new BlogController(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
 
 //create the comment repo
 let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
-// commentRepo.test(1, false).then(res => {
-//   console.log(res);
-// })
-
 //register the comment routes
 let commentcontroller: IController = new CommentController(commentRepo);
 commentcontroller.registerRoutes(app);

@@ -20,27 +20,52 @@ var Comment = /** @class */ (function () {
     Comment.prototype.getCreatedDate = function () {
         return this.created;
     };
-    //check comment properties against incoming values and update if any changes
-    Comment.prototype.updateComment = function (content, username, deleted, like) {
-        if (content === void 0) { content = ""; }
-        if (username === void 0) { username = ""; }
-        if (deleted === void 0) { deleted = false; }
-        if (like === void 0) { like = false; }
-        if (this.content !== content)
-            this.content = content;
-        if (this.username !== username)
-            this.username = username;
-        if (this.deleted !== deleted)
-            this.deleted = deleted;
-        if (like)
+    //add a like to the comment's like count and the user who liked the comment to the comment's likedby collection
+    Comment.prototype.addLike = function (username) {
+        if (!this.alreadyLiked(username)) {
             this.likes += 1;
+            this.likedby.push(username);
+            return true;
+        }
+        return false;
     };
-    //determine if a user already liked this comment
+    //determine if a user already liked this comment -- if so they cannot like it again
     Comment.prototype.alreadyLiked = function (username) {
         var liked = this.likedby.some(function (user) {
             return user === username;
         });
         return liked;
+    };
+    //marks a comment as deleted, setting comment content to [deleted]
+    Comment.prototype.markDeleted = function (username) {
+        //ensure incoming user owns the comment
+        if (this.username !== username) {
+            //comment not marked as deleted b/c user does not own the comment
+            return false;
+        }
+        //set deleted to true 
+        this.deleted = true;
+        //set content to [deleted]
+        this.content = "[deleted]";
+        //return true to indicate comment is marked as deleted
+        return true;
+    };
+    //edit the comment's content
+    Comment.prototype.editContent = function (username, content) {
+        //ensure incoming user owns the comment
+        if (this.username !== username) {
+            //comment not marked as deleted b/c user does not own the comment
+            return false;
+        }
+        //check if the comment is marked as deleted
+        if (this.deleted) {
+            //cannot edit content when comment is marked as deleted
+            return false;
+        }
+        //edit the comment content
+        this.content = content;
+        //return true
+        return true;
     };
     return Comment;
 }());

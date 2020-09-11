@@ -10,9 +10,7 @@ var cors_1 = __importDefault(require("cors"));
 var path_1 = __importDefault(require("path"));
 var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
-var SqliteRepository_1 = __importDefault(require("./User/Repositories/SqliteRepository"));
 var UserController_1 = __importDefault(require("./User/UserController"));
-var dbinit_1 = require("./dbinit");
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
 var PGSQLRepo_1 = __importDefault(require("./User/Repositories/PGSQLRepo"));
@@ -21,12 +19,13 @@ var CommentPGSQLRepo_1 = __importDefault(require("./Comment/Repositories/Comment
 var CommentController_1 = __importDefault(require("./Comment/CommentController"));
 //TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
+//TODO: Add indices to the database properties being used for keyset pagination.
 //Used for development database changes. 
-dbinit_1.createDB().then(function () {
-    console.log("Inited");
-}).catch(function (e) {
-    console.log(e);
-});
+// createDB().then(() => {
+//   console.log("Inited");
+// }).catch(e => {
+//   console.log(e);
+// })
 // Create a new express app instance
 var app = express_1.default();
 //direct express middleware to use routes/settings
@@ -37,6 +36,8 @@ app.use(body_parser_1.default.urlencoded({
 //static path we need to set up
 //To operate with images (or other static files) with Node.js configure static paths
 app.use('/uploads', express_1.default.static('uploads'));
+// Express Middleware for serving static scripts
+app.use('/scripts', express_1.default.static('scripts'));
 //tell app to use the cookie parser
 app.use(cookie_parser_1.default());
 //use cors
@@ -59,21 +60,16 @@ hbs_1.default.registerPartials(partialViewsPath);
 var staticDirectory = new directory_1.default();
 staticDirectory.registerRoutes(app); //TODO: Rename method
 //register the user routes -- (could also have set up controllers which have the routes baked in)
-var userRepo = new SqliteRepository_1.default();
 var userRepoPostgre = new PGSQLRepo_1.default();
 //let blogRepo: IBlogRepository = new BlogSQLiteRepo();
 var blogRepoPostgre = new BlogPGSQLRepo_1.default();
 var usercont = new UserController_1.default(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 //register the blog routes 
-//let blogrepo: IBlogRepository = new BlogSQLiteRepo();
 var blogcontroller = new BlogController_1.default(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
 //create the comment repo
 var commentRepo = new CommentPGSQLRepo_1.default();
-// commentRepo.test(1, false).then(res => {
-//   console.log(res);
-// })
 //register the comment routes
 var commentcontroller = new CommentController_1.default(commentRepo);
 commentcontroller.registerRoutes(app);
