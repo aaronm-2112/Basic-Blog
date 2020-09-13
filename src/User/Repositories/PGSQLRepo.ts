@@ -96,7 +96,7 @@ export default class UserPGSQLRepo implements IRepository {
     return user;
   }
 
-  async create(user: IUser): Promise<Boolean> {
+  async create(user: IUser): Promise<number> {
     try {
       console.log("In create");
       //Generate a salt for the user
@@ -112,7 +112,7 @@ export default class UserPGSQLRepo implements IRepository {
       user.setPassword(hash);
 
       //prepare the insertion query
-      let query: string = `INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) VALUES($1, $2, $3, $4, $5, $6, $7, $8);`;
+      let query: string = `INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING userid;`;
 
       //prepare the insertion values
       let values: Array<String> = new Array();
@@ -126,13 +126,16 @@ export default class UserPGSQLRepo implements IRepository {
       values.push(user.getProfilePicPath());
 
       //insert the user into the users table
-      await this.pool.query(query, values);
+      let result: any = await this.pool.query(query, values);
 
-      return true;
+      //retrieve the userid
+      let userid: number = result.rows[0]["userid"];
+
+      //send the userid
+      return userid;
 
     } catch (e) {
       throw new Error(e);
-      return false;
     }
   }
 

@@ -2,21 +2,29 @@
 import * as express from 'express';
 import { Request, Response, Router } from 'express';
 import Auth from '../Auth/Auth';
+import IUserRepository from '../User/Repositories/IRepository';
+import IBlogRepository from '../Blog/Repositories/IBlogRepository';
+import IUser from '../User/IUser';
+import IBlog from '../Blog/IBlog';
+import { searchParameters } from "../Blog/BlogSearchCriteria";
 
 export default class Directory {
 
-  //common directory routes
   private router: Router = express.Router();
-  //Auth
   private auth: Auth;
+  private userRepository: IUserRepository;
+  private blogRepository: IBlogRepository;
 
-  //setup jwt authentication
-  constructor() {
+
+  //setup auth and inject repositories
+  constructor(userRepository: IUserRepository, blogRepository: IBlogRepository) {
     this.auth = new Auth();
+    this.userRepository = userRepository;
+    this.blogRepository = blogRepository;
   }
 
   //all the paths in the filesystem that can be reached through normal user navigation
-  private paths: { root: string, signup: string, login: '/login', search: string, profile: string, homepage: string } = { root: '/', signup: '/signup', login: '/login', search: '/search', profile: '/profile/:userId', homepage: '/homepage' };
+  private paths: { root: string, search: string, profile: string, profileEdit: string } = { root: '/', search: '/search', profile: '/profile', profileEdit: '/profile/edit' };
 
   //direct express middleware to render the paths using handlebars
   registerRoutes(app: express.Application) {
@@ -42,22 +50,88 @@ export default class Directory {
       }
     })
 
-    this.router.get(`${this.paths.homepage}`, this.auth.authenitcateJWT, (req: Request, res: Response) => {
-      console.log("In homepage route");
-      res.render('Homepage');
-    })
-
     //render search path
     this.router.get(`${this.paths.search}`, (req: Request, res: Response) => {
-      res.render('Search', this.paths)
+      //get the userID from the cookie
+      let userID: { id: string } = { id: "" };
+
+      //extract the userid from the jwt 
+      this.auth.setSubject(req.cookies["jwt"], userID);
+
+      //determine if the user is signed in
+      if (userID.id.length) {
+        //send entire navigatin options
+        res.render('Search', { links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile]] });
+      } else {
+        //no profile option
+        res.render('Search', { links: [["home", this.paths.root], ["search", this.paths.search]] });
+      }
     })
 
-    this.router.get(`${this.paths.signup}`, (req: Request, res: Response) => {
-      res.render('Signup');
+    //render profile page
+    this.router.get(`${this.paths.profile}`, this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+      try {
+        //grab subject information out of res.locals 
+        let username: string = res.locals.userId;  //TODO: Add error checking
+
+        //get the blogid -- the keyset pagination key
+        let blogid: string = req.query.key as string;
+        console.log(blogid);
+        //get the key conditional -- can be lt(<) or gt(>)
+        let keyCondition: string = req.query.keyCondition as string;
+
+        //Get the user information 
+        let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
+
+        //Get the user's blogs
+        let blogs: IBlog[] = await this.blogRepository.findAll(searchParameters.Username, (user.username as string), blogid, keyCondition);
+
+        //store front end blog information
+        let blogDetails: Array<{ title: string, editPath: string, viewPath: string }> = new Array<{ title: string, editPath: string, viewPath: string }>();
+
+        //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
+        blogs.forEach(blog => {
+          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blog/${blog.blogid}/true`, viewPath: `http://localhost:3000/blog/${blog.blogid}/false` })
+        });
+
+        //  1. Send user profile info to profile partial
+        res.render('Profile', {
+          userName: user.getUsername(), firstName: user.getFirstname(),
+          lastName: user.getLastname(), bio: user.getBio(),
+          blogDetails: blogDetails,
+          profileImagePath: user.getProfilePicPath()
+        });
+
+      } catch (e) {
+        console.log("profile get" + e);
+        res.sendStatus(400);
+      }
     })
 
-    this.router.get(`${this.paths.login}`, (req: Request, res: Response) => {
-      res.render('Login');
+    //render profile editing page
+    this.router.get(`${this.paths.profileEdit}`, this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+      try {
+        //grab username out of the local vars
+        let username: string = res.locals.userId //TODO: Add error checking
+
+        //Get the user information 
+        let user: IUser = await this.userRepository.find(username);
+
+        //set path to the image from the Views directory [views are in /Views] using absolute paths
+        //TODO: Use env to get absolute path not hardcoded string
+        //let imagePath: string = "http://localhost:3000/" + path.normalize(user.getProfilePicPath());
+
+
+        //  1. Send user profile info to profile edit
+        res.render('ProfileEdit', {
+          userName: user.getUsername(), firstName: user.getFirstname(),
+          lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
+        });
+
+      } catch (e) {
+        console.error("Profile edit get" + e);
+        res.sendStatus(400);
+      }
     })
 
     //render wildcard path -- needs to be after all routes defined in other paths too

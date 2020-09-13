@@ -12,6 +12,7 @@ import IBlogRepository from './Blog/Repositories/IBlogRepository';
 import IController from './Controllers/IController';
 import BlogController from './Blog/BlogController';
 import Upload from './Common/Resources/Uploads';
+import login from './Common/login';
 import UserPGSQLRepo from './User/Repositories/PGSQLRepo';
 import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
 import CommentPGSQLRepo from './Comment/Repositories/CommentPGSQLRepo';
@@ -59,9 +60,6 @@ app.use(cors({
 //Direct express to use Handlebars templating engine for rendering the app's pages
 app.set('view engine', 'hbs');
 
-
-
-
 //Define path to the directory of the application's views
 let viewsPath: string = path.join(__dirname, '../Views');
 //Direct express to use files in the views directory -- TODO: Better explanation. 
@@ -71,14 +69,15 @@ app.set('views', viewsPath);
 let partialViewsPath: string = path.join(__dirname, '../Views/Partials');
 hbs.registerPartials(partialViewsPath);
 
-//Setup the app's filesystem 
-let staticDirectory: Directory = new Directory();
-staticDirectory.registerRoutes(app); //TODO: Rename method
-
-//register the user routes -- (could also have set up controllers which have the routes baked in)
+//create the blog and user repositories
 let userRepoPostgre: IUserRepository = new UserPGSQLRepo();
-//let blogRepo: IBlogRepository = new BlogSQLiteRepo();
 let blogRepoPostgre: IBlogRepository = new BlogPGSQLRepo();
+
+//Setup the app's filesystem 
+let staticDirectory: Directory = new Directory(userRepoPostgre, blogRepoPostgre);
+staticDirectory.registerRoutes(app);
+
+//register the user routes
 let usercont: UserController = new UserController(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 
@@ -86,16 +85,23 @@ usercont.registerRoutes(app);
 let blogcontroller: IController = new BlogController(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
 
-//create the comment repo
-let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
 //register the comment routes
+let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
 let commentcontroller: IController = new CommentController(commentRepo);
 commentcontroller.registerRoutes(app);
 
-//register the common upload route
+//register the common routes-----------------
+
+//route for uploading title and profile images
 Upload(app).then(res => {
   console.log("Uploads registered.");
 }).catch(e => console.log(e));
+
+login(app, userRepoPostgre).then(res => {
+  console.log("Login registered");
+}).catch(e => console.log(e));
+
+
 
 
 

@@ -49,8 +49,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var User_1 = __importDefault(require("./User"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
 var express = __importStar(require("express"));
-var salt_1 = require("../Common/salt");
-var BlogSearchCriteria_1 = require("../Blog/BlogSearchCriteria");
 //Purpose: Handle all user view behaviour.
 //Rather than use a service for representing a compound model I chose to place two repos in the UserControler.
 //           Rationale: 
@@ -70,9 +68,9 @@ var UserController = /** @class */ (function () {
     UserController.prototype.registerRoutes = function (app) {
         //UNGUARDED ROUTES------------------------------------------------------------------
         var _this = this;
-        //SIGNUP
-        this.router.post('/signup', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var user, userInserted, e_1;
+        //Create a user -- aka a SIGNUP functionality
+        this.router.post('/user', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var user, userid, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -81,18 +79,11 @@ var UserController = /** @class */ (function () {
                         user.setUsername(req.body.username);
                         user.setEmail(req.body.email);
                         user.setPassword(req.body.password);
-                        console.log(user);
                         return [4 /*yield*/, this.userRepository.create(user)];
                     case 1:
-                        userInserted = _a.sent();
-                        // if insertion successful return success
-                        if (userInserted) {
-                            // TODO: Render a login page
-                            res.sendStatus(201);
-                        }
-                        else { // else return failure 
-                            res.sendStatus(400);
-                        }
+                        userid = _a.sent();
+                        //return the userid and status code
+                        res.status(201).send({ userid: userid });
                         return [3 /*break*/, 3];
                     case 2:
                         e_1 = _a.sent();
@@ -103,126 +94,11 @@ var UserController = /** @class */ (function () {
                 }
             });
         }); });
-        //LOGIN
-        this.router.post("/login", function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var username, password, user, samePassword, jwtBearerToken, e_2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 3, , 4]);
-                        username = req.body.username;
-                        password = req.body.password;
-                        return [4 /*yield*/, this.userRepository.find(username)];
-                    case 1:
-                        user = _a.sent();
-                        // TODO: Test this error handling
-                        if (!user) {
-                            res.status(400).send();
-                            return [2 /*return*/];
-                        }
-                        return [4 /*yield*/, salt_1.compareUserPassword(password, user.getPassword())];
-                    case 2:
-                        samePassword = _a.sent();
-                        if (!samePassword) {
-                            //stop execution-- incorrect password
-                            res.sendStatus(400);
-                            return [2 /*return*/];
-                        }
-                        console.log(user);
-                        jwtBearerToken = this.auth.createJWT(user);
-                        console.log(jwtBearerToken);
-                        //send back the bearer token to the user KEY: Too long to be secure. Usually other tactics as well are used. But this is practice. 
-                        //res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }) //TODO: Make configurable but is fine for now.
-                        //cookies are sent automaticlaly with every request
-                        res.cookie('jwt', jwtBearerToken, {
-                            expires: new Date(Date.now() + 1728000),
-                            secure: false,
-                            httpOnly: true
-                        }).sendStatus(200);
-                        return [3 /*break*/, 4];
-                    case 3:
-                        e_2 = _a.sent();
-                        console.log("Login post" + e_2);
-                        res.sendStatus(400);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); });
         //GUARDED ROUTES------------------------------------------------------------------------------------------------------------------
-        this.router.get("/profile", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var username, blogid, keyCondition, user, blogs, blogDetails_1, e_3;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 3, , 4]);
-                        username = res.locals.userId;
-                        blogid = req.query.key;
-                        console.log(blogid);
-                        keyCondition = req.query.keyCondition;
-                        return [4 /*yield*/, this.userRepository.find(username)];
-                    case 1:
-                        user = _a.sent();
-                        return [4 /*yield*/, this.blogRepo.findAll(BlogSearchCriteria_1.searchParameters.Username, user.username, blogid, keyCondition)];
-                    case 2:
-                        blogs = _a.sent();
-                        blogDetails_1 = new Array();
-                        //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
-                        blogs.forEach(function (blog) {
-                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blog/" + blog.blogid + "/true", viewPath: "http://localhost:3000/blog/" + blog.blogid + "/false" });
-                        });
-                        //  1. Send user profile info to profile partial
-                        res.render('Profile', {
-                            userName: user.getUsername(), firstName: user.getFirstname(),
-                            lastName: user.getLastname(), bio: user.getBio(),
-                            blogDetails: blogDetails_1,
-                            profileImagePath: user.getProfilePicPath()
-                        });
-                        return [3 /*break*/, 4];
-                    case 3:
-                        e_3 = _a.sent();
-                        console.log("profile get" + e_3);
-                        res.sendStatus(400);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); });
-        //TODO: Allow editing to happen on the Profile page instead of on a separate page
-        this.router.get("/profile/edit", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var username, user, e_4;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        username = res.locals.userId //TODO: Add error checking
-                        ;
-                        return [4 /*yield*/, this.userRepository.find(username)];
-                    case 1:
-                        user = _a.sent();
-                        //set path to the image from the Views directory [views are in /Views] using absolute paths
-                        //TODO: Use env to get absolute path not hardcoded string
-                        //let imagePath: string = "http://localhost:3000/" + path.normalize(user.getProfilePicPath());
-                        //  1. Send user profile info to profile edit
-                        res.render('ProfileEdit', {
-                            userName: user.getUsername(), firstName: user.getFirstname(),
-                            lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
-                        });
-                        return [3 /*break*/, 3];
-                    case 2:
-                        e_4 = _a.sent();
-                        console.error("Profile edit get" + e_4);
-                        res.sendStatus(400);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
-                }
-            });
-        }); });
         //TODO: Security checks
         //TOOD: Refactor into a route that points to a resource?
-        //TODO: Refactor into a Put or Patch request
-        this.router.post("/profile/edit", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userName, firstName, lastName, bio, profilePicPath, user, newuser, e_5;
+        this.router.patch("/user", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var userName, firstName, lastName, bio, profilePicPath, user, newuser, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -263,8 +139,8 @@ var UserController = /** @class */ (function () {
                         res.sendStatus(200);
                         return [3 /*break*/, 4];
                     case 3:
-                        e_5 = _a.sent();
-                        console.error("Profile edit post" + e_5);
+                        e_2 = _a.sent();
+                        console.error("Profile edit post" + e_2);
                         res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];

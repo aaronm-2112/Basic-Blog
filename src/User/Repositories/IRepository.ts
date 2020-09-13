@@ -7,7 +7,7 @@ import { UserQueryParameters } from '../UserQueryParameters';
 export default interface IUserRepository {
   findAll(searchBy: UserQueryParameters, searchValue: string): Promise<IUser[]>;
   find(username: string): Promise<IUser>;
-  create(user: IUser): Promise<Boolean>;
+  create(user: IUser): Promise<number>;
   update(user: IUser): Promise<void>;
   delete(email: string): Promise<Boolean>;
 }

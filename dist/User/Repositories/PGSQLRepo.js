@@ -126,7 +126,7 @@ var UserPGSQLRepo = /** @class */ (function () {
     };
     UserPGSQLRepo.prototype.create = function (user) {
         return __awaiter(this, void 0, void 0, function () {
-            var salt, hash, query, values, e_2;
+            var salt, hash, query, values, result, userid, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -142,7 +142,7 @@ var UserPGSQLRepo = /** @class */ (function () {
                         hash = _a.sent();
                         //set the user's hash 
                         user.setPassword(hash);
-                        query = "INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) VALUES($1, $2, $3, $4, $5, $6, $7, $8);";
+                        query = "INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING userid;";
                         values = new Array();
                         values.push(user.getUsername());
                         values.push(user.getPassword());
@@ -152,12 +152,12 @@ var UserPGSQLRepo = /** @class */ (function () {
                         values.push(user.getBio());
                         values.push(user.getSalt());
                         values.push(user.getProfilePicPath());
-                        //insert the user into the users table
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 3:
-                        //insert the user into the users table
-                        _a.sent();
-                        return [2 /*return*/, true];
+                        result = _a.sent();
+                        userid = result.rows[0]["userid"];
+                        //send the userid
+                        return [2 /*return*/, userid];
                     case 4:
                         e_2 = _a.sent();
                         throw new Error(e_2);

@@ -13,6 +13,7 @@ var directory_1 = __importDefault(require("./Directory/directory"));
 var UserController_1 = __importDefault(require("./User/UserController"));
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
+var login_1 = __importDefault(require("./Common/login"));
 var PGSQLRepo_1 = __importDefault(require("./User/Repositories/PGSQLRepo"));
 var BlogPGSQLRepo_1 = __importDefault(require("./Blog/Repositories/BlogPGSQLRepo"));
 var CommentPGSQLRepo_1 = __importDefault(require("./Comment/Repositories/CommentPGSQLRepo"));
@@ -56,26 +57,29 @@ app.set('views', viewsPath);
 //Define path to the application's partial views 
 var partialViewsPath = path_1.default.join(__dirname, '../Views/Partials');
 hbs_1.default.registerPartials(partialViewsPath);
-//Setup the app's filesystem 
-var staticDirectory = new directory_1.default();
-staticDirectory.registerRoutes(app); //TODO: Rename method
-//register the user routes -- (could also have set up controllers which have the routes baked in)
+//create the blog and user repositories
 var userRepoPostgre = new PGSQLRepo_1.default();
-//let blogRepo: IBlogRepository = new BlogSQLiteRepo();
 var blogRepoPostgre = new BlogPGSQLRepo_1.default();
+//Setup the app's filesystem 
+var staticDirectory = new directory_1.default(userRepoPostgre, blogRepoPostgre);
+staticDirectory.registerRoutes(app);
+//register the user routes
 var usercont = new UserController_1.default(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 //register the blog routes 
 var blogcontroller = new BlogController_1.default(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
-//create the comment repo
-var commentRepo = new CommentPGSQLRepo_1.default();
 //register the comment routes
+var commentRepo = new CommentPGSQLRepo_1.default();
 var commentcontroller = new CommentController_1.default(commentRepo);
 commentcontroller.registerRoutes(app);
-//register the common upload route
+//register the common routes-----------------
+//route for uploading title and profile images
 Uploads_1.default(app).then(function (res) {
     console.log("Uploads registered.");
+}).catch(function (e) { return console.log(e); });
+login_1.default(app, userRepoPostgre).then(function (res) {
+    console.log("Login registered");
 }).catch(function (e) { return console.log(e); });
 // //create 15 blogs
 // for (let i = 0; i < 15; i++) {

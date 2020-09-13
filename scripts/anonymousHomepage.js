@@ -33,7 +33,7 @@ async function login() {
 
 async function signup() {
   try {
-    const url = "http://localhost:3000/signup";
+    const url = "http://localhost:3000/user";
 
     let email = document.getElementById("email").value;
     let username = document.getElementById("uname-signup").value;
