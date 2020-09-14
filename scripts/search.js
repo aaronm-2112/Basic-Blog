@@ -91,7 +91,7 @@ async function getNextResults() {
     //check if there are any cached results for the next set of blog results
     if (nextResults.length === 0) {
       //send query request to the blog controller
-      let response = await fetch(`http://localhost:3000/blog?param=${param}&value=${value}&key=${blogid}&keyCondition=>`, {
+      let response = await fetch(`http://localhost:3000/blogs?param=${param}&value=${value}&key=${blogid}&keyCondition=>`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
 
@@ -162,7 +162,7 @@ async function getPrevResults() {
     //check if there are any cached results for the next set of blog results
     if (previousResults.length === 0) {
       //send query request to the blog controller
-      let response = await fetch(`http://localhost:3000/blog?param=${param}&value=${value}&key=${blogid}&keyCondition=<`, {
+      let response = await fetch(`http://localhost:3000/blogs?param=${param}&value=${value}&key=${blogid}&keyCondition=<`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
 
@@ -202,7 +202,7 @@ async function display(blogs) {
     //set the username
     username = blogs[i].username;
     //construct the path to the blog  -- blogID and if editing or not
-    blogurl = `http://localhost:3000/blog/${blogs[i].blogid}/false`;
+    blogurl = `http://localhost:3000/blogs/${blogs[i].blogid}?edit=false`;
 
     //create the title DOM element
     let DOMTitle = document.createElement('p');

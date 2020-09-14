@@ -7,7 +7,7 @@ import * as express from 'express';
 import IController from "../Controllers/IController";
 import IBlogRepository from "../Blog/Repositories/IBlogRepository";
 import IBlog from '../Blog/IBlog';
-
+import { searchParameters } from "../Blog/BlogSearchCriteria";
 
 //Purpose: Handle all user view behaviour.
 //Rather than use a service for representing a compound model I chose to place two repos in the UserControler.
@@ -20,7 +20,7 @@ export default class UserController implements IController {
   private userRepository: IUserRepository;
 
   //used for sending blog information to the Profile view
-  private blogRepo: IBlogRepository;
+  private blogRepository: IBlogRepository;
 
   //Router
   private router: Router; // used for login
@@ -36,16 +36,75 @@ export default class UserController implements IController {
     // setup authentication-- TODO: Make a singleton?
     this.auth = new Auth();
     //setup blog repository
-    this.blogRepo = blogRepo;
+    this.blogRepository = blogRepo;
 
   }
 
   registerRoutes(app: express.Application): void {
+    //TODO IMP!!!!!!!!!: Alter the homepage so the client can navigate to the users/:userid route 
 
-    //UNGUARDED ROUTES------------------------------------------------------------------
+    //Send back all user information needed for the profile view.
+    //Query parameters: profile, edit
+    this.router.get('/users/:userid', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+      try {
+        //extract the userid from the parameter
+        let usernamePassedIn: string = req.params.userid;
+
+        //extract the userid from the auth
+        let usernameOfUser: string = res.locals.userId;
+
+        //check if the userids do not match
+        if (usernameOfUser !== usernamePassedIn) {
+          //send back frobidden status code
+          res.sendStatus(403);
+          return;
+        }
+
+        //get the user from the user repo
+        let user: IUser = await this.userRepository.find(usernamePassedIn);
+
+        //Get the user's first 10 blogs
+        let blogs: IBlog[] = await this.blogRepository.findAll(searchParameters.Username, (user.username as string), "0", ">");
+
+        //store front end blog information
+        let blogDetails: Array<{ title: string, editPath: string, viewPath: string }> = new Array<{ title: string, editPath: string, viewPath: string }>();
+
+        //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
+        blogs.forEach(blog => {
+          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blogs/${blog.blogid}?edit=true`, viewPath: `http://localhost:3000/blogs/${blog.blogid}?edit=false` })
+        });
+
+
+        //extract the query parameters
+        let profile: string = req.query.profile as string;
+        let edit: string = req.query.edit as string;
+
+        //check which query parameter was used
+        if (profile !== undefined) {
+          // send back the user profile view
+          res.render('Profile', {
+            userName: user.getUsername(), firstName: user.getFirstname(),
+            lastName: user.getLastname(), bio: user.getBio(),
+            blogDetails: blogDetails,
+            profileImagePath: user.getProfilePicPath()
+          });
+        } else if (edit !== undefined) {
+          //send back the user edit view
+          res.render('ProfileEdit', {
+            userName: user.getUsername(), firstName: user.getFirstname(),
+            lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
+          });
+        } else {
+          //sedn back 400 status error
+          res.sendStatus(400);
+        }
+      } catch (e) {
+        res.sendStatus(400);
+      }
+    })
 
     //Create a user -- aka a SIGNUP functionality
-    this.router.post('/user', async (req: Request, res: Response) => {
+    this.router.post('/users', async (req: Request, res: Response) => {
       try {
         //create the user with the information provided in the request
         let user: IUser = new User();
@@ -65,15 +124,8 @@ export default class UserController implements IController {
       }
     })
 
-    //GUARDED ROUTES------------------------------------------------------------------------------------------------------------------
-    this.router.get('/user/:userid', async (req: Request, res: Response) => {
-
-    })
-
-
-
     //TODO: Security checks
-    this.router.patch("/user", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+    this.router.patch("/users", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //Retrieve user id
         let userName: string = res.locals.userId;
@@ -126,6 +178,15 @@ export default class UserController implements IController {
         res.sendStatus(400);
       }
 
+    })
+
+    //TODO: Delete the user
+    this.router.delete("/users/:userid", this.auth.authenitcateJWT, (req: Request, res: Response) => {
+      try {
+
+      } catch (e) {
+
+      }
     })
 
     // register the routes

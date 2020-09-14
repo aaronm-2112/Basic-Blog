@@ -33,7 +33,7 @@ async function login() {
 
 async function signup() {
   try {
-    const url = "http://localhost:3000/user";
+    const url = "http://localhost:3000/users";
 
     let email = document.getElementById("email").value;
     let username = document.getElementById("uname-signup").value;
@@ -70,12 +70,7 @@ function displaySignup(e) {
     signupKids[i].style.display = "block";
   }
 
-  //hide the login 
-  let loginKids = document.getElementById('login-div').children;
-
-  for (let i = 0; i < loginKids.length; i++) {
-    loginKids[i].style.display = "none";
-  }
+  hideLogin();
 }
 
 function displayLogin(e) {
@@ -96,6 +91,15 @@ function displayLogin(e) {
 
 }
 
+function hideLogin() {
+  //hide the login 
+  let loginKids = document.getElementById('login-div').children;
+
+  for (let i = 0; i < loginKids.length; i++) {
+    loginKids[i].style.display = "none";
+  }
+}
+
 
 //set event listeners
 document.getElementById("signup", signup).addEventListener("click", signup);
@@ -105,6 +109,16 @@ document.getElementById("show-login").addEventListener("click", displayLogin);
 
 //window loading
 window.onload = function () {
+
+
+  //check of the profile navigation link exists
+  let links = document.querySelector('nav').children;
+
+  if (links.length < 3) {
+    //disable login
+    hideLogin();
+  }
+
   //hide the signup 
   let signupKids = document.getElementById('signup-div').children;
 

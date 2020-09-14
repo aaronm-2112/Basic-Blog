@@ -24,31 +24,43 @@ export default class Directory {
   }
 
   //all the paths in the filesystem that can be reached through normal user navigation
-  private paths: { root: string, search: string, profile: string, profileEdit: string } = { root: '/', search: '/search', profile: '/profile', profileEdit: '/profile/edit' };
+  private paths: { root: string, search: string, profile: string, profileEdit: string, blog: string } = { root: '/', search: '/search', profile: '/users/', profileEdit: '/profile/edit', blog: '/blog' };
 
   //direct express middleware to render the paths using handlebars
   registerRoutes(app: express.Application) {
 
     //render root path -- for now make unguarded version of homepage
-    //TODO: Show alternate version if not authenticated!
-    this.router.get(`${this.paths.root}`, (req: Request, res: Response) => {
-      //get the userID from the cookie
-      let userID: { id: string } = { id: "" };
+    //TODO: MAke a special authentication method that is called as middleware that doesn't fail but rather passes in info that user is not authenticated. This is to avoid the synchronous setSubject call on the homepage.
+    this.router.get(`${this.paths.root}`, async (req: Request, res: Response) => {
+      try {
+        //get the userID from the cookie
+        let userID: { id: string } = { id: "" };
 
-      //extract the userid from the jwt 
-      this.auth.setSubject(req.cookies["jwt"], userID);
+        //extract the userid from the jwt 
+        this.auth.setSubject(req.cookies["jwt"], userID);
 
-      console.log(userID);
+        console.log(userID);
 
-      //check if any userid was extracted from the jwt
-      if (userID.id.length) {
-        //if so render the logged in homepage
-        res.render('Homepage');
-      } else {
-        //render the homepage that allows the user to sign up or log in
-        res.render('HomepageAnonymous');
+        //check if any userid was extracted from the jwt
+        if (userID.id.length) {
+          //find the user
+          let user: IUser = await this.userRepository.find(userID.id);
+
+          //if so render homepage with a link to the user profile
+          res.render('Homepage', {
+            links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile + `${user.getUserID()}`]]
+          });
+        } else {
+          //render homepage without a link to the user profile
+          res.render('Homepage', {
+            links: [["home", this.paths.root], ["search", this.paths.search]]
+          });
+        }
+      } catch (e) {
+
       }
     })
+
 
     //render search path
     this.router.get(`${this.paths.search}`, (req: Request, res: Response) => {
@@ -91,7 +103,7 @@ export default class Directory {
 
         //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
         blogs.forEach(blog => {
-          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blog/${blog.blogid}/true`, viewPath: `http://localhost:3000/blog/${blog.blogid}/false` })
+          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blogs/${blog.blogid}?edit=true`, viewPath: `http://localhost:3000/blogs/${blog.blogid}?edit=false` })
         });
 
         //  1. Send user profile info to profile partial
@@ -117,11 +129,6 @@ export default class Directory {
         //Get the user information 
         let user: IUser = await this.userRepository.find(username);
 
-        //set path to the image from the Views directory [views are in /Views] using absolute paths
-        //TODO: Use env to get absolute path not hardcoded string
-        //let imagePath: string = "http://localhost:3000/" + path.normalize(user.getProfilePicPath());
-
-
         //  1. Send user profile info to profile edit
         res.render('ProfileEdit', {
           userName: user.getUsername(), firstName: user.getFirstname(),
@@ -132,6 +139,11 @@ export default class Directory {
         console.error("Profile edit get" + e);
         res.sendStatus(400);
       }
+    })
+
+    //render the blog creation page
+    this.router.get('/blog', this.auth.authenitcateJWT, (req: Request, res: Response) => {
+      res.render('CreateBlog');
     })
 
     //render wildcard path -- needs to be after all routes defined in other paths too

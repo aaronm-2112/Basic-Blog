@@ -55,7 +55,7 @@ var Directory = /** @class */ (function () {
     function Directory(userRepository, blogRepository) {
         this.router = express.Router();
         //all the paths in the filesystem that can be reached through normal user navigation
-        this.paths = { root: '/', search: '/search', profile: '/profile', profileEdit: '/profile/edit' };
+        this.paths = { root: '/', search: '/search', profile: '/users/', profileEdit: '/profile/edit', blog: '/blog' };
         this.auth = new Auth_1.default();
         this.userRepository = userRepository;
         this.blogRepository = blogRepository;
@@ -64,23 +64,40 @@ var Directory = /** @class */ (function () {
     Directory.prototype.registerRoutes = function (app) {
         var _this = this;
         //render root path -- for now make unguarded version of homepage
-        //TODO: Show alternate version if not authenticated!
-        this.router.get("" + this.paths.root, function (req, res) {
-            //get the userID from the cookie
-            var userID = { id: "" };
-            //extract the userid from the jwt 
-            _this.auth.setSubject(req.cookies["jwt"], userID);
-            console.log(userID);
-            //check if any userid was extracted from the jwt
-            if (userID.id.length) {
-                //if so render the logged in homepage
-                res.render('Homepage');
-            }
-            else {
-                //render the homepage that allows the user to sign up or log in
-                res.render('HomepageAnonymous');
-            }
-        });
+        //TODO: MAke a special authentication method that is called as middleware that doesn't fail but rather passes in info that user is not authenticated. This is to avoid the synchronous setSubject call on the homepage.
+        this.router.get("" + this.paths.root, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var userID, user, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 4, , 5]);
+                        userID = { id: "" };
+                        //extract the userid from the jwt 
+                        this.auth.setSubject(req.cookies["jwt"], userID);
+                        console.log(userID);
+                        if (!userID.id.length) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.userRepository.find(userID.id)];
+                    case 1:
+                        user = _a.sent();
+                        //if so render homepage with a link to the user profile
+                        res.render('Homepage', {
+                            links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile + ("" + user.getUserID())]]
+                        });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        //render homepage without a link to the user profile
+                        res.render('Homepage', {
+                            links: [["home", this.paths.root], ["search", this.paths.search]]
+                        });
+                        _a.label = 3;
+                    case 3: return [3 /*break*/, 5];
+                    case 4:
+                        e_1 = _a.sent();
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        }); });
         //render search path
         this.router.get("" + this.paths.search, function (req, res) {
             //get the userID from the cookie
@@ -99,7 +116,7 @@ var Directory = /** @class */ (function () {
         });
         //render profile page
         this.router.get("" + this.paths.profile, this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var username, blogid, keyCondition, user, blogs, blogDetails_1, e_1;
+            var username, blogid, keyCondition, user, blogs, blogDetails_1, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -117,7 +134,7 @@ var Directory = /** @class */ (function () {
                         blogDetails_1 = new Array();
                         //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
                         blogs.forEach(function (blog) {
-                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blog/" + blog.blogid + "/true", viewPath: "http://localhost:3000/blog/" + blog.blogid + "/false" });
+                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blogs/" + blog.blogid + "?edit=true", viewPath: "http://localhost:3000/blogs/" + blog.blogid + "?edit=false" });
                         });
                         //  1. Send user profile info to profile partial
                         res.render('Profile', {
@@ -128,8 +145,8 @@ var Directory = /** @class */ (function () {
                         });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_1 = _a.sent();
-                        console.log("profile get" + e_1);
+                        e_2 = _a.sent();
+                        console.log("profile get" + e_2);
                         res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -138,7 +155,7 @@ var Directory = /** @class */ (function () {
         }); });
         //render profile editing page
         this.router.get("" + this.paths.profileEdit, this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var username, user, e_2;
+            var username, user, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -148,9 +165,6 @@ var Directory = /** @class */ (function () {
                         return [4 /*yield*/, this.userRepository.find(username)];
                     case 1:
                         user = _a.sent();
-                        //set path to the image from the Views directory [views are in /Views] using absolute paths
-                        //TODO: Use env to get absolute path not hardcoded string
-                        //let imagePath: string = "http://localhost:3000/" + path.normalize(user.getProfilePicPath());
                         //  1. Send user profile info to profile edit
                         res.render('ProfileEdit', {
                             userName: user.getUsername(), firstName: user.getFirstname(),
@@ -158,14 +172,18 @@ var Directory = /** @class */ (function () {
                         });
                         return [3 /*break*/, 3];
                     case 2:
-                        e_2 = _a.sent();
-                        console.error("Profile edit get" + e_2);
+                        e_3 = _a.sent();
+                        console.error("Profile edit get" + e_3);
                         res.sendStatus(400);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }
             });
         }); });
+        //render the blog creation page
+        this.router.get('/blog', this.auth.authenitcateJWT, function (req, res) {
+            res.render('CreateBlog');
+        });
         //render wildcard path -- needs to be after all routes defined in other paths too
         // this.router.get('*', (req: Request, res: Response) => {
         //   res.send("Wow nothing there").status(200);

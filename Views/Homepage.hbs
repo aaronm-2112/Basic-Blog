@@ -5,13 +5,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog Homepage</title>
-  {{>Navigation}}
+  <nav>
+    {{#each links}}
+    <li><a href="{{this.[1]}}">{{this.[0]}}</a></li>
+    {{/each}}
+  </nav>
 </head>
 
 <body>
   <h1>Welcome to blog!</h1>
 
-  {{!-- {{>Signup}} --}}
+
+  <div id="login-div">
+    <label for="uname">Username:</label>
+    <input type="text" id="uname-login"><br>
+    <label for="pword">Password:</label>
+    <input type="text" id="pword-login"><br>
+    <button id="login">Login</button>
+    <p>No account? <span id="show-signup">Create one</span></p>
+  </div>
+
+  <div id="signup-div">
+    <label for="email">Email:</label>
+    <input type="text" id="email"><br>
+    <label for="uname">Username:</label>
+    <input type="text" id="uname-signup"><br>
+    <label for="pword">Password:</label>
+    <input type="text" id="pword-signup"><br>
+    <button id="signup">Sign Up</button>
+    <p>Have an account? <span id="show-login">Login</span></p>
+  </div>
+
+  <script type="text/javascript" src="scripts/homepage.js"></script>
+
 </body>
 
 </html>

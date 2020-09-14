@@ -51,9 +51,12 @@ var BlogController = /** @class */ (function () {
         this.auth = new Auth_1.default(); //TODO: Make a singleton?
     }
     BlogController.prototype.registerRoutes = function (app) {
+        //Done: [TODO: Make route blogs and keeep the same]
+        //TODO: Make /blogs/:blogID and replace edit with a query parameter
+        //Done: [ TODO: Move create blog into the directory ]
         var _this = this;
         //returns blog creation view
-        this.router.get('/blog', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.get('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var searchBy, value, blogid, keyCondition, blogs, _a, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -89,9 +92,7 @@ var BlogController = /** @class */ (function () {
                         //return the results to the user 
                         res.send(blogs);
                         return [2 /*return*/];
-                    case 7:
-                        res.render('CreateBlog');
-                        return [3 /*break*/, 9];
+                    case 7: return [3 /*break*/, 9];
                     case 8:
                         e_1 = _b.sent();
                         res.sendStatus(400);
@@ -102,9 +103,8 @@ var BlogController = /** @class */ (function () {
             });
         }); });
         //return a specific blog for viewing/editing or a list of blogs based off a query term
-        //TODO: update the edit parameter and turn it into a query parameter -- This is more RESTful
-        this.router.get('/blog/:blogID/:edit', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blogID, blog, imagePath, userID, e_2;
+        this.router.get('/blogs/:blogID', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var blogID, blog, imagePath, edit, userID, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -114,22 +114,20 @@ var BlogController = /** @class */ (function () {
                     case 1:
                         blog = _a.sent();
                         imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleimagepath);
+                        edit = req.query.edit;
                         //check the value of edit
-                        if (req.params.edit === "true") {
-                            console.log("Editing");
+                        if (edit !== undefined && edit !== "false") {
                             userID = { id: "" };
                             this.auth.setSubject(req.cookies["jwt"], userID);
-                            console.log("After subject function");
                             //check if a userID was extracted from the incoming JWT
-                            if (userID.id === "silly") {
-                                console.log("UserID is silly");
+                            if (!userID.id.length) {
                                 //if not return because there is no way to verify if the incoming user owns the blog they want to edit
                                 res.sendStatus(400);
                                 return [2 /*return*/];
                             }
                             //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
                             if (userID.id === blog.username) {
-                                //edit the blog -- TODO: Make this an edit blog page instead TODO: Make this one blog page with logic to determine this.
+                                //render the edit blog template
                                 res.render('EditBlog', {
                                     titleImagePath: imagePath,
                                     title: blog.title,
@@ -145,7 +143,7 @@ var BlogController = /** @class */ (function () {
                             }
                         }
                         else {
-                            //render the blog template with the blog's properties
+                            //render the viewable blog template with the blog's properties
                             res.render('Blog', {
                                 titleImagePath: imagePath,
                                 title: blog.title,
@@ -165,8 +163,7 @@ var BlogController = /** @class */ (function () {
         }); });
         //create a blog resource --return blogID 
         //A blog resource contains a path to the blog's title image if one was uploaded.
-        //This image path needs to be posted to the uploads path, then linked to blog with a patch request to blog.
-        this.router.post('/blog', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.post('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blog, blogID, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -194,7 +191,7 @@ var BlogController = /** @class */ (function () {
             });
         }); });
         //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
-        this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var userID, blog, editBlog, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -245,42 +242,6 @@ var BlogController = /** @class */ (function () {
                         res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
-                }
-            });
-        }); });
-        //allow the user to edit a blog -- TODO: Change because Edit is not a resource
-        this.router.get('/blog/edit/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blogID, blog, username, imagePath, e_5;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        blogID = req.params.blogID;
-                        return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogID)];
-                    case 1:
-                        blog = _a.sent();
-                        username = res.locals.userId;
-                        //check if the username in the blog properties matches the username of the user making the request
-                        if (!blog.creator(username)) {
-                            //If not stop and return unauthorized b/c the user did not create this blog
-                            res.sendStatus(401);
-                            return [2 /*return*/];
-                        }
-                        imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleimagepath);
-                        //change \ to / in blog's path to the title image
-                        imagePath = imagePath.replace(/\\/g, "/");
-                        //direct the user to the blog edit view with blog parameters
-                        res.render('EditBlog', {
-                            title: blog.title,
-                            titleImagePath: imagePath,
-                            content: blog.content
-                        });
-                        return [3 /*break*/, 3];
-                    case 2:
-                        e_5 = _a.sent();
-                        res.sendStatus(400);
-                        throw new Error(e_5);
-                    case 3: return [2 /*return*/];
                 }
             });
         }); });

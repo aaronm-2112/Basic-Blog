@@ -4,7 +4,7 @@ document.getElementById("update").addEventListener("click", updateUserInformatio
 //request user information get updated
 async function updateUserInformation() {
   //define uri
-  let uri = "http://localhost:3000/user";
+  let uri = "http://localhost:3000/users";
 
   //get user information 
   let firstName = document.getElementById("fname").value;
@@ -56,7 +56,7 @@ async function updateUserInformation() {
     console.log(imagePath);
 
     //patch the user with the new profile pic data
-    let imagePathPatchRes = await fetch("http://localhost:3000/user", { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profilePicturePath: imagePath }) });
+    let imagePathPatchRes = await fetch("http://localhost:3000/users", { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profilePicturePath: imagePath }) });
 
     //change location to profile
     window.location.href = "/profile";

@@ -49,6 +49,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var User_1 = __importDefault(require("./User"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
 var express = __importStar(require("express"));
+var BlogSearchCriteria_1 = require("../Blog/BlogSearchCriteria");
 //Purpose: Handle all user view behaviour.
 //Rather than use a service for representing a compound model I chose to place two repos in the UserControler.
 //           Rationale: 
@@ -63,14 +64,73 @@ var UserController = /** @class */ (function () {
         // setup authentication-- TODO: Make a singleton?
         this.auth = new Auth_1.default();
         //setup blog repository
-        this.blogRepo = blogRepo;
+        this.blogRepository = blogRepo;
     }
     UserController.prototype.registerRoutes = function (app) {
-        //UNGUARDED ROUTES------------------------------------------------------------------
+        //TODO IMP!!!!!!!!!: Alter the homepage so the client can navigate to the users/:userid route 
         var _this = this;
+        //Send back all user information needed for the profile view.
+        //Query parameters: profile, edit
+        this.router.get('/users/:userid', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var usernamePassedIn, usernameOfUser, user, blogs, blogDetails_1, profile, edit, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        usernamePassedIn = req.params.userid;
+                        usernameOfUser = res.locals.userId;
+                        //check if the userids do not match
+                        if (usernameOfUser !== usernamePassedIn) {
+                            //send back frobidden status code
+                            res.sendStatus(403);
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, this.userRepository.find(usernamePassedIn)];
+                    case 1:
+                        user = _a.sent();
+                        return [4 /*yield*/, this.blogRepository.findAll(BlogSearchCriteria_1.searchParameters.Username, user.username, "0", ">")];
+                    case 2:
+                        blogs = _a.sent();
+                        blogDetails_1 = new Array();
+                        //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
+                        blogs.forEach(function (blog) {
+                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blogs/" + blog.blogid + "?edit=true", viewPath: "http://localhost:3000/blogs/" + blog.blogid + "?edit=false" });
+                        });
+                        profile = req.query.profile;
+                        edit = req.query.edit;
+                        //check which query parameter was used
+                        if (profile !== undefined) {
+                            // send back the user profile view
+                            res.render('Profile', {
+                                userName: user.getUsername(), firstName: user.getFirstname(),
+                                lastName: user.getLastname(), bio: user.getBio(),
+                                blogDetails: blogDetails_1,
+                                profileImagePath: user.getProfilePicPath()
+                            });
+                        }
+                        else if (edit !== undefined) {
+                            //send back the user edit view
+                            res.render('ProfileEdit', {
+                                userName: user.getUsername(), firstName: user.getFirstname(),
+                                lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
+                            });
+                        }
+                        else {
+                            //sedn back 400 status error
+                            res.sendStatus(400);
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        res.sendStatus(400);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        }); });
         //Create a user -- aka a SIGNUP functionality
-        this.router.post('/user', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var user, userid, e_1;
+        this.router.post('/users', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var user, userid, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -86,19 +146,17 @@ var UserController = /** @class */ (function () {
                         res.status(201).send({ userid: userid });
                         return [3 /*break*/, 3];
                     case 2:
-                        e_1 = _a.sent();
-                        console.log(e_1);
+                        e_2 = _a.sent();
+                        console.log(e_2);
                         res.sendStatus(400);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }
             });
         }); });
-        //GUARDED ROUTES------------------------------------------------------------------------------------------------------------------
         //TODO: Security checks
-        //TOOD: Refactor into a route that points to a resource?
-        this.router.patch("/user", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userName, firstName, lastName, bio, profilePicPath, user, newuser, e_2;
+        this.router.patch("/users", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var userName, firstName, lastName, bio, profilePicPath, user, newuser, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -139,14 +197,21 @@ var UserController = /** @class */ (function () {
                         res.sendStatus(200);
                         return [3 /*break*/, 4];
                     case 3:
-                        e_2 = _a.sent();
-                        console.error("Profile edit post" + e_2);
+                        e_3 = _a.sent();
+                        console.error("Profile edit post" + e_3);
                         res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
             });
         }); });
+        //TODO: Delete the user
+        this.router.delete("/users/:userid", this.auth.authenitcateJWT, function (req, res) {
+            try {
+            }
+            catch (e) {
+            }
+        });
         // register the routes
         app.use(this.router);
     };

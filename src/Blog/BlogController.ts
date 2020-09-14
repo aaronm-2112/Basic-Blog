@@ -21,8 +21,12 @@ export default class BlogController implements IController {
 
   registerRoutes(app: express.Application): void {
 
+    //Done: [TODO: Make route blogs and keeep the same]
+    //TODO: Make /blogs/:blogID and replace edit with a query parameter
+    //Done: [ TODO: Move create blog into the directory ]
+
     //returns blog creation view
-    this.router.get('/blog', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+    this.router.get('/blogs', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //grab the query string from the parameters
         let searchBy: string = req.query.param as string;
@@ -54,9 +58,7 @@ export default class BlogController implements IController {
           //return the results to the user 
           res.send(blogs);
           return;
-        }//else send create blog view to user
-
-        res.render('CreateBlog');
+        }
       } catch (e) {
         res.sendStatus(400);
         console.log(e);
@@ -65,9 +67,7 @@ export default class BlogController implements IController {
     });
 
     //return a specific blog for viewing/editing or a list of blogs based off a query term
-    //TODO: update the edit parameter and turn it into a query parameter -- This is more RESTful
-    this.router.get('/blog/:blogID/:edit', async (req: Request, res: Response) => {
-
+    this.router.get('/blogs/:blogID', async (req: Request, res: Response) => {
       try {
         //retrieve the blogID from the request parameter
         let blogID: string = req.params.blogID;
@@ -79,18 +79,18 @@ export default class BlogController implements IController {
         //TODO: Use env to get absolute path not hardcoded string
         let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleimagepath);
 
+        //get the edit request parameter
+        let edit: string = req.query.edit as string;
+
         //check the value of edit
-        if (req.params.edit === "true") {
-          console.log("Editing");
+        if (edit !== undefined && edit !== "false") {
+
           //get the userID from the cookie
           let userID: { id: string } = { id: "" };
-
           this.auth.setSubject(req.cookies["jwt"], userID);
-          console.log("After subject function");
 
           //check if a userID was extracted from the incoming JWT
-          if (userID.id === "silly") {
-            console.log("UserID is silly");
+          if (!userID.id.length) {
             //if not return because there is no way to verify if the incoming user owns the blog they want to edit
             res.sendStatus(400);
             return;
@@ -98,7 +98,7 @@ export default class BlogController implements IController {
 
           //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
           if (userID.id === blog.username) {
-            //edit the blog -- TODO: Make this an edit blog page instead TODO: Make this one blog page with logic to determine this.
+            //render the edit blog template
             res.render('EditBlog', {
               titleImagePath: imagePath,
               title: blog.title,
@@ -112,7 +112,7 @@ export default class BlogController implements IController {
             return;
           }
         } else {
-          //render the blog template with the blog's properties
+          //render the viewable blog template with the blog's properties
           res.render('Blog', {
             titleImagePath: imagePath,
             title: blog.title,
@@ -127,11 +127,9 @@ export default class BlogController implements IController {
       }
     });
 
-
     //create a blog resource --return blogID 
     //A blog resource contains a path to the blog's title image if one was uploaded.
-    //This image path needs to be posted to the uploads path, then linked to blog with a patch request to blog.
-    this.router.post('/blog', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+    this.router.post('/blogs', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //create a blog resource
         let blog: IBlog = new Blog();
@@ -158,7 +156,7 @@ export default class BlogController implements IController {
     });
 
     //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
-    this.router.patch('/blog/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+    this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //get the userID
         let userID: string = res.locals.userId;
@@ -212,48 +210,6 @@ export default class BlogController implements IController {
       }
 
     });
-
-
-
-    //allow the user to edit a blog -- TODO: Change because Edit is not a resource
-    this.router.get('/blog/edit/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
-      try {
-        //retrieve the BlogID parameter
-        let blogID: string = req.params.blogID;
-
-        //retrieve the blog information using the blogID
-        let blog: IBlog = await this.repo.find(searchParameters.BlogID, blogID);
-
-        //retrieve the username from the cookie
-        let username: string = res.locals.userId;
-
-        //check if the username in the blog properties matches the username of the user making the request
-        if (!blog.creator(username)) {
-          //If not stop and return unauthorized b/c the user did not create this blog
-          res.sendStatus(401);
-          return;
-        }
-
-        //set path to the image from the Views directory [views are in /Views] using absolute paths
-        //TODO: Use env to get absolute path not hardcoded string. Add this code to some model?
-        let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleimagepath);
-
-        //change \ to / in blog's path to the title image
-        imagePath = imagePath.replace(/\\/g, "/");
-
-        //direct the user to the blog edit view with blog parameters
-        res.render('EditBlog', {
-          title: blog.title,
-          titleImagePath: imagePath,
-          content: blog.content
-        });
-
-      } catch (e) {
-        res.sendStatus(400);
-        throw new Error(e);
-      }
-    });
-
 
     //register router with the app
     app.use(this.router);
