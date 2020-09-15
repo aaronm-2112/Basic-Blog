@@ -25,7 +25,8 @@ export default class BlogController implements IController {
     //TODO: Make /blogs/:blogID and replace edit with a query parameter
     //Done: [ TODO: Move create blog into the directory ]
 
-    //returns blog creation view
+    //returns all blogs defined by the client's query parameters
+    //Query parameters: searchBy, value, blogid, keyCondition
     this.router.get('/blogs', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //grab the query string from the parameters

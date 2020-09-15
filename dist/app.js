@@ -18,9 +18,9 @@ var PGSQLRepo_1 = __importDefault(require("./User/Repositories/PGSQLRepo"));
 var BlogPGSQLRepo_1 = __importDefault(require("./Blog/Repositories/BlogPGSQLRepo"));
 var CommentPGSQLRepo_1 = __importDefault(require("./Comment/Repositories/CommentPGSQLRepo"));
 var CommentController_1 = __importDefault(require("./Comment/CommentController"));
-//TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //TODO: Add indices to the database properties being used for keyset pagination.
+//TODO: Finish homepage refactor. Then review all endpoints to ensure they follow REST guidelines. Then test with Postman and any unit tests required for the models. Refactor applicaiton logic into models while doing so. 
 //Used for development database changes. 
 // createDB().then(() => {
 //   console.log("Inited");

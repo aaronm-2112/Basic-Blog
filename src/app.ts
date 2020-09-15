@@ -18,9 +18,11 @@ import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
 import CommentPGSQLRepo from './Comment/Repositories/CommentPGSQLRepo';
 import CommentController from './Comment/CommentController';
 
-//TODO: Add Location headers in all post request responses to client.
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //TODO: Add indices to the database properties being used for keyset pagination.
+//TODO: 1. Finish homepage refactor.  DONE
+//      2. Review all endpoints to ensure they follow REST guidelines. 
+//      3. Test with Postman and any unit tests required for the models. Refactor applicaiton logic into models while doing so. 
 
 
 //Used for development database changes. 

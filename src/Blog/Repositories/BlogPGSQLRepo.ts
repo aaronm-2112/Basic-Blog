@@ -65,8 +65,6 @@ export default class BlogPGSQLRepo implements IBlogRepository {
         blog.titleimagepath = row.titleimagepath;
         blog.username = row.username;
         blog.content = row.content;
-
-        console.log(blog);
         //push blog into blog array 
         blogs.push(blog);
       });

@@ -52,8 +52,8 @@ async function signup() {
 
     //TODO: Send http request to login instead of redirect like this
     if (response.status === 201) {
-      //go to the homepage
-      window.location.href = '/';
+      //display the login
+      displayLogin();
     } else {
       console.log("Error");
     }
@@ -62,7 +62,7 @@ async function signup() {
   }
 }
 
-function displaySignup(e) {
+function displaySignup() {
   //show the signup 
   let signupKids = document.getElementById('signup-div').children;
 
@@ -73,7 +73,7 @@ function displaySignup(e) {
   hideLogin();
 }
 
-function displayLogin(e) {
+function displayLogin() {
   //show the login 
   let loginKids = document.getElementById('login-div').children;
 
@@ -113,8 +113,9 @@ window.onload = function () {
 
   //check of the profile navigation link exists
   let links = document.querySelector('nav').children;
+  console.log(links);
 
-  if (links.length < 3) {
+  if (links.length >= 3) {
     //disable login
     hideLogin();
   }

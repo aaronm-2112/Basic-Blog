@@ -95,7 +95,6 @@ var BlogPGSQLRepo = /** @class */ (function () {
                             blog_1.titleimagepath = row.titleimagepath;
                             blog_1.username = row.username;
                             blog_1.content = row.content;
-                            console.log(blog_1);
                             //push blog into blog array 
                             blogs_1.push(blog_1);
                         });

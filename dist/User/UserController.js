@@ -78,7 +78,17 @@ var UserController = /** @class */ (function () {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
                         usernamePassedIn = req.params.userid;
+                        //check if parameter is undefined
+                        if (usernamePassedIn === undefined) {
+                            //return error status code if so
+                            res.sendStatus(400);
+                            return [2 /*return*/];
+                        }
+                        //decode the username parameter passed in 
+                        usernamePassedIn = decodeURIComponent(usernamePassedIn);
+                        console.log(usernamePassedIn);
                         usernameOfUser = res.locals.userId;
+                        console.log(usernameOfUser);
                         //check if the userids do not match
                         if (usernameOfUser !== usernamePassedIn) {
                             //send back frobidden status code

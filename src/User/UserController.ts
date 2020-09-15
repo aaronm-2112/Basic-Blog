@@ -41,17 +41,30 @@ export default class UserController implements IController {
   }
 
   registerRoutes(app: express.Application): void {
-    //TODO IMP!!!!!!!!!: Alter the homepage so the client can navigate to the users/:userid route 
-
-    //Send back all user information needed for the profile view.
+    //Send back all user information needed for the profile and profile edit views.
     //Query parameters: profile, edit
+    //TODO: Add default query parameter values that make sense.
     this.router.get('/users/:userid', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //extract the userid from the parameter
         let usernamePassedIn: string = req.params.userid;
 
+        //check if parameter is undefined
+        if (usernamePassedIn === undefined) {
+          //return error status code if so
+          res.sendStatus(400);
+          return;
+        }
+
+        //decode the username parameter passed in 
+        usernamePassedIn = decodeURIComponent(usernamePassedIn);
+
+        console.log(usernamePassedIn);
+
         //extract the userid from the auth
         let usernameOfUser: string = res.locals.userId;
+
+        console.log(usernameOfUser);
 
         //check if the userids do not match
         if (usernameOfUser !== usernamePassedIn) {
@@ -104,6 +117,7 @@ export default class UserController implements IController {
     })
 
     //Create a user -- aka a SIGNUP functionality
+    //TODO: Add body parameters that aren't included (except salt) for the option. 
     this.router.post('/users', async (req: Request, res: Response) => {
       try {
         //create the user with the information provided in the request
@@ -166,10 +180,6 @@ export default class UserController implements IController {
 
         //update the user information in the database
         await this.userRepository.update(user);
-
-        let newuser: IUser = await this.userRepository.find(user.getUsername() as string);
-
-        console.log(newuser);
 
         res.sendStatus(200);
 

@@ -39,16 +39,11 @@ export default class Directory {
         //extract the userid from the jwt 
         this.auth.setSubject(req.cookies["jwt"], userID);
 
-        console.log(userID);
-
         //check if any userid was extracted from the jwt
         if (userID.id.length) {
-          //find the user
-          let user: IUser = await this.userRepository.find(userID.id);
-
           //if so render homepage with a link to the user profile
           res.render('Homepage', {
-            links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile + `${user.getUserID()}`]]
+            links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile + `${userID.id}?profile=true`]]
           });
         } else {
           //render homepage without a link to the user profile
@@ -80,66 +75,6 @@ export default class Directory {
       }
     })
 
-    //render profile page
-    this.router.get(`${this.paths.profile}`, this.auth.authenitcateJWT, async (req: Request, res: Response) => {
-      try {
-        //grab subject information out of res.locals 
-        let username: string = res.locals.userId;  //TODO: Add error checking
-
-        //get the blogid -- the keyset pagination key
-        let blogid: string = req.query.key as string;
-        console.log(blogid);
-        //get the key conditional -- can be lt(<) or gt(>)
-        let keyCondition: string = req.query.keyCondition as string;
-
-        //Get the user information 
-        let user: IUser = await this.userRepository.find(username); //TODO: Make username a PK and unique
-
-        //Get the user's blogs
-        let blogs: IBlog[] = await this.blogRepository.findAll(searchParameters.Username, (user.username as string), blogid, keyCondition);
-
-        //store front end blog information
-        let blogDetails: Array<{ title: string, editPath: string, viewPath: string }> = new Array<{ title: string, editPath: string, viewPath: string }>();
-
-        //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
-        blogs.forEach(blog => {
-          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blogs/${blog.blogid}?edit=true`, viewPath: `http://localhost:3000/blogs/${blog.blogid}?edit=false` })
-        });
-
-        //  1. Send user profile info to profile partial
-        res.render('Profile', {
-          userName: user.getUsername(), firstName: user.getFirstname(),
-          lastName: user.getLastname(), bio: user.getBio(),
-          blogDetails: blogDetails,
-          profileImagePath: user.getProfilePicPath()
-        });
-
-      } catch (e) {
-        console.log("profile get" + e);
-        res.sendStatus(400);
-      }
-    })
-
-    //render profile editing page
-    this.router.get(`${this.paths.profileEdit}`, this.auth.authenitcateJWT, async (req: Request, res: Response) => {
-      try {
-        //grab username out of the local vars
-        let username: string = res.locals.userId //TODO: Add error checking
-
-        //Get the user information 
-        let user: IUser = await this.userRepository.find(username);
-
-        //  1. Send user profile info to profile edit
-        res.render('ProfileEdit', {
-          userName: user.getUsername(), firstName: user.getFirstname(),
-          lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
-        });
-
-      } catch (e) {
-        console.error("Profile edit get" + e);
-        res.sendStatus(400);
-      }
-    })
 
     //render the blog creation page
     this.router.get('/blog', this.auth.authenitcateJWT, (req: Request, res: Response) => {
