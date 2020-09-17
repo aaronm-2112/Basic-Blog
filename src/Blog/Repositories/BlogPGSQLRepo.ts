@@ -140,7 +140,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
   }
 
   //upddate any changes that occur to the blog. Do not update BlogID
-  async update(blog: IBlog): Promise<void> {
+  async update(blog: IBlog): Promise<IBlog> {
     try {
       console.log("In update");
 
@@ -173,7 +173,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       }
 
       //create the update query
-      let query: string = `UPDATE blogs SET ` + queryProperties.join(',') + ` WHERE blogid = $${parameterNumber}`;
+      let query: string = `UPDATE blogs SET ` + queryProperties.join(',') + ` WHERE blogid = $${parameterNumber} RETURNING *`;
 
       console.log(query);
 
@@ -183,9 +183,18 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //execute the update query
       let result = await this.pool.query(query, queryValues);
 
-      console.log(result);
+      //get the updated row
+      let row: any = result.rows[0];
 
-      return;
+      //create an updated blog
+      let updatedBlog: IBlog = new Blog();
+      updatedBlog.username = row.username;
+      updatedBlog.blogid = row.blogid;
+      updatedBlog.content = row.content;
+      updatedBlog.title = row.title;
+      updatedBlog.titleimagepath = row.titleimagepath;
+
+      return updatedBlog;
     } catch (e) {
       console.log(e);
       throw new Error(e);

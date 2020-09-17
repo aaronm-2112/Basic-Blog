@@ -55,6 +55,8 @@ var CommentControler = /** @class */ (function () {
         //or be a search for any comment without regard to what blog it belongs to.
         //query parameters: blog, reply, replyto, orderby, likes, commentid
         //replyto is 0 when the requested comments are not replies
+        //TODO: Provide option to return user representation as JSON using HTTP headers
+        //TODO: Good default query parameters for pagination
         this.router.get('/comments', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogid, reply, replyto, orderby, likes, commentid, flip, comments, e_1;
             var _a, _b;
@@ -89,7 +91,7 @@ var CommentControler = /** @class */ (function () {
                         _c.label = 4;
                     case 4:
                         //return the comments 
-                        res.send(comments);
+                        res.status(200).send(comments);
                         return [3 /*break*/, 6];
                     case 5:
                         e_1 = _c.sent();
@@ -117,7 +119,7 @@ var CommentControler = /** @class */ (function () {
                     case 1:
                         comment = _a.sent();
                         //return the comment data back to the user
-                        res.send(comment);
+                        res.status(200).send(comment);
                         return [3 /*break*/, 3];
                     case 2:
                         e_2 = _a.sent();
@@ -160,7 +162,7 @@ var CommentControler = /** @class */ (function () {
                     case 1:
                         commentid = _a.sent();
                         //return the commentid
-                        res.send(commentid.toString());
+                        res.status(201).location("http://localhost:3000/comments/" + commentid).send(commentid.toString());
                         return [3 /*break*/, 3];
                     case 2:
                         e_3 = _a.sent();
@@ -223,13 +225,12 @@ var CommentControler = /** @class */ (function () {
                                 return [2 /*return*/];
                             }
                         }
-                        //update the comment with the comment repo
                         return [4 /*yield*/, this.repo.update(comment)];
                     case 2:
                         //update the comment with the comment repo
-                        _a.sent();
+                        comment = _a.sent();
                         //send back successful status code 200
-                        res.sendStatus(200);
+                        res.status(200).send(comment);
                         return [3 /*break*/, 4];
                     case 3:
                         e_4 = _a.sent();

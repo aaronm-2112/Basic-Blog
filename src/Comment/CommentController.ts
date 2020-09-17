@@ -27,6 +27,8 @@ export default class CommentControler implements IController {
     //or be a search for any comment without regard to what blog it belongs to.
     //query parameters: blog, reply, replyto, orderby, likes, commentid
     //replyto is 0 when the requested comments are not replies
+    //TODO: Provide option to return user representation as JSON using HTTP headers
+    //TODO: Good default query parameters for pagination
     this.router.get('/comments', async (req: Request, res: Response) => {
       try {
         //retrieve the query parameters
@@ -64,7 +66,7 @@ export default class CommentControler implements IController {
         }
 
         //return the comments 
-        res.send(comments);
+        res.status(200).send(comments);
       } catch (e) {
         res.sendStatus(400);
         console.log(e);
@@ -87,7 +89,7 @@ export default class CommentControler implements IController {
         let comment: IComment = await this.repo.find(cid);
 
         //return the comment data back to the user
-        res.send(comment);
+        res.status(200).send(comment);
 
       } catch (e) {
         res.sendStatus(400);
@@ -129,7 +131,7 @@ export default class CommentControler implements IController {
         let commentid: number = await this.repo.create(comment)
 
         //return the commentid
-        res.send(commentid.toString());
+        res.status(201).location(`http://localhost:3000/comments/${commentid}`).send(commentid.toString());
 
       } catch (e) {
         console.log(e);
@@ -196,11 +198,10 @@ export default class CommentControler implements IController {
         }
 
         //update the comment with the comment repo
-        await this.repo.update(comment);
+        comment = await this.repo.update(comment);
 
         //send back successful status code 200
-        res.sendStatus(200);
-
+        res.status(200).send(comment);
       } catch (e) {
         res.sendStatus(400);
         console.error(e);

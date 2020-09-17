@@ -172,7 +172,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
     //upddate any changes that occur to the blog. Do not update BlogID
     BlogPGSQLRepo.prototype.update = function (blog) {
         return __awaiter(this, void 0, void 0, function () {
-            var queryProperties, queryValues, blogEntries, parameterNumber, entry, query, result, e_4;
+            var queryProperties, queryValues, blogEntries, parameterNumber, entry, query, result, row, updatedBlog, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -198,15 +198,21 @@ var BlogPGSQLRepo = /** @class */ (function () {
                                 parameterNumber += 1;
                             }
                         }
-                        query = "UPDATE blogs SET " + queryProperties.join(',') + (" WHERE blogid = $" + parameterNumber);
+                        query = "UPDATE blogs SET " + queryProperties.join(',') + (" WHERE blogid = $" + parameterNumber + " RETURNING *");
                         console.log(query);
                         //add the blogID to the queryValues list
                         queryValues.push(blog.blogid.toString());
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         result = _a.sent();
-                        console.log(result);
-                        return [2 /*return*/];
+                        row = result.rows[0];
+                        updatedBlog = new Blog_1.default();
+                        updatedBlog.username = row.username;
+                        updatedBlog.blogid = row.blogid;
+                        updatedBlog.content = row.content;
+                        updatedBlog.title = row.title;
+                        updatedBlog.titleimagepath = row.titleimagepath;
+                        return [2 /*return*/, updatedBlog];
                     case 2:
                         e_4 = _a.sent();
                         console.log(e_4);

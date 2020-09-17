@@ -2,25 +2,16 @@
 import * as express from 'express';
 import { Request, Response, Router } from 'express';
 import Auth from '../Auth/Auth';
-import IUserRepository from '../User/Repositories/IRepository';
-import IBlogRepository from '../Blog/Repositories/IBlogRepository';
-import IUser from '../User/IUser';
-import IBlog from '../Blog/IBlog';
-import { searchParameters } from "../Blog/BlogSearchCriteria";
 
+//TODO: Wildcard pathing setup
 export default class Directory {
 
   private router: Router = express.Router();
   private auth: Auth;
-  private userRepository: IUserRepository;
-  private blogRepository: IBlogRepository;
-
 
   //setup auth and inject repositories
-  constructor(userRepository: IUserRepository, blogRepository: IBlogRepository) {
+  constructor() {
     this.auth = new Auth();
-    this.userRepository = userRepository;
-    this.blogRepository = blogRepository;
   }
 
   //all the paths in the filesystem that can be reached through normal user navigation

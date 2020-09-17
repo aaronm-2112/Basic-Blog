@@ -51,11 +51,11 @@ var BlogController = /** @class */ (function () {
         this.auth = new Auth_1.default(); //TODO: Make a singleton?
     }
     BlogController.prototype.registerRoutes = function (app) {
-        //Done: [TODO: Make route blogs and keeep the same]
-        //TODO: Make /blogs/:blogID and replace edit with a query parameter
-        //Done: [ TODO: Move create blog into the directory ]
         var _this = this;
-        //returns blog creation view
+        //returns all blogs defined by the client's query parameters
+        //Query parameters: searchBy, value, blogid, keyCondition
+        //TODO: Provide option to return user representation as JSON using HTTP headers
+        //TODO: Good default query parameters for pagination
         this.router.get('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var searchBy, value, blogid, keyCondition, blogs, _a, e_1;
             return __generator(this, function (_b) {
@@ -90,7 +90,7 @@ var BlogController = /** @class */ (function () {
                         return [2 /*return*/];
                     case 6:
                         //return the results to the user 
-                        res.send(blogs);
+                        res.status(200).send(blogs);
                         return [2 /*return*/];
                     case 7: return [3 /*break*/, 9];
                     case 8:
@@ -103,6 +103,8 @@ var BlogController = /** @class */ (function () {
             });
         }); });
         //return a specific blog for viewing/editing or a list of blogs based off a query term
+        //TODO: Research if this is a good/acceptable use of query parameters
+        //TODO: Provide option to return user representation as JSON using HTTP headers
         this.router.get('/blogs/:blogID', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogID, blog, imagePath, edit, userID, e_2;
             return __generator(this, function (_a) {
@@ -180,7 +182,7 @@ var BlogController = /** @class */ (function () {
                     case 1:
                         blogID = _a.sent();
                         //return the blog id to the user
-                        res.send(blogID.toString());
+                        res.status(201).location("http://localhost:3000/blogs/" + blogID).send(blogID.toString());
                         return [3 /*break*/, 3];
                     case 2:
                         e_3 = _a.sent();
@@ -228,13 +230,12 @@ var BlogController = /** @class */ (function () {
                         }
                         //set blog object's blogID using the incoming request parameter
                         editBlog.blogid = parseInt(req.params.blogID);
-                        //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
                         return [4 /*yield*/, this.repo.update(editBlog)];
                     case 2:
                         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
-                        _a.sent();
+                        blog = _a.sent();
                         //send no content success
-                        res.sendStatus(204);
+                        res.status(200).send(blog);
                         return [3 /*break*/, 4];
                     case 3:
                         e_4 = _a.sent();

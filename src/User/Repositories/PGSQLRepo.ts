@@ -139,9 +139,8 @@ export default class UserPGSQLRepo implements IRepository {
     }
   }
 
-  async update(user: IUser): Promise<void> {
+  async update(user: IUser): Promise<IUser> {
     try {
-      console.log("In user update");
       //store user properties and their respective values that need to be updated
       let queryProperties: string[] = [];
       let queryValues: string[] = [];
@@ -169,15 +168,30 @@ export default class UserPGSQLRepo implements IRepository {
       }
 
       //create the update query using the collection of valid user properties
-      let query: string = `UPDATE users SET ` + queryProperties.join(',') + ` WHERE username = $${parameterNumber}`;
-
-      console.log(query);
+      let query: string = `UPDATE users SET ` + queryProperties.join(',') + ` WHERE username = $${parameterNumber} RETURNING *`;
 
       //add the username to the collection of query values
       queryValues.push(user.getUsername() as string);
 
       //execute the update query
       let result = await this.pool.query(query, queryValues);
+
+      //extract the returned row from the result
+      let row: any = result.rows[0];
+
+      //create a user with the row properties
+      let updatedUser: IUser = new User();
+      updatedUser.userid = row.userid;
+      updatedUser.setProfilePicPath(row.profilepic);
+      updatedUser.setEmail(row.email);
+      updatedUser.setFirstname(row.firstname);
+      updatedUser.setLastname(row.lastname);
+      updatedUser.setUsername(row.username);
+      updatedUser.setBio(row.bio);
+      updatedUser.setPassword(row.password);
+
+
+      return updatedUser;
     } catch (e) {
       throw new Error(e);
     }

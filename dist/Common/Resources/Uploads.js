@@ -49,9 +49,9 @@ function Upload(app) {
         return __generator(this, function (_a) {
             auth = new Auth_1.default();
             upload = multer_1.default({ dest: 'uploads/' });
-            //TODO: Move this out of the blog controller and expand functionality to cover user profile image uploads.
             //create an image resource -- return unique image ID or image path
             //This blog hero image needs to be linked to a blog resource using the blog's Patch path.
+            //TODO: Return uri location in the header
             app.post('/uploads', auth.authenitcateJWT, upload.single("image"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
                 var imagePath;
                 return __generator(this, function (_a) {

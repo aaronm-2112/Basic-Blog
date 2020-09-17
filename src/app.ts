@@ -22,7 +22,9 @@ import CommentController from './Comment/CommentController';
 //TODO: Add indices to the database properties being used for keyset pagination.
 //TODO: 1. Finish homepage refactor.  DONE
 //      2. Review all endpoints to ensure they follow REST guidelines. 
-//      3. Test with Postman and any unit tests required for the models. Refactor applicaiton logic into models while doing so. 
+//      3. Refactor any endpoints that do not
+//      4. Add rate limiting to the endpoints.
+//      5. Test with Postman and any unit tests required for the models. Refactor controller applicaiton logic into models while doing so. 
 
 
 //Used for development database changes. 
@@ -59,6 +61,9 @@ app.use(cors({
   credentials: true
 }));
 
+// Only parse query parameters into strings, not objects
+app.set('query parser', 'simple');
+
 //Direct express to use Handlebars templating engine for rendering the app's pages
 app.set('view engine', 'hbs');
 
@@ -71,15 +76,13 @@ app.set('views', viewsPath);
 let partialViewsPath: string = path.join(__dirname, '../Views/Partials');
 hbs.registerPartials(partialViewsPath);
 
-//create the blog and user repositories
-let userRepoPostgre: IUserRepository = new UserPGSQLRepo();
-let blogRepoPostgre: IBlogRepository = new BlogPGSQLRepo();
-
 //Setup the app's filesystem 
-let staticDirectory: Directory = new Directory(userRepoPostgre, blogRepoPostgre);
+let staticDirectory: Directory = new Directory();
 staticDirectory.registerRoutes(app);
 
 //register the user routes
+let userRepoPostgre: IUserRepository = new UserPGSQLRepo();
+let blogRepoPostgre: IBlogRepository = new BlogPGSQLRepo();
 let usercont: UserController = new UserController(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 
@@ -94,7 +97,7 @@ commentcontroller.registerRoutes(app);
 
 //register the common routes-----------------
 
-//route for uploading title and profile images
+//route for uploading blog title and profile images
 Upload(app).then(res => {
   console.log("Uploads registered.");
 }).catch(e => console.log(e));

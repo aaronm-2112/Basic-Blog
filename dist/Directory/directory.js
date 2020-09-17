@@ -49,15 +49,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //Purpose: Define the filesystem for the application. 
 var express = __importStar(require("express"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
+//TODO: Wildcard pathing setup
 var Directory = /** @class */ (function () {
     //setup auth and inject repositories
-    function Directory(userRepository, blogRepository) {
+    function Directory() {
         this.router = express.Router();
         //all the paths in the filesystem that can be reached through normal user navigation
         this.paths = { root: '/', search: '/search', profile: '/users/', profileEdit: '/profile/edit', blog: '/blog' };
         this.auth = new Auth_1.default();
-        this.userRepository = userRepository;
-        this.blogRepository = blogRepository;
     }
     //direct express middleware to render the paths using handlebars
     Directory.prototype.registerRoutes = function (app) {
@@ -71,7 +70,6 @@ var Directory = /** @class */ (function () {
                     userID = { id: "" };
                     //extract the userid from the jwt 
                     this.auth.setSubject(req.cookies["jwt"], userID);
-                    console.log(userID);
                     //check if any userid was extracted from the jwt
                     if (userID.id.length) {
                         //if so render homepage with a link to the user profile

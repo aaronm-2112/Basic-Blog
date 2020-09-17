@@ -8,6 +8,6 @@ export default interface IUserRepository {
   findAll(searchBy: UserQueryParameters, searchValue: string): Promise<IUser[]>;
   find(username: string): Promise<IUser>;
   create(user: IUser): Promise<number>;
-  update(user: IUser): Promise<void>;
+  update(user: IUser): Promise<IUser>;
   delete(email: string): Promise<Boolean>;
 }

@@ -67,10 +67,11 @@ var UserController = /** @class */ (function () {
         this.blogRepository = blogRepo;
     }
     UserController.prototype.registerRoutes = function (app) {
-        //TODO IMP!!!!!!!!!: Alter the homepage so the client can navigate to the users/:userid route 
         var _this = this;
-        //Send back all user information needed for the profile view.
+        //Send back all user information needed for the profile and profile edit views.
         //Query parameters: profile, edit
+        //TODO: Provide option to return user representation as JSON using HTTP headers
+        //TODO: Research if this is a good/acceptable use of query parameters
         this.router.get('/users/:userid', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var usernamePassedIn, usernameOfUser, user, blogs, blogDetails_1, profile, edit, e_1;
             return __generator(this, function (_a) {
@@ -126,7 +127,7 @@ var UserController = /** @class */ (function () {
                             });
                         }
                         else {
-                            //sedn back 400 status error
+                            //send back 400 status error
                             res.sendStatus(400);
                         }
                         return [3 /*break*/, 4];
@@ -139,6 +140,7 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //Create a user -- aka a SIGNUP functionality
+        //TODO: Add body parameters that aren't included (except salt) for the option and other unecessary implementation details
         this.router.post('/users', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var user, userid, e_2;
             return __generator(this, function (_a) {
@@ -153,7 +155,7 @@ var UserController = /** @class */ (function () {
                     case 1:
                         userid = _a.sent();
                         //return the userid and status code
-                        res.status(201).send({ userid: userid });
+                        res.status(201).location("http://localhost:3000/users/" + userid).send({ userid: userid });
                         return [3 /*break*/, 3];
                     case 2:
                         e_2 = _a.sent();
@@ -165,12 +167,14 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //TODO: Security checks
+        //TODO: Add userid to patch url for consistency
+        //Body Parameters: firstName, lastName, bio, profilePicPath
         this.router.patch("/users", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userName, firstName, lastName, bio, profilePicPath, user, newuser, e_3;
+            var userName, firstName, lastName, bio, profilePicPath, user, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 3, , 4]);
+                        _a.trys.push([0, 2, , 3]);
                         userName = res.locals.userId;
                         firstName = req.body.firstName;
                         lastName = req.body.lastName;
@@ -194,24 +198,19 @@ var UserController = /** @class */ (function () {
                         if (req.body.profilePicturePath !== null && req.body.profilePicturePath !== undefined) {
                             user.setProfilePicPath(profilePicPath);
                         }
-                        console.log(user.getProfilePicPath());
-                        //update the user information in the database
                         return [4 /*yield*/, this.userRepository.update(user)];
                     case 1:
                         //update the user information in the database
-                        _a.sent();
-                        return [4 /*yield*/, this.userRepository.find(user.getUsername())];
+                        user = _a.sent();
+                        //send a 200 status code and the updated user resource
+                        res.status(200).send(user);
+                        return [3 /*break*/, 3];
                     case 2:
-                        newuser = _a.sent();
-                        console.log(newuser);
-                        res.sendStatus(200);
-                        return [3 /*break*/, 4];
-                    case 3:
                         e_3 = _a.sent();
                         console.error("Profile edit post" + e_3);
                         res.sendStatus(400);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         }); });

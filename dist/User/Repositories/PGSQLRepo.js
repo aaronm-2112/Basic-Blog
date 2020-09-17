@@ -168,12 +168,11 @@ var UserPGSQLRepo = /** @class */ (function () {
     };
     UserPGSQLRepo.prototype.update = function (user) {
         return __awaiter(this, void 0, void 0, function () {
-            var queryProperties, queryValues, userEntries, parameterNumber, entry, query, result, e_3;
+            var queryProperties, queryValues, userEntries, parameterNumber, entry, query, result, row, updatedUser, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        console.log("In user update");
                         queryProperties = [];
                         queryValues = [];
                         userEntries = Object.entries(user);
@@ -192,14 +191,23 @@ var UserPGSQLRepo = /** @class */ (function () {
                                 parameterNumber += 1;
                             }
                         }
-                        query = "UPDATE users SET " + queryProperties.join(',') + (" WHERE username = $" + parameterNumber);
-                        console.log(query);
+                        query = "UPDATE users SET " + queryProperties.join(',') + (" WHERE username = $" + parameterNumber + " RETURNING *");
                         //add the username to the collection of query values
                         queryValues.push(user.getUsername());
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         result = _a.sent();
-                        return [3 /*break*/, 3];
+                        row = result.rows[0];
+                        updatedUser = new User_1.default();
+                        updatedUser.userid = row.userid;
+                        updatedUser.setProfilePicPath(row.profilepic);
+                        updatedUser.setEmail(row.email);
+                        updatedUser.setFirstname(row.firstname);
+                        updatedUser.setLastname(row.lastname);
+                        updatedUser.setUsername(row.username);
+                        updatedUser.setBio(row.bio);
+                        updatedUser.setPassword(row.password);
+                        return [2 /*return*/, updatedUser];
                     case 2:
                         e_3 = _a.sent();
                         throw new Error(e_3);

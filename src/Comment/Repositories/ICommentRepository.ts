@@ -10,6 +10,6 @@ export default interface ICommentRepository {
   create(comment: IComment): Promise<number>; //create comment return the cid
   //find a single comment using its commentid
   find(commentid: number): Promise<IComment>;
-  update(comment: IComment): Promise<void>;
+  update(comment: IComment): Promise<IComment>;
   test(blogid: number, reply: boolean): Promise<Array<IComment>>;
 }

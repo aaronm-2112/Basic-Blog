@@ -183,7 +183,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
     }
   }
 
-  async update(comment: IComment): Promise<void> {
+  async update(comment: IComment): Promise<IComment> {
     try {
       //create the update query
       let query: string = `UPDATE comments SET 
@@ -196,7 +196,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
                                   likedby = $7,
                                   deleted = $8,
                                   created = $9
-                                  WHERE commentid = $10`;
+                                  WHERE commentid = $10 RETURNING *`;
 
       //fill the query values
       let queryValues: any[] = [];
@@ -212,8 +212,25 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       queryValues.push(comment.commentid);
 
       //execute the query
-      await this.pool.query(query, queryValues);
+      let result = await this.pool.query(query, queryValues);
 
+      let row: any = result.rows[0];
+
+      let updatedComment: IComment = new Comment();
+
+      updatedComment.commentid = row.commentid;
+      updatedComment.username = row.username;
+      updatedComment.content = row.content;
+      updatedComment.created = row.created;
+      updatedComment.deleted = row.deleted;
+      updatedComment.likes = row.likes;
+      updatedComment.likedby = row.likedby;
+      updatedComment.reply = row.reply;
+      updatedComment.replyto = row.replyto;
+      updatedComment.blogid = row.blogid;
+
+
+      return updatedComment;
     } catch (e) {
       throw new Error(e);
     }

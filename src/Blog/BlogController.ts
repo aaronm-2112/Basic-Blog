@@ -21,12 +21,10 @@ export default class BlogController implements IController {
 
   registerRoutes(app: express.Application): void {
 
-    //Done: [TODO: Make route blogs and keeep the same]
-    //TODO: Make /blogs/:blogID and replace edit with a query parameter
-    //Done: [ TODO: Move create blog into the directory ]
-
     //returns all blogs defined by the client's query parameters
     //Query parameters: searchBy, value, blogid, keyCondition
+    //TODO: Provide option to return user representation as JSON using HTTP headers
+    //TODO: Good default query parameters for pagination
     this.router.get('/blogs', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //grab the query string from the parameters
@@ -57,7 +55,7 @@ export default class BlogController implements IController {
           }
 
           //return the results to the user 
-          res.send(blogs);
+          res.status(200).send(blogs);
           return;
         }
       } catch (e) {
@@ -68,6 +66,8 @@ export default class BlogController implements IController {
     });
 
     //return a specific blog for viewing/editing or a list of blogs based off a query term
+    //TODO: Research if this is a good/acceptable use of query parameters
+    //TODO: Provide option to return user representation as JSON using HTTP headers
     this.router.get('/blogs/:blogID', async (req: Request, res: Response) => {
       try {
         //retrieve the blogID from the request parameter
@@ -148,7 +148,7 @@ export default class BlogController implements IController {
         let blogID: number = await this.repo.create(blog);
 
         //return the blog id to the user
-        res.send(blogID.toString());
+        res.status(201).location(`http://localhost:3000/blogs/${blogID}`).send(blogID.toString());
       } catch (e) {
         res.sendStatus(400);
         throw new Error(e);
@@ -201,15 +201,14 @@ export default class BlogController implements IController {
         editBlog.blogid = parseInt(req.params.blogID);
 
         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
-        await this.repo.update(editBlog);
+        blog = await this.repo.update(editBlog);
 
         //send no content success
-        res.sendStatus(204);
+        res.status(200).send(blog);
       } catch (e) {
         console.error(e);
         res.sendStatus(400);
       }
-
     });
 
     //register router with the app

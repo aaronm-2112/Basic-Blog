@@ -218,12 +218,12 @@ var CommentPGSQLRepo = /** @class */ (function () {
     };
     CommentPGSQLRepo.prototype.update = function (comment) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, queryValues, e_4;
+            var query, queryValues, result, row, updatedComment, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        query = "UPDATE comments SET \n                                  username = $1, \n                                  blogid = $2,  \n                                  content = $3,\n                                  reply = $4,\n                                  replyto = $5,\n                                  likes = $6,\n                                  likedby = $7,\n                                  deleted = $8,\n                                  created = $9\n                                  WHERE commentid = $10";
+                        query = "UPDATE comments SET \n                                  username = $1, \n                                  blogid = $2,  \n                                  content = $3,\n                                  reply = $4,\n                                  replyto = $5,\n                                  likes = $6,\n                                  likedby = $7,\n                                  deleted = $8,\n                                  created = $9\n                                  WHERE commentid = $10 RETURNING *";
                         queryValues = [];
                         queryValues.push(comment.username);
                         queryValues.push(comment.blogid);
@@ -235,12 +235,22 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         queryValues.push(comment.deleted);
                         queryValues.push(comment.created);
                         queryValues.push(comment.commentid);
-                        //execute the query
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
-                        //execute the query
-                        _a.sent();
-                        return [3 /*break*/, 3];
+                        result = _a.sent();
+                        row = result.rows[0];
+                        updatedComment = new Comment_1.default();
+                        updatedComment.commentid = row.commentid;
+                        updatedComment.username = row.username;
+                        updatedComment.content = row.content;
+                        updatedComment.created = row.created;
+                        updatedComment.deleted = row.deleted;
+                        updatedComment.likes = row.likes;
+                        updatedComment.likedby = row.likedby;
+                        updatedComment.reply = row.reply;
+                        updatedComment.replyto = row.replyto;
+                        updatedComment.blogid = row.blogid;
+                        return [2 /*return*/, updatedComment];
                     case 2:
                         e_4 = _a.sent();
                         throw new Error(e_4);

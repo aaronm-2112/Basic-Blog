@@ -41,9 +41,11 @@ export default class UserController implements IController {
   }
 
   registerRoutes(app: express.Application): void {
+
     //Send back all user information needed for the profile and profile edit views.
     //Query parameters: profile, edit
-    //TODO: Add default query parameter values that make sense.
+    //TODO: Provide option to return user representation as JSON using HTTP headers
+    //TODO: Research if this is a good/acceptable use of query parameters
     this.router.get('/users/:userid', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //extract the userid from the parameter
@@ -94,21 +96,40 @@ export default class UserController implements IController {
 
         //check which query parameter was used
         if (profile !== undefined) {
-          // send back the user profile view
-          res.render('Profile', {
-            userName: user.getUsername(), firstName: user.getFirstname(),
-            lastName: user.getLastname(), bio: user.getBio(),
-            blogDetails: blogDetails,
-            profileImagePath: user.getProfilePicPath()
-          });
+          if (req.accepts('html') === "html") {
+            //send back the user profile view in html
+            res.render('Profile', {
+              userName: user.getUsername(), firstName: user.getFirstname(),
+              lastName: user.getLastname(), bio: user.getBio(),
+              blogDetails: blogDetails,
+              profileImagePath: user.getProfilePicPath()
+            });
+          } else {
+            //default to a JSON representation of the user profile information
+            res.status(200).send({
+              userName: user.getUsername(), firstName: user.getFirstname(),
+              lastName: user.getLastname(), bio: user.getBio(),
+              blogDetails: blogDetails,
+              profileImagePath: user.getProfilePicPath()
+            })
+          }
         } else if (edit !== undefined) {
-          //send back the user edit view
-          res.render('ProfileEdit', {
-            userName: user.getUsername(), firstName: user.getFirstname(),
-            lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
-          });
+          if (req.accepts('html') === "html") {
+            //send back the user edit view
+            res.render('ProfileEdit', {
+              userName: user.getUsername(), firstName: user.getFirstname(),
+              lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
+            });
+          } else {
+            //default to a JSON representation of the user profile information that would be received in an html edit request
+            res.status(200).send({
+              userName: user.getUsername(), firstName: user.getFirstname(),
+              lastName: user.getLastname(), bio: user.getBio(),
+              profileImagePath: user.getProfilePicPath()
+            })
+          }
         } else {
-          //sedn back 400 status error
+          //send back 400 status error
           res.sendStatus(400);
         }
       } catch (e) {
@@ -117,7 +138,7 @@ export default class UserController implements IController {
     })
 
     //Create a user -- aka a SIGNUP functionality
-    //TODO: Add body parameters that aren't included (except salt) for the option. 
+    //TODO: Add body parameters that aren't included (except salt) for the option and other unecessary implementation details
     this.router.post('/users', async (req: Request, res: Response) => {
       try {
         //create the user with the information provided in the request
@@ -130,7 +151,7 @@ export default class UserController implements IController {
         let userid: number = await this.userRepository.create(user);
 
         //return the userid and status code
-        res.status(201).send({ userid });
+        res.status(201).location(`http://localhost:3000/users/${userid}`).send({ userid });
       }
       catch (e) {
         console.log(e);
@@ -139,6 +160,8 @@ export default class UserController implements IController {
     })
 
     //TODO: Security checks
+    //TODO: Add userid to patch url for consistency
+    //Body Parameters: firstName, lastName, bio, profilePicPath
     this.router.patch("/users", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //Retrieve user id
@@ -175,14 +198,11 @@ export default class UserController implements IController {
           user.setProfilePicPath(profilePicPath);
         }
 
-        console.log(user.getProfilePicPath());
-
-
         //update the user information in the database
-        await this.userRepository.update(user);
+        user = await this.userRepository.update(user);
 
-        res.sendStatus(200);
-
+        //send a 200 status code and the updated user resource
+        res.status(200).send(user);
       } catch (e) {
         console.error("Profile edit post" + e);
         res.sendStatus(400);

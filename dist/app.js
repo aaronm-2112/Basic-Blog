@@ -20,7 +20,11 @@ var CommentPGSQLRepo_1 = __importDefault(require("./Comment/Repositories/Comment
 var CommentController_1 = __importDefault(require("./Comment/CommentController"));
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //TODO: Add indices to the database properties being used for keyset pagination.
-//TODO: Finish homepage refactor. Then review all endpoints to ensure they follow REST guidelines. Then test with Postman and any unit tests required for the models. Refactor applicaiton logic into models while doing so. 
+//TODO: 1. Finish homepage refactor.  DONE
+//      2. Review all endpoints to ensure they follow REST guidelines. 
+//      3. Refactor any endpoints that do not
+//      4. Add rate limiting to the endpoints.
+//      5. Test with Postman and any unit tests required for the models. Refactor controller applicaiton logic into models while doing so. 
 //Used for development database changes. 
 // createDB().then(() => {
 //   console.log("Inited");
@@ -48,6 +52,8 @@ app.use(cors_1.default({
     ],
     credentials: true
 }));
+// Only parse query parameters into strings, not objects
+app.set('query parser', 'simple');
 //Direct express to use Handlebars templating engine for rendering the app's pages
 app.set('view engine', 'hbs');
 //Define path to the directory of the application's views
@@ -57,13 +63,12 @@ app.set('views', viewsPath);
 //Define path to the application's partial views 
 var partialViewsPath = path_1.default.join(__dirname, '../Views/Partials');
 hbs_1.default.registerPartials(partialViewsPath);
-//create the blog and user repositories
-var userRepoPostgre = new PGSQLRepo_1.default();
-var blogRepoPostgre = new BlogPGSQLRepo_1.default();
 //Setup the app's filesystem 
-var staticDirectory = new directory_1.default(userRepoPostgre, blogRepoPostgre);
+var staticDirectory = new directory_1.default();
 staticDirectory.registerRoutes(app);
 //register the user routes
+var userRepoPostgre = new PGSQLRepo_1.default();
+var blogRepoPostgre = new BlogPGSQLRepo_1.default();
 var usercont = new UserController_1.default(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 //register the blog routes 
@@ -74,7 +79,7 @@ var commentRepo = new CommentPGSQLRepo_1.default();
 var commentcontroller = new CommentController_1.default(commentRepo);
 commentcontroller.registerRoutes(app);
 //register the common routes-----------------
-//route for uploading title and profile images
+//route for uploading blog title and profile images
 Uploads_1.default(app).then(function (res) {
     console.log("Uploads registered.");
 }).catch(function (e) { return console.log(e); });
