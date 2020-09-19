@@ -27,23 +27,28 @@ export default class CommentControler implements IController {
     //or be a search for any comment without regard to what blog it belongs to.
     //query parameters: blog, reply, replyto, orderby, likes, commentid
     //replyto is 0 when the requested comments are not replies
-    //TODO: Provide option to return user representation as JSON using HTTP headers
-    //TODO: Good default query parameters for pagination
+    //By default it searches all comments for the most liked, top level comments
     this.router.get('/comments', async (req: Request, res: Response) => {
       try {
-        //retrieve the query parameters
 
+        //ensure header is application/json
+        if (req.accepts('application/json') === false && req.accepts('text/html') === 'text/html') {
+          res.sendStatus(406);
+          return;
+        }
+
+        //retrieve the query parameters
         //blog parameter exists because comments have no alternative representation 
         //as hierarchical relationship such as blogs/:blogid/comments 
         //-- so could have less query paramaters if i added 
         //that and would have a more lean /comments exclusively for getting any comments
-        let blogid: number = parseInt(req.query.blog as string);
-        let reply: string = req.query.reply as string;
-        let replyto: string = req.query.replyto as string;
-        let orderby: string = req.query.orderby as string;
-        let likes: string = req.query.likes as string;
-        let commentid: number = parseInt(req.query.commentid as string)
-        let flip: string = req.query.flip as string;
+        let blogid: number = parseInt(req.query.blog as string) || 0;
+        let reply: string = req.query.reply as string || "false";
+        let replyto: string = req.query.replyto as string || "0";
+        let orderby: string = req.query.orderby as string || "likes";
+        let likes: string = req.query.likes as string || "1000";
+        let commentid: number = parseInt(req.query.commentid as string) || 1000;
+        let flip: string = req.query.flip as string || "next";
 
 
         //check if query parameters are valid

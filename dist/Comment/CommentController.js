@@ -55,8 +55,7 @@ var CommentControler = /** @class */ (function () {
         //or be a search for any comment without regard to what blog it belongs to.
         //query parameters: blog, reply, replyto, orderby, likes, commentid
         //replyto is 0 when the requested comments are not replies
-        //TODO: Provide option to return user representation as JSON using HTTP headers
-        //TODO: Good default query parameters for pagination
+        //By default it searches all comments for the most liked, top level comments
         this.router.get('/comments', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogid, reply, replyto, orderby, likes, commentid, flip, comments, e_1;
             var _a, _b;
@@ -64,13 +63,18 @@ var CommentControler = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 5, , 6]);
-                        blogid = parseInt(req.query.blog);
-                        reply = req.query.reply;
-                        replyto = req.query.replyto;
-                        orderby = req.query.orderby;
-                        likes = req.query.likes;
-                        commentid = parseInt(req.query.commentid);
-                        flip = req.query.flip;
+                        //ensure header is application/json
+                        if (req.accepts('application/json') === false && req.accepts('text/html') === 'text/html') {
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
+                        blogid = parseInt(req.query.blog) || 0;
+                        reply = req.query.reply || "false";
+                        replyto = req.query.replyto || "0";
+                        orderby = req.query.orderby || "likes";
+                        likes = req.query.likes || "1000";
+                        commentid = parseInt(req.query.commentid) || 1000;
+                        flip = req.query.flip || "next";
                         //check if query parameters are valid
                         if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined || flip === undefined, isNaN(commentid)) {
                             //no query parameters or bad query parameters in set return

@@ -74,7 +74,7 @@ var Directory = /** @class */ (function () {
                     if (userID.id.length) {
                         //if so render homepage with a link to the user profile
                         res.render('Homepage', {
-                            links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile + (userID.id + "?profile=true")]]
+                            links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile + (userID.id + "?profilePage=true")]]
                         });
                     }
                     else {
@@ -85,6 +85,7 @@ var Directory = /** @class */ (function () {
                     }
                 }
                 catch (e) {
+                    res.sendStatus(400);
                 }
                 return [2 /*return*/];
             });
@@ -110,9 +111,9 @@ var Directory = /** @class */ (function () {
             res.render('CreateBlog');
         });
         //render wildcard path -- needs to be after all routes defined in other paths too
-        // this.router.get('*', (req: Request, res: Response) => {
-        //   res.send("Wow nothing there").status(200);
-        // });
+        this.router.get('*', function (req, res) {
+            res.sendStatus(404);
+        });
         //Use the directory routes at root level 
         app.use('/', this.router);
     };

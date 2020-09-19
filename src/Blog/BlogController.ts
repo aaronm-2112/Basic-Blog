@@ -22,19 +22,17 @@ export default class BlogController implements IController {
   registerRoutes(app: express.Application): void {
 
     //returns all blogs defined by the client's query parameters
-    //Query parameters: searchBy, value, blogid, keyCondition
-    //TODO: Provide option to return user representation as JSON using HTTP headers
-    //TODO: Good default query parameters for pagination
+    //Query parameters: param = username || title, value, blogid, keyCondition
     this.router.get('/blogs', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
         //grab the query string from the parameters
         let searchBy: string = req.query.param as string;
-        let value: string = req.query.value as string;
+        let searchByValue: string = req.query.value as string;
         let blogid: string = req.query.key as string;
         let keyCondition: string = req.query.keyCondition as string; //should be > or < 
 
         //check if the query string exists
-        if (value !== "" && value !== undefined) {
+        if (searchByValue !== "" && searchByValue !== undefined) {
           //create the blog collection
           let blogs: IBlog[]
 
@@ -42,11 +40,11 @@ export default class BlogController implements IController {
           switch (searchBy) {
             case searchParameters.Username:
               //search the blog repo using the query parameter
-              blogs = await this.repo.findAll(searchParameters.Username, value, blogid, keyCondition);
+              blogs = await this.repo.findAll(searchParameters.Username, searchByValue, blogid, keyCondition);
               break;
             case searchParameters.Title:
               //search the blog repo using the query parameter
-              blogs = await this.repo.findAll(searchParameters.Title, value, blogid, keyCondition);
+              blogs = await this.repo.findAll(searchParameters.Title, searchByValue, blogid, keyCondition);
               break;
             default:
               //invalid search parameter -- result not found
@@ -66,8 +64,8 @@ export default class BlogController implements IController {
     });
 
     //return a specific blog for viewing/editing or a list of blogs based off a query term
-    //TODO: Research if this is a good/acceptable use of query parameters
-    //TODO: Provide option to return user representation as JSON using HTTP headers
+    //Query parameters: editPage - view the blog resorce in an editable html representation
+    //Accept options: text/html or application/json
     this.router.get('/blogs/:blogID', async (req: Request, res: Response) => {
       try {
         //retrieve the blogID from the request parameter
@@ -80,8 +78,27 @@ export default class BlogController implements IController {
         //TODO: Use env to get absolute path not hardcoded string
         let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleimagepath);
 
-        //get the edit request parameter
-        let edit: string = req.query.edit as string;
+        //get the edit query parameter
+        let edit: string = req.query.editPage as string;
+
+        //check if user wants to view the blog in a json representation
+        if (req.accepts('application/json') === 'application/json') {
+          //if so send json representation of their 
+          res.status(200).send({
+            titleImagePath: imagePath,
+            title: blog.title,
+            username: blog.username,
+            content: blog.content
+          });
+          return;
+        }
+
+        //check if client does not wants text/html
+        if (req.accepts('text/html') === false) {
+          //if so send not acceptable status code
+          res.sendStatus(406);
+          return;
+        }
 
         //check the value of edit
         if (edit !== undefined && edit !== "false") {

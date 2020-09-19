@@ -53,20 +53,18 @@ var BlogController = /** @class */ (function () {
     BlogController.prototype.registerRoutes = function (app) {
         var _this = this;
         //returns all blogs defined by the client's query parameters
-        //Query parameters: searchBy, value, blogid, keyCondition
-        //TODO: Provide option to return user representation as JSON using HTTP headers
-        //TODO: Good default query parameters for pagination
+        //Query parameters: param = username || title, value, blogid, keyCondition
         this.router.get('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var searchBy, value, blogid, keyCondition, blogs, _a, e_1;
+            var searchBy, searchByValue, blogid, keyCondition, blogs, _a, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 8, , 9]);
                         searchBy = req.query.param;
-                        value = req.query.value;
+                        searchByValue = req.query.value;
                         blogid = req.query.key;
                         keyCondition = req.query.keyCondition;
-                        if (!(value !== "" && value !== undefined)) return [3 /*break*/, 7];
+                        if (!(searchByValue !== "" && searchByValue !== undefined)) return [3 /*break*/, 7];
                         blogs = void 0;
                         _a = searchBy;
                         switch (_a) {
@@ -74,12 +72,12 @@ var BlogController = /** @class */ (function () {
                             case BlogSearchCriteria_1.searchParameters.Title: return [3 /*break*/, 3];
                         }
                         return [3 /*break*/, 5];
-                    case 1: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Username, value, blogid, keyCondition)];
+                    case 1: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Username, searchByValue, blogid, keyCondition)];
                     case 2:
                         //search the blog repo using the query parameter
                         blogs = _b.sent();
                         return [3 /*break*/, 6];
-                    case 3: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Title, value, blogid, keyCondition)];
+                    case 3: return [4 /*yield*/, this.repo.findAll(BlogSearchCriteria_1.searchParameters.Title, searchByValue, blogid, keyCondition)];
                     case 4:
                         //search the blog repo using the query parameter
                         blogs = _b.sent();
@@ -103,8 +101,8 @@ var BlogController = /** @class */ (function () {
             });
         }); });
         //return a specific blog for viewing/editing or a list of blogs based off a query term
-        //TODO: Research if this is a good/acceptable use of query parameters
-        //TODO: Provide option to return user representation as JSON using HTTP headers
+        //Query parameters: editPage - view the blog resorce in an editable html representation
+        //Accept options: text/html or application/json
         this.router.get('/blogs/:blogID', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogID, blog, imagePath, edit, userID, e_2;
             return __generator(this, function (_a) {
@@ -116,7 +114,24 @@ var BlogController = /** @class */ (function () {
                     case 1:
                         blog = _a.sent();
                         imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleimagepath);
-                        edit = req.query.edit;
+                        edit = req.query.editPage;
+                        //check if user wants to view the blog in a json representation
+                        if (req.accepts('application/json') === 'application/json') {
+                            //if so send json representation of their 
+                            res.status(200).send({
+                                titleImagePath: imagePath,
+                                title: blog.title,
+                                username: blog.username,
+                                content: blog.content
+                            });
+                            return [2 /*return*/];
+                        }
+                        //check if client does not wants text/html
+                        if (req.accepts('text/html') === false) {
+                            //if so send not acceptable status code
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
                         //check the value of edit
                         if (edit !== undefined && edit !== "false") {
                             userID = { id: "" };

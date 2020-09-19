@@ -20,11 +20,12 @@ var CommentPGSQLRepo_1 = __importDefault(require("./Comment/Repositories/Comment
 var CommentController_1 = __importDefault(require("./Comment/CommentController"));
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //TODO: Add indices to the database properties being used for keyset pagination.
-//TODO: 1. Finish homepage refactor.  DONE
-//      2. Review all endpoints to ensure they follow REST guidelines. 
-//      3. Refactor any endpoints that do not
-//      4. Add rate limiting to the endpoints.
+//TODO: 1. Finish homepage refactor.                                   DONE
+//      2. Review all endpoints to ensure they follow REST guidelines. DONE
+//      3. Refactor any endpoints that do not.                         DONE
+//      4. Add rate limiting to the endpoints.                         Do After cloud move
 //      5. Test with Postman and any unit tests required for the models. Refactor controller applicaiton logic into models while doing so. 
+//      6. Add indices to the database to improve pagination speed.
 //Used for development database changes. 
 // createDB().then(() => {
 //   console.log("Inited");
@@ -63,9 +64,6 @@ app.set('views', viewsPath);
 //Define path to the application's partial views 
 var partialViewsPath = path_1.default.join(__dirname, '../Views/Partials');
 hbs_1.default.registerPartials(partialViewsPath);
-//Setup the app's filesystem 
-var staticDirectory = new directory_1.default();
-staticDirectory.registerRoutes(app);
 //register the user routes
 var userRepoPostgre = new PGSQLRepo_1.default();
 var blogRepoPostgre = new BlogPGSQLRepo_1.default();
@@ -86,6 +84,9 @@ Uploads_1.default(app).then(function (res) {
 login_1.default(app, userRepoPostgre).then(function (res) {
     console.log("Login registered");
 }).catch(function (e) { return console.log(e); });
+//Setup the app's filesystem 
+var staticDirectory = new directory_1.default();
+staticDirectory.registerRoutes(app);
 // //create 15 blogs
 // for (let i = 0; i < 15; i++) {
 //   let blog: IBlog = new Blog();

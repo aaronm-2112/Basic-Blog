@@ -66,7 +66,7 @@ function Upload(app) {
                             imagePath = imagePath.replace(/\\/g, "/");
                             console.log(imagePath);
                             //send back the imagepath to the user
-                            res.status(201).send(imagePath);
+                            res.status(201).location("http://localhost:3000/" + imagePath).send(imagePath);
                         }
                     }
                     catch (e) {

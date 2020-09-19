@@ -95,5 +95,8 @@ export default class User implements IUser {
     this.profilepic = path;
   }
 
+  usernameMatches(incomingUsername: string): boolean {
+    return this.username === incomingUsername;
+  }
 
 } 

@@ -42,41 +42,49 @@ export default class UserController implements IController {
 
   registerRoutes(app: express.Application): void {
 
-    //Send back all user information needed for the profile and profile edit views.
-    //Query parameters: profile, edit
-    //TODO: Provide option to return user representation as JSON using HTTP headers
-    //TODO: Research if this is a good/acceptable use of query parameters
+    /*
+    Send back all user information needed for the profile and profile edit views.
+    Query parameters: editPage = true | false -- marking true returns the editable portion of the user resource 
+                                                 marking false or leaving undefined returns the whole user resource
+    Accept: 'text/html || 'application/json'
+        Question: Is this a good/acceptable use of query parameters? 
+        Answer: It may be flawed but my approach is that this route provides a user resource. 
+                The query parameters only defines the way in which to view the resource
+                (either in a profile page form or a edit page form) so this is not an unacceptable use of them.
+    */
     this.router.get('/users/:userid', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-        //extract the userid from the parameter
+        //ensure the user has at least one of the correct Accept header values
+        if (req.accepts(['text/html', 'application/json']) === false) {
+          res.sendStatus(406);
+          return;
+        }
+
+        //extract the username from the route parameter
         let usernamePassedIn: string = req.params.userid;
 
-        //check if parameter is undefined
+        //check if route parameter is undefined
         if (usernamePassedIn === undefined) {
           //return error status code if so
           res.sendStatus(400);
           return;
         }
 
-        //decode the username parameter passed in 
+        //decode the username from the route parameter passed in 
         usernamePassedIn = decodeURIComponent(usernamePassedIn);
 
-        console.log(usernamePassedIn);
+        //find the user with the user repository using the route parameter
+        let user: IUser = await this.userRepository.find(usernamePassedIn);
 
-        //extract the userid from the auth
-        let usernameOfUser: string = res.locals.userId;
+        //extract the username of the client making the request from the auth service
+        let verifiedUsername: string = res.locals.userId;
 
-        console.log(usernameOfUser);
-
-        //check if the userids do not match
-        if (usernameOfUser !== usernamePassedIn) {
-          //send back frobidden status code
+        //check if the username of the client making the request matches that of the user found with the route parameter
+        if (!user.usernameMatches(verifiedUsername)) {
+          //send back frobidden status code if not
           res.sendStatus(403);
           return;
         }
-
-        //get the user from the user repo
-        let user: IUser = await this.userRepository.find(usernamePassedIn);
 
         //Get the user's first 10 blogs
         let blogs: IBlog[] = await this.blogRepository.findAll(searchParameters.Username, (user.username as string), "0", ">");
@@ -89,14 +97,13 @@ export default class UserController implements IController {
           blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blogs/${blog.blogid}?edit=true`, viewPath: `http://localhost:3000/blogs/${blog.blogid}?edit=false` })
         });
 
+        //extract the query parameter
+        let edit: string = req.query.editPage as string;
 
-        //extract the query parameters
-        let profile: string = req.query.profile as string;
-        let edit: string = req.query.edit as string;
-
-        //check which query parameter was used
-        if (profile !== undefined) {
-          if (req.accepts('html') === "html") {
+        //check if edit was left undefined or marked false
+        if (edit === undefined || edit === "false") {
+          //check if client wants an html representation of the user resource
+          if (req.accepts('text/html') === "text/html") {
             //send back the user profile view in html
             res.render('Profile', {
               userName: user.getUsername(), firstName: user.getFirstname(),
@@ -111,41 +118,82 @@ export default class UserController implements IController {
               lastName: user.getLastname(), bio: user.getBio(),
               blogDetails: blogDetails,
               profileImagePath: user.getProfilePicPath()
-            })
+            });
           }
-        } else if (edit !== undefined) {
-          if (req.accepts('html') === "html") {
+        } else {
+          //check if client wants an html representation of the editable portion of the user reource
+          if (req.accepts('text/html') === "text/html") {
             //send back the user edit view
             res.render('ProfileEdit', {
               userName: user.getUsername(), firstName: user.getFirstname(),
               lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
             });
           } else {
-            //default to a JSON representation of the user profile information that would be received in an html edit request
+            //send a JSON representation
             res.status(200).send({
               userName: user.getUsername(), firstName: user.getFirstname(),
               lastName: user.getLastname(), bio: user.getBio(),
               profileImagePath: user.getProfilePicPath()
-            })
+            });
           }
-        } else {
-          //send back 400 status error
-          res.sendStatus(400);
         }
+
       } catch (e) {
         res.sendStatus(400);
       }
     })
 
     //Create a user -- aka a SIGNUP functionality
-    //TODO: Add body parameters that aren't included (except salt) for the option and other unecessary implementation details
+    //Body parameters: username, email, password, firstname, lastname, bio
+    //Accept: 'application/json'
     this.router.post('/users', async (req: Request, res: Response) => {
       try {
-        //create the user with the information provided in the request
+        //check if the client has a valide Accept header value
+        if (req.accepts('application/json') === false) {
+          //if not return status code 406
+          res.sendStatus(406);
+          return;
+        }
+
+        //extract the essential user information from the body of the request
+        let password: string = req.body.password as string;
+        let email: string = req.body.email as string;
+        let username: string = req.body.username as string;
+
+        //verify that the essential information is provided
+        if (username === undefined || email === undefined || password === undefined) {
+          //if not return 400 error
+          res.sendStatus(400);
+          return;
+        }
+
+        //create a user
         let user: IUser = new User();
-        user.setUsername(req.body.username);
-        user.setEmail(req.body.email);
-        user.setPassword(req.body.password);
+
+        //fill out the user's properties with the essential body values
+        user.setPassword(password);
+        user.setEmail(email);
+        user.setUsername(username);
+
+        //extract the remaining user infromation from the body of the request
+        let firstname: string = req.body.firstname as string;
+        let lastname: string = req.body.lastname as string;
+        let bio: string = req.body.bio as string;
+
+
+        //fill out the user's remaining properties with any valid body properties remaining
+        if (firstname !== undefined) {
+          user.setFirstname(firstname);
+        }
+
+        if (lastname !== undefined) {
+          user.setLastname(lastname);
+        }
+
+        if (bio !== undefined) {
+          user.setBio(bio);
+        }
+
 
         //insert the user into the database 
         let userid: number = await this.userRepository.create(user);
@@ -159,11 +207,18 @@ export default class UserController implements IController {
       }
     })
 
-    //TODO: Security checks
-    //TODO: Add userid to patch url for consistency
+
+    //TODO: Add userid to patch url for consistency & security checks
     //Body Parameters: firstName, lastName, bio, profilePicPath
+    //Accept: 'application/json'
     this.router.patch("/users", this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
+        //check if the client has a valide Accept header value
+        if (req.accepts('application/json') === false) {
+          res.sendStatus(406);
+          return;
+        }
+
         //Retrieve user id
         let userName: string = res.locals.userId;
 
@@ -179,22 +234,22 @@ export default class UserController implements IController {
         let user: IUser = new User();
         user.setUsername(userName);
 
-        if (req.body.firstName !== null && req.body.firstName !== undefined) {
+        if (req.body.firstName !== undefined) {
           user.setFirstname(firstName);
         }
 
         //blog title
-        if (req.body.lastName !== null && req.body.lastName !== undefined) {
+        if (req.body.lastName !== undefined) {
           user.setLastname(lastName);
         }
 
         //blog's path to titleimage
-        if (req.body.bio !== null && req.body.bio !== undefined) {
+        if (req.body.bio !== undefined) {
           user.setBio(bio);
         }
 
         //blog's username value -- TODO: Determine if this is necessary here
-        if (req.body.profilePicturePath !== null && req.body.profilePicturePath !== undefined) {
+        if (req.body.profilePicturePath !== undefined) {
           user.setProfilePicPath(profilePicPath);
         }
 
@@ -204,7 +259,6 @@ export default class UserController implements IController {
         //send a 200 status code and the updated user resource
         res.status(200).send(user);
       } catch (e) {
-        console.error("Profile edit post" + e);
         res.sendStatus(400);
       }
 

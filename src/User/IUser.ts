@@ -30,4 +30,7 @@ export default interface IUser {
   getProfilePicPath(): string;
   setProfilePicPath(path: string): void;
 
+  //check if the incoming username matches the current user's username
+  usernameMatches(incomingUsername: string): boolean;
+
 } 

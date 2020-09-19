@@ -68,37 +68,46 @@ var UserController = /** @class */ (function () {
     }
     UserController.prototype.registerRoutes = function (app) {
         var _this = this;
-        //Send back all user information needed for the profile and profile edit views.
-        //Query parameters: profile, edit
-        //TODO: Provide option to return user representation as JSON using HTTP headers
-        //TODO: Research if this is a good/acceptable use of query parameters
+        /*
+        Send back all user information needed for the profile and profile edit views.
+        Query parameters: editPage = true | false -- marking true returns the editable portion of the user resource
+                                                     marking false or leaving undefined returns the whole user resource
+        Accept: 'text/html || 'application/json'
+            Question: Is this a good/acceptable use of query parameters?
+            Answer: It may be flawed but my approach is that this route provides a user resource.
+                    The query parameters only defines the way in which to view the resource
+                    (either in a profile page form or a edit page form) so this is not an unacceptable use of them.
+        */
         this.router.get('/users/:userid', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var usernamePassedIn, usernameOfUser, user, blogs, blogDetails_1, profile, edit, e_1;
+            var usernamePassedIn, user, verifiedUsername, blogs, blogDetails_1, edit, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
+                        //ensure the user has at least one of the correct Accept header values
+                        if (req.accepts(['text/html', 'application/json']) === false) {
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
                         usernamePassedIn = req.params.userid;
-                        //check if parameter is undefined
+                        //check if route parameter is undefined
                         if (usernamePassedIn === undefined) {
                             //return error status code if so
                             res.sendStatus(400);
                             return [2 /*return*/];
                         }
-                        //decode the username parameter passed in 
+                        //decode the username from the route parameter passed in 
                         usernamePassedIn = decodeURIComponent(usernamePassedIn);
-                        console.log(usernamePassedIn);
-                        usernameOfUser = res.locals.userId;
-                        console.log(usernameOfUser);
-                        //check if the userids do not match
-                        if (usernameOfUser !== usernamePassedIn) {
-                            //send back frobidden status code
-                            res.sendStatus(403);
-                            return [2 /*return*/];
-                        }
                         return [4 /*yield*/, this.userRepository.find(usernamePassedIn)];
                     case 1:
                         user = _a.sent();
+                        verifiedUsername = res.locals.userId;
+                        //check if the username of the client making the request matches that of the user found with the route parameter
+                        if (!user.usernameMatches(verifiedUsername)) {
+                            //send back frobidden status code if not
+                            res.sendStatus(403);
+                            return [2 /*return*/];
+                        }
                         return [4 /*yield*/, this.blogRepository.findAll(BlogSearchCriteria_1.searchParameters.Username, user.username, "0", ">")];
                     case 2:
                         blogs = _a.sent();
@@ -107,28 +116,46 @@ var UserController = /** @class */ (function () {
                         blogs.forEach(function (blog) {
                             blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blogs/" + blog.blogid + "?edit=true", viewPath: "http://localhost:3000/blogs/" + blog.blogid + "?edit=false" });
                         });
-                        profile = req.query.profile;
-                        edit = req.query.edit;
-                        //check which query parameter was used
-                        if (profile !== undefined) {
-                            // send back the user profile view
-                            res.render('Profile', {
-                                userName: user.getUsername(), firstName: user.getFirstname(),
-                                lastName: user.getLastname(), bio: user.getBio(),
-                                blogDetails: blogDetails_1,
-                                profileImagePath: user.getProfilePicPath()
-                            });
-                        }
-                        else if (edit !== undefined) {
-                            //send back the user edit view
-                            res.render('ProfileEdit', {
-                                userName: user.getUsername(), firstName: user.getFirstname(),
-                                lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
-                            });
+                        edit = req.query.editPage;
+                        //check if edit was left undefined or marked false
+                        if (edit === undefined || edit === "false") {
+                            //check if client wants an html representation of the user resource
+                            if (req.accepts('text/html') === "text/html") {
+                                //send back the user profile view in html
+                                res.render('Profile', {
+                                    userName: user.getUsername(), firstName: user.getFirstname(),
+                                    lastName: user.getLastname(), bio: user.getBio(),
+                                    blogDetails: blogDetails_1,
+                                    profileImagePath: user.getProfilePicPath()
+                                });
+                            }
+                            else {
+                                //default to a JSON representation of the user profile information
+                                res.status(200).send({
+                                    userName: user.getUsername(), firstName: user.getFirstname(),
+                                    lastName: user.getLastname(), bio: user.getBio(),
+                                    blogDetails: blogDetails_1,
+                                    profileImagePath: user.getProfilePicPath()
+                                });
+                            }
                         }
                         else {
-                            //send back 400 status error
-                            res.sendStatus(400);
+                            //check if client wants an html representation of the editable portion of the user reource
+                            if (req.accepts('text/html') === "text/html") {
+                                //send back the user edit view
+                                res.render('ProfileEdit', {
+                                    userName: user.getUsername(), firstName: user.getFirstname(),
+                                    lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
+                                });
+                            }
+                            else {
+                                //send a JSON representation
+                                res.status(200).send({
+                                    userName: user.getUsername(), firstName: user.getFirstname(),
+                                    lastName: user.getLastname(), bio: user.getBio(),
+                                    profileImagePath: user.getProfilePicPath()
+                                });
+                            }
                         }
                         return [3 /*break*/, 4];
                     case 3:
@@ -140,17 +167,47 @@ var UserController = /** @class */ (function () {
             });
         }); });
         //Create a user -- aka a SIGNUP functionality
-        //TODO: Add body parameters that aren't included (except salt) for the option and other unecessary implementation details
+        //Body parameters: username, email, password, firstname, lastname, bio
+        //Accept: 'application/json'
         this.router.post('/users', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var user, userid, e_2;
+            var password, email, username, user, firstname, lastname, bio, userid, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
+                        //check if the client has a valide Accept header value
+                        if (req.accepts('application/json') === false) {
+                            //if not return status code 406
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
+                        password = req.body.password;
+                        email = req.body.email;
+                        username = req.body.username;
+                        //verify that the essential information is provided
+                        if (username === undefined || email === undefined || password === undefined) {
+                            //if not return 400 error
+                            res.sendStatus(400);
+                            return [2 /*return*/];
+                        }
                         user = new User_1.default();
-                        user.setUsername(req.body.username);
-                        user.setEmail(req.body.email);
-                        user.setPassword(req.body.password);
+                        //fill out the user's properties with the essential body values
+                        user.setPassword(password);
+                        user.setEmail(email);
+                        user.setUsername(username);
+                        firstname = req.body.firstname;
+                        lastname = req.body.lastname;
+                        bio = req.body.bio;
+                        //fill out the user's remaining properties with any valid body properties remaining
+                        if (firstname !== undefined) {
+                            user.setFirstname(firstname);
+                        }
+                        if (lastname !== undefined) {
+                            user.setLastname(lastname);
+                        }
+                        if (bio !== undefined) {
+                            user.setBio(bio);
+                        }
                         return [4 /*yield*/, this.userRepository.create(user)];
                     case 1:
                         userid = _a.sent();
@@ -166,15 +223,20 @@ var UserController = /** @class */ (function () {
                 }
             });
         }); });
-        //TODO: Security checks
-        //TODO: Add userid to patch url for consistency
+        //TODO: Add userid to patch url for consistency & security checks
         //Body Parameters: firstName, lastName, bio, profilePicPath
+        //Accept: 'application/json'
         this.router.patch("/users", this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var userName, firstName, lastName, bio, profilePicPath, user, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
+                        //check if the client has a valide Accept header value
+                        if (req.accepts('application/json') === false) {
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
                         userName = res.locals.userId;
                         firstName = req.body.firstName;
                         lastName = req.body.lastName;
@@ -183,19 +245,19 @@ var UserController = /** @class */ (function () {
                         console.log(profilePicPath);
                         user = new User_1.default();
                         user.setUsername(userName);
-                        if (req.body.firstName !== null && req.body.firstName !== undefined) {
+                        if (req.body.firstName !== undefined) {
                             user.setFirstname(firstName);
                         }
                         //blog title
-                        if (req.body.lastName !== null && req.body.lastName !== undefined) {
+                        if (req.body.lastName !== undefined) {
                             user.setLastname(lastName);
                         }
                         //blog's path to titleimage
-                        if (req.body.bio !== null && req.body.bio !== undefined) {
+                        if (req.body.bio !== undefined) {
                             user.setBio(bio);
                         }
                         //blog's username value -- TODO: Determine if this is necessary here
-                        if (req.body.profilePicturePath !== null && req.body.profilePicturePath !== undefined) {
+                        if (req.body.profilePicturePath !== undefined) {
                             user.setProfilePicPath(profilePicPath);
                         }
                         return [4 /*yield*/, this.userRepository.update(user)];
@@ -207,7 +269,6 @@ var UserController = /** @class */ (function () {
                         return [3 /*break*/, 3];
                     case 2:
                         e_3 = _a.sent();
-                        console.error("Profile edit post" + e_3);
                         res.sendStatus(400);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];

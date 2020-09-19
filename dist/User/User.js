@@ -67,6 +67,9 @@ var User = /** @class */ (function () {
     User.prototype.setProfilePicPath = function (path) {
         this.profilepic = path;
     };
+    User.prototype.usernameMatches = function (incomingUsername) {
+        return this.username === incomingUsername;
+    };
     return User;
 }());
 exports.default = User;
