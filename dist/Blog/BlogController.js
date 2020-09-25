@@ -54,17 +54,26 @@ var BlogController = /** @class */ (function () {
         var _this = this;
         //returns all blogs defined by the client's query parameters
         //Query parameters: param = username || title, value, blogid, keyCondition
-        this.router.get('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        //Accept header: application/json
+        //Content Type header: application/json 
+        this.router.get('/blogs', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var searchBy, searchByValue, blogid, keyCondition, blogs, _a, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 8, , 9]);
+                        if (req.accepts('application/json') === false) {
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
                         searchBy = req.query.param;
                         searchByValue = req.query.value;
                         blogid = req.query.key;
                         keyCondition = req.query.keyCondition;
                         if (!(searchByValue !== "" && searchByValue !== undefined)) return [3 /*break*/, 7];
+                        //decode the searchbyvalue passed in
+                        searchByValue = decodeURIComponent(searchByValue);
+                        console.log(searchByValue);
                         blogs = void 0;
                         _a = searchBy;
                         switch (_a) {
@@ -84,25 +93,25 @@ var BlogController = /** @class */ (function () {
                         return [3 /*break*/, 6];
                     case 5:
                         //invalid search parameter -- result not found
-                        res.sendStatus(404);
+                        res.sendStatus(400);
                         return [2 /*return*/];
                     case 6:
                         //return the results to the user 
                         res.status(200).send(blogs);
-                        return [2 /*return*/];
+                        _b.label = 7;
                     case 7: return [3 /*break*/, 9];
                     case 8:
                         e_1 = _b.sent();
                         res.sendStatus(400);
-                        console.log(e_1);
-                        throw new Error(e_1);
+                        return [3 /*break*/, 9];
                     case 9: return [2 /*return*/];
                 }
             });
         }); });
         //return a specific blog for viewing/editing or a list of blogs based off a query term
-        //Query parameters: editPage - view the blog resorce in an editable html representation
+        //Query parameters: editPage - view the blog resorce in an editable html representation(not applicable to application/json)
         //Accept options: text/html or application/json
+        //Response Content Type: text/html or application/json
         this.router.get('/blogs/:blogID', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogID, blog, imagePath, edit, userID, e_2;
             return __generator(this, function (_a) {
@@ -139,7 +148,7 @@ var BlogController = /** @class */ (function () {
                             //check if a userID was extracted from the incoming JWT
                             if (!userID.id.length) {
                                 //if not return because there is no way to verify if the incoming user owns the blog they want to edit
-                                res.sendStatus(400);
+                                res.sendStatus(403);
                                 return [2 /*return*/];
                             }
                             //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
@@ -155,7 +164,7 @@ var BlogController = /** @class */ (function () {
                             }
                             else {
                                 //user does not have access
-                                res.sendStatus(400);
+                                res.sendStatus(403);
                                 return [2 /*return*/];
                             }
                         }
@@ -180,12 +189,19 @@ var BlogController = /** @class */ (function () {
         }); });
         //create a blog resource --return blogID 
         //A blog resource contains a path to the blog's title image if one was uploaded.
+        //Body parameters: title, content
+        //Response Content Type: Application/json
         this.router.post('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blog, blogID, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
+                        //check if the request's Accept header matches the response Content Type header
+                        if (req.accepts("application/json") === false) {
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
                         blog = new Blog_1.default();
                         //set the username -- foreign key for the Blog entity that connects it to the User entity
                         blog.username = res.locals.userId;
@@ -197,7 +213,7 @@ var BlogController = /** @class */ (function () {
                     case 1:
                         blogID = _a.sent();
                         //return the blog id to the user
-                        res.status(201).location("http://localhost:3000/blogs/" + blogID).send(blogID.toString());
+                        res.status(201).location("http://localhost:3000/blogs/" + blogID).send({ blogID: blogID });
                         return [3 /*break*/, 3];
                     case 2:
                         e_3 = _a.sent();

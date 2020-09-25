@@ -1,0 +1,17 @@
+[
+  {
+    "blogid": "1",
+    "edit": "false",
+    "accept": "application/json"
+  },
+  {
+    "blogid": "1",
+    "edit": "false",
+    "accept": "text/html"
+  },
+  {
+    "blogid": "1",
+    "edit": "true",
+    "accept": "text/html"
+  }
+]

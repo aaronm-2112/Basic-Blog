@@ -8,6 +8,21 @@ export default interface IBlog {
   content: string;
   titleimagepath: string;
 
+  //getters
+  getBlogid(): number;
+  getUsername(): string;
+  getTitle(): string;
+  getContent(): string;
+  getTitleimagepath(): string;
 
+  //setters
+  setBlogid(id: number): void;
+  setUsername(username: string): void;
+  setTitle(title: string): void;
+  setContent(content: string): void;
+  setTitleimagepath(titleimagepath: string): void;
+
+
+  //determine if the user created the blog -- implies ownership
   creator(incomingUser: string): boolean;
 }

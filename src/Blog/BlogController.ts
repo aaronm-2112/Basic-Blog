@@ -23,8 +23,15 @@ export default class BlogController implements IController {
 
     //returns all blogs defined by the client's query parameters
     //Query parameters: param = username || title, value, blogid, keyCondition
-    this.router.get('/blogs', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
+    //Accept header: application/json
+    //Content Type header: application/json 
+    this.router.get('/blogs', async (req: Request, res: Response) => {
       try {
+        if (req.accepts('application/json') === false) {
+          res.sendStatus(406);
+          return;
+        }
+
         //grab the query string from the parameters
         let searchBy: string = req.query.param as string;
         let searchByValue: string = req.query.value as string;
@@ -33,6 +40,10 @@ export default class BlogController implements IController {
 
         //check if the query string exists
         if (searchByValue !== "" && searchByValue !== undefined) {
+          //decode the searchbyvalue passed in
+          searchByValue = decodeURIComponent(searchByValue);
+          console.log(searchByValue);
+
           //create the blog collection
           let blogs: IBlog[]
 
@@ -48,24 +59,22 @@ export default class BlogController implements IController {
               break;
             default:
               //invalid search parameter -- result not found
-              res.sendStatus(404);
+              res.sendStatus(400);
               return;
           }
 
           //return the results to the user 
           res.status(200).send(blogs);
-          return;
         }
       } catch (e) {
         res.sendStatus(400);
-        console.log(e);
-        throw new Error(e);
       }
     });
 
     //return a specific blog for viewing/editing or a list of blogs based off a query term
-    //Query parameters: editPage - view the blog resorce in an editable html representation
+    //Query parameters: editPage - view the blog resorce in an editable html representation(not applicable to application/json)
     //Accept options: text/html or application/json
+    //Response Content Type: text/html or application/json
     this.router.get('/blogs/:blogID', async (req: Request, res: Response) => {
       try {
         //retrieve the blogID from the request parameter
@@ -110,7 +119,7 @@ export default class BlogController implements IController {
           //check if a userID was extracted from the incoming JWT
           if (!userID.id.length) {
             //if not return because there is no way to verify if the incoming user owns the blog they want to edit
-            res.sendStatus(400);
+            res.sendStatus(403);
             return;
           }
 
@@ -126,7 +135,7 @@ export default class BlogController implements IController {
             return;
           } else {
             //user does not have access
-            res.sendStatus(400);
+            res.sendStatus(403);
             return;
           }
         } else {
@@ -147,8 +156,17 @@ export default class BlogController implements IController {
 
     //create a blog resource --return blogID 
     //A blog resource contains a path to the blog's title image if one was uploaded.
+    //Body parameters: title, content
+    //Accept: application/json
+    //Response Content Type: Application/json
     this.router.post('/blogs', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
+        //check if the request's Accept header matches the response Content Type header
+        if (req.accepts("application/json") === false) {
+          res.sendStatus(406);
+          return;
+        }
+
         //create a blog resource
         let blog: IBlog = new Blog();
 
@@ -165,7 +183,7 @@ export default class BlogController implements IController {
         let blogID: number = await this.repo.create(blog);
 
         //return the blog id to the user
-        res.status(201).location(`http://localhost:3000/blogs/${blogID}`).send(blogID.toString());
+        res.status(201).location(`http://localhost:3000/blogs/${blogID}`).send({ blogID });
       } catch (e) {
         res.sendStatus(400);
         throw new Error(e);
@@ -173,18 +191,34 @@ export default class BlogController implements IController {
 
     });
 
-    //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
+    //patch a blog resource
+    //Body Parameters: content, titleImagePath, title
+    //Accept: application/json
+    //Response Content Type: application/json
     this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
+        //ensure request accept header matches the response Content Type header
+        if (req.accepts('application/json') === false) {
+          res.sendStatus(406);
+          return;
+        }
+
         //get the userID
         let userID: string = res.locals.userId;
 
-        //get the blog via the blogID
-        let blog: IBlog = await this.repo.find(searchParameters.BlogID, req.params.blogID);
+        //extract the request parameter
+        let blogid: string = req.params.blogID;
 
-        //TODO: Make blog method to do this b/c this is not/shouldn't be controller logic 
-        //check if the incoming userID isn't the same as the blog identified with the incoming blogID
-        if (userID !== blog.username) {
+        //extract the body parameters
+        let title: string = req.body.title as string;
+        let content: string = req.body.content as string;
+        let titleimagepath: string = req.body.titleImagePath as string;
+
+        //get the blog via the blogID
+        let blog: IBlog = await this.repo.find(searchParameters.BlogID, blogid);
+
+        //check if the user was not the one that created the blog
+        if (!blog.creator(userID)) {
           //the user does not have authorization to edit this blog
           res.sendStatus(400);
           return;
@@ -193,29 +227,32 @@ export default class BlogController implements IController {
         //store incoming request parameters 
         let editBlog: IBlog = new Blog();
 
-        //TODO: Make blog method to do this b/c this is not/shouldn't be controller logic 
         //determine which blog properties are being patched based off request body parameters
-        if (req.body.content !== null && req.body.content !== undefined) {
-          editBlog.content = req.body.content;
+        if (content !== undefined) {
+          editBlog.setContent(content);
         }
 
         //blog title
-        if (req.body.title !== null && req.body.title !== undefined) {
-          editBlog.title = req.body.title;
+        if (title !== undefined) {
+          editBlog.setTitle(title);
         }
 
         //blog's path to titleimage
-        if (req.body.titleImagePath !== null && req.body.titleImagePath !== undefined) {
-          editBlog.titleimagepath = req.body.titleImagePath;
+        if (titleimagepath !== undefined) {
+          editBlog.setTitleimagepath(titleimagepath);
         }
 
-        //blog's username value -- TODO: Determine if this is necessary here
-        if (req.body.username !== null && req.body.username !== undefined) {
-          editBlog.username = req.body.username;
+        //set the blogid to a number
+        let blogidNumber: number = parseInt(blogid);
+
+        //check if blogidNumber is NaN
+        if (isNaN(blogidNumber)) {
+          res.sendStatus(400);
+          return;
         }
 
         //set blog object's blogID using the incoming request parameter
-        editBlog.blogid = parseInt(req.params.blogID);
+        editBlog.setBlogid(blogidNumber);
 
         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
         blog = await this.repo.update(editBlog);
@@ -223,7 +260,6 @@ export default class BlogController implements IController {
         //send no content success
         res.status(200).send(blog);
       } catch (e) {
-        console.error(e);
         res.sendStatus(400);
       }
     });

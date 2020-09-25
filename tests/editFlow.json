@@ -1,0 +1,29 @@
+[
+  {
+    "username": "First User",
+    "password": "1234",
+    "firstname": "Roger",
+    "lastname": "Stone",
+    "bio": "First of 7 children.",
+    "profilePicPath": "",
+    "accept": "application/json"
+  },
+  {
+    "username": "First User",
+    "password": "1234",
+    "firstname": "",
+    "lastname": "",
+    "bio": "",
+    "profilePicPath": "",
+    "accept": "application/json"
+  },
+  {
+    "username": "First User",
+    "password": "1234",
+    "firstname": "Roger",
+    "lastname": "Stone",
+    "bio": "First of 7 children.",
+    "profilePicPath": "",
+    "accept": "text/html"
+  }
+]

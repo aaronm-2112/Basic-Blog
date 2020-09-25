@@ -24,7 +24,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
 
   //find all blogs using a certain search criteria 
   //Uses the blogid to perform basic keyset pagination. Returns only 10 results per search.
-  async findAll(searchBy: searchParameters, value: string, key: string, keyCondition: string): Promise<IBlog[]> {
+  async findAll(searchBy: searchParameters, searchByValue: string, key: string, keyCondition: string): Promise<IBlog[]> {
     try {
       let query: string;
       //determine query condition
@@ -33,7 +33,8 @@ export default class BlogPGSQLRepo implements IBlogRepository {
         query = `SELECT * FROM blogs WHERE ${searchBy} = $1 AND blogid ${keyCondition} ${key} LIMIT 10`;
       } else if (keyCondition === '<') {
         //analagous to getting the previous results
-        query = `SELECT * FROM blogs WHERE ${searchBy} = $1 AND blogid < ${key} AND blogid >= ${key} - 10 LIMIT 10`;
+        //query = `SELECT * FROM blogs WHERE ${searchBy} = $1 AND blogid < ${key} AND blogid >= ${key} - 10 LIMIT 10`;
+        query = `SELECT * FROM blogs WHERE ${searchBy} = $1 AND blogid < ${key} ORDER BY blogid DESC LIMIT 10`;
       } else {
         //TODO: Handle more appropriately
         //unaccepted condition return 
@@ -45,7 +46,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       let values: string[] = [];
 
       //add the search value to the value collection
-      values.push(value);
+      values.push(searchByValue);
 
       //execute the query
       let result = await this.pool.query(query, values);

@@ -65,35 +65,44 @@ export default class UserPGSQLRepo implements IRepository {
 
   //TODO: use search criteria and searchby values
   async find(username: string): Promise<IUser> {
-    //create the find query
-    let query: string = `SELECT * FROM users WHERE username = $1`;
+    try {
+      //create the find query
+      let query: string = `SELECT * FROM users WHERE username = $1`;
 
-    //create the query values
-    let values: Array<string> = new Array();
-    values.push(username);
+      //create the query values
+      let values: Array<string> = new Array();
+      values.push(username);
 
-    //execute the query and store the result
-    let result = await this.pool.query(query, values);
+      //execute the query and store the result
+      let result = await this.pool.query(query, values);
 
-    //extract the rows from the result
-    let rows: any[] = result.rows;
+      //extract the rows from the result
+      let rows: any[] = result.rows;
 
-    //create a user object
-    let user: IUser = new User();
+      if (!rows.length) {
+        throw new Error("Not found");
+      }
 
-    // fill out the user object and return it
-    rows.forEach(row => {
-      user.setEmail(row["email"]);
-      user.setBio(row["bio"]);
-      user.setFirstname(row["firstname"]);
-      user.setLastname(row["lastname"]);
-      user.setUsername(row["username"]);
-      user.setPassword(row["password"]);
-      user.setProfilePicPath(row["profilepic"]);
-    });
+      //create a user object
+      let user: IUser = new User();
 
-    //return the user value
-    return user;
+      // fill out the user object and return it
+      rows.forEach(row => {
+        user.userid = row["userid"];
+        user.setEmail(row["email"]);
+        user.setBio(row["bio"]);
+        user.setFirstname(row["firstname"]);
+        user.setLastname(row["lastname"]);
+        user.setUsername(row["username"]);
+        user.setPassword(row["password"]);
+        user.setProfilePicPath(row["profilepic"]);
+      });
+
+      //return the user value
+      return user;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   async create(user: IUser): Promise<number> {

@@ -68,14 +68,10 @@ function login(app, userRepository) {
                             samePassword = _a.sent();
                             if (!samePassword) {
                                 //stop execution-- incorrect password
-                                res.sendStatus(400);
+                                res.sendStatus(403);
                                 return [2 /*return*/];
                             }
-                            console.log(user);
                             jwtBearerToken = auth.createJWT(user);
-                            console.log(jwtBearerToken);
-                            //send back the bearer token to the user KEY: Too long to be secure. Usually other tactics as well are used. But this is practice. 
-                            //res.status(200).send({ "idToken": jwtBearerToken, "expiresIn": "2 days" }) //TODO: Make configurable but is fine for now.
                             //cookies are sent automaticlaly with every request
                             res.cookie('jwt', jwtBearerToken, {
                                 expires: new Date(Date.now() + 1728000),

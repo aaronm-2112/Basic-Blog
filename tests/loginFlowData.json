@@ -1,0 +1,44 @@
+[
+  {
+    "accept": "application/json",
+    "username": "First User",
+    "editPageValue": "false",
+    "password": "1234"
+  },
+  {
+    "accept": "application/json",
+    "username": "First User",
+    "editPageValue": "true",
+    "password": "1234"
+  },
+  {
+    "accept": "text/html",
+    "username": "First User",
+    "editPageValue": "false",
+    "password": "1234"
+  },
+  {
+    "accept": "text/html",
+    "username": "First User",
+    "editPageValue": "true",
+    "password": "1234"
+  },
+  {
+    "accept": "application/xml",
+    "username": "First User",
+    "editPageValue": "false",
+    "password": "1234"
+  },
+  {
+    "accept": "application/json",
+    "username": "Larry",
+    "editPageValue": "false",
+    "password": "1234"
+  },
+  {
+    "accept": "application/json",
+    "username": "",
+    "editPageValue": "false",
+    "password": "1234"
+  }
+]

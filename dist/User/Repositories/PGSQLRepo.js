@@ -96,10 +96,11 @@ var UserPGSQLRepo = /** @class */ (function () {
     //TODO: use search criteria and searchby values
     UserPGSQLRepo.prototype.find = function (username) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, values, result, rows, user;
+            var query, values, result, rows, user_1, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 2, , 3]);
                         query = "SELECT * FROM users WHERE username = $1";
                         values = new Array();
                         values.push(username);
@@ -107,26 +108,34 @@ var UserPGSQLRepo = /** @class */ (function () {
                     case 1:
                         result = _a.sent();
                         rows = result.rows;
-                        user = new User_1.default();
+                        if (!rows.length) {
+                            throw new Error("Not found");
+                        }
+                        user_1 = new User_1.default();
                         // fill out the user object and return it
                         rows.forEach(function (row) {
-                            user.setEmail(row["email"]);
-                            user.setBio(row["bio"]);
-                            user.setFirstname(row["firstname"]);
-                            user.setLastname(row["lastname"]);
-                            user.setUsername(row["username"]);
-                            user.setPassword(row["password"]);
-                            user.setProfilePicPath(row["profilepic"]);
+                            user_1.userid = row["userid"];
+                            user_1.setEmail(row["email"]);
+                            user_1.setBio(row["bio"]);
+                            user_1.setFirstname(row["firstname"]);
+                            user_1.setLastname(row["lastname"]);
+                            user_1.setUsername(row["username"]);
+                            user_1.setPassword(row["password"]);
+                            user_1.setProfilePicPath(row["profilepic"]);
                         });
                         //return the user value
-                        return [2 /*return*/, user];
+                        return [2 /*return*/, user_1];
+                    case 2:
+                        e_2 = _a.sent();
+                        throw new Error(e_2);
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
     UserPGSQLRepo.prototype.create = function (user) {
         return __awaiter(this, void 0, void 0, function () {
-            var salt, hash, query, values, result, userid, e_2;
+            var salt, hash, query, values, result, userid, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -159,8 +168,8 @@ var UserPGSQLRepo = /** @class */ (function () {
                         //send the userid
                         return [2 /*return*/, userid];
                     case 4:
-                        e_2 = _a.sent();
-                        throw new Error(e_2);
+                        e_3 = _a.sent();
+                        throw new Error(e_3);
                     case 5: return [2 /*return*/];
                 }
             });
@@ -168,7 +177,7 @@ var UserPGSQLRepo = /** @class */ (function () {
     };
     UserPGSQLRepo.prototype.update = function (user) {
         return __awaiter(this, void 0, void 0, function () {
-            var queryProperties, queryValues, userEntries, parameterNumber, entry, query, result, row, updatedUser, e_3;
+            var queryProperties, queryValues, userEntries, parameterNumber, entry, query, result, row, updatedUser, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -209,8 +218,8 @@ var UserPGSQLRepo = /** @class */ (function () {
                         updatedUser.setPassword(row.password);
                         return [2 /*return*/, updatedUser];
                     case 2:
-                        e_3 = _a.sent();
-                        throw new Error(e_3);
+                        e_4 = _a.sent();
+                        throw new Error(e_4);
                     case 3: return [2 /*return*/];
                 }
             });

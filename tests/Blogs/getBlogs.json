@@ -1,0 +1,44 @@
+[
+  {
+    "key": "1000",
+    "keyCondition": "<",
+    "param": "username",
+    "value": "First User",
+    "accept": "application/json"
+  },
+  {
+    "key": "1",
+    "keyCondition": ">",
+    "param": "username",
+    "value": "First User",
+    "accept": "application/json"
+  },
+  {
+    "key": "1000",
+    "keyCondition": "<",
+    "param": "title",
+    "value": "Blog 4",
+    "accept": "application/json"
+  },
+  {
+    "key": "1",
+    "keyCondition": ">",
+    "param": "title",
+    "value": "Blog 4",
+    "accept": "application/json"
+  },
+  {
+    "key": "1000",
+    "keyCondition": "<",
+    "param": "titless",
+    "value": "Blog 4",
+    "accept": "application/json"
+  },
+  {
+    "key": "1000",
+    "keyCondition": "<",
+    "param": "titless",
+    "value": "Blog 4",
+    "accept": "text/html"
+  }
+]

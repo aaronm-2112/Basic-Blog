@@ -101,6 +101,7 @@ var UserController = /** @class */ (function () {
                         return [4 /*yield*/, this.userRepository.find(usernamePassedIn)];
                     case 1:
                         user = _a.sent();
+                        console.log(user);
                         verifiedUsername = res.locals.userId;
                         //check if the username of the client making the request matches that of the user found with the route parameter
                         if (!user.usernameMatches(verifiedUsername)) {
@@ -185,7 +186,7 @@ var UserController = /** @class */ (function () {
                         email = req.body.email;
                         username = req.body.username;
                         //verify that the essential information is provided
-                        if (username === undefined || email === undefined || password === undefined) {
+                        if (username === undefined || email === undefined || password === undefined || username === "" || email === "" || password === "") {
                             //if not return 400 error
                             res.sendStatus(400);
                             return [2 /*return*/];

@@ -57,7 +57,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
     }
     //find all blogs using a certain search criteria 
     //Uses the blogid to perform basic keyset pagination. Returns only 10 results per search.
-    BlogPGSQLRepo.prototype.findAll = function (searchBy, value, key, keyCondition) {
+    BlogPGSQLRepo.prototype.findAll = function (searchBy, searchByValue, key, keyCondition) {
         return __awaiter(this, void 0, void 0, function () {
             var query, values, result, rows, blogs_1, blog_1, e_1;
             return __generator(this, function (_a) {
@@ -72,7 +72,8 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         }
                         else if (keyCondition === '<') {
                             //analagous to getting the previous results
-                            query = "SELECT * FROM blogs WHERE " + searchBy + " = $1 AND blogid < " + key + " AND blogid >= " + key + " - 10 LIMIT 10";
+                            //query = `SELECT * FROM blogs WHERE ${searchBy} = $1 AND blogid < ${key} AND blogid >= ${key} - 10 LIMIT 10`;
+                            query = "SELECT * FROM blogs WHERE " + searchBy + " = $1 AND blogid < " + key + " ORDER BY blogid DESC LIMIT 10";
                         }
                         else {
                             //TODO: Handle more appropriately
@@ -81,7 +82,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         }
                         values = [];
                         //add the search value to the value collection
-                        values.push(value);
+                        values.push(searchByValue);
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 1:
                         result = _a.sent();

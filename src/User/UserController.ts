@@ -76,6 +76,8 @@ export default class UserController implements IController {
         //find the user with the user repository using the route parameter
         let user: IUser = await this.userRepository.find(usernamePassedIn);
 
+        console.log(user);
+
         //extract the username of the client making the request from the auth service
         let verifiedUsername: string = res.locals.userId;
 
@@ -161,7 +163,7 @@ export default class UserController implements IController {
         let username: string = req.body.username as string;
 
         //verify that the essential information is provided
-        if (username === undefined || email === undefined || password === undefined) {
+        if (username === undefined || email === undefined || password === undefined || username === "" || email === "" || password === "") {
           //if not return 400 error
           res.sendStatus(400);
           return;
