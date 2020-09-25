@@ -220,7 +220,7 @@ export default class BlogController implements IController {
         //check if the user was not the one that created the blog
         if (!blog.creator(userID)) {
           //the user does not have authorization to edit this blog
-          res.sendStatus(400);
+          res.sendStatus(403);
           return;
         }
 

@@ -10,6 +10,38 @@ var Blog = /** @class */ (function () {
         this.content = "";
         this.titleimagepath = "";
     }
+    //getters
+    Blog.prototype.getBlogid = function () {
+        return this.blogid;
+    };
+    Blog.prototype.getUsername = function () {
+        return this.username;
+    };
+    Blog.prototype.getTitle = function () {
+        return this.title;
+    };
+    Blog.prototype.getContent = function () {
+        return this.content;
+    };
+    Blog.prototype.getTitleimagepath = function () {
+        return this.titleimagepath;
+    };
+    //setters
+    Blog.prototype.setBlogid = function (id) {
+        this.blogid = id;
+    };
+    Blog.prototype.setUsername = function (username) {
+        this.username = username;
+    };
+    Blog.prototype.setTitle = function (title) {
+        this.title = title;
+    };
+    Blog.prototype.setContent = function (content) {
+        this.content = content;
+    };
+    Blog.prototype.setTitleimagepath = function (titleimagepath) {
+        this.titleimagepath = titleimagepath;
+    };
     //validate if a user owns this blog resource
     Blog.prototype.creator = function (incomingUser) {
         if (this.username === incomingUser) {

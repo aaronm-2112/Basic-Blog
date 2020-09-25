@@ -190,7 +190,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         //traverse the blog's entries
                         for (entry in blogEntries) {
                             //determine which blog properties need to be updated
-                            if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogid' && blogEntries[entry][1] !== "") { //empty string not acceptable update value
+                            if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogid' && blogEntries[entry][0] !== "username") { //empty string not acceptable update value
                                 //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
                                 queryProperties.push(blogEntries[entry][0] + (" = $" + parameterNumber));
                                 //push the blog property value into the list of query values

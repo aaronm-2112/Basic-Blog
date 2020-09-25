@@ -56,6 +56,8 @@ var CommentControler = /** @class */ (function () {
         //query parameters: blog, reply, replyto, orderby, likes, commentid
         //replyto is 0 when the requested comments are not replies
         //By default it searches all comments for the most liked, top level comments
+        //Accept: application/json
+        //Response Content Type: application/json
         this.router.get('/comments', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogid, reply, replyto, orderby, likes, commentid, flip, comments, e_1;
             var _a, _b;

@@ -28,11 +28,12 @@ export default class CommentControler implements IController {
     //query parameters: blog, reply, replyto, orderby, likes, commentid
     //replyto is 0 when the requested comments are not replies
     //By default it searches all comments for the most liked, top level comments
+    //Accept: application/json
+    //Response Content Type: application/json
     this.router.get('/comments', async (req: Request, res: Response) => {
       try {
-
         //ensure header is application/json
-        if (req.accepts('application/json') === false && req.accepts('text/html') === 'text/html') {
+        if (req.accepts('application/json') === false) {
           res.sendStatus(406);
           return;
         }

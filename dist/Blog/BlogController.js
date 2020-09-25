@@ -190,6 +190,7 @@ var BlogController = /** @class */ (function () {
         //create a blog resource --return blogID 
         //A blog resource contains a path to the blog's title image if one was uploaded.
         //Body parameters: title, content
+        //Accept: application/json
         //Response Content Type: Application/json
         this.router.post('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blog, blogID, e_3;
@@ -223,44 +224,56 @@ var BlogController = /** @class */ (function () {
                 }
             });
         }); });
-        //patch a blog entity with content, titleImagePath, username, or the title as properties that can be updated
+        //patch a blog resource
+        //Body Parameters: content, titleImagePath, title
+        //Accept: application/json
+        //Response Content Type: application/json
         this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userID, blog, editBlog, e_4;
+            var userID, blogid, title, content, titleimagepath, blog, editBlog, blogidNumber, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
+                        //ensure request accept header matches the response Content Type header
+                        if (req.accepts('application/json') === false) {
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
                         userID = res.locals.userId;
-                        return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, req.params.blogID)];
+                        blogid = req.params.blogID;
+                        title = req.body.title;
+                        content = req.body.content;
+                        titleimagepath = req.body.titleImagePath;
+                        return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogid)];
                     case 1:
                         blog = _a.sent();
-                        //TODO: Make blog method to do this b/c this is not/shouldn't be controller logic 
-                        //check if the incoming userID isn't the same as the blog identified with the incoming blogID
-                        if (userID !== blog.username) {
+                        //check if the user was not the one that created the blog
+                        if (!blog.creator(userID)) {
                             //the user does not have authorization to edit this blog
-                            res.sendStatus(400);
+                            res.sendStatus(403);
                             return [2 /*return*/];
                         }
                         editBlog = new Blog_1.default();
-                        //TODO: Make blog method to do this b/c this is not/shouldn't be controller logic 
                         //determine which blog properties are being patched based off request body parameters
-                        if (req.body.content !== null && req.body.content !== undefined) {
-                            editBlog.content = req.body.content;
+                        if (content !== undefined) {
+                            editBlog.setContent(content);
                         }
                         //blog title
-                        if (req.body.title !== null && req.body.title !== undefined) {
-                            editBlog.title = req.body.title;
+                        if (title !== undefined) {
+                            editBlog.setTitle(title);
                         }
                         //blog's path to titleimage
-                        if (req.body.titleImagePath !== null && req.body.titleImagePath !== undefined) {
-                            editBlog.titleimagepath = req.body.titleImagePath;
+                        if (titleimagepath !== undefined) {
+                            editBlog.setTitleimagepath(titleimagepath);
                         }
-                        //blog's username value -- TODO: Determine if this is necessary here
-                        if (req.body.username !== null && req.body.username !== undefined) {
-                            editBlog.username = req.body.username;
+                        blogidNumber = parseInt(blogid);
+                        //check if blogidNumber is NaN
+                        if (isNaN(blogidNumber)) {
+                            res.sendStatus(400);
+                            return [2 /*return*/];
                         }
                         //set blog object's blogID using the incoming request parameter
-                        editBlog.blogid = parseInt(req.params.blogID);
+                        editBlog.setBlogid(blogidNumber);
                         return [4 /*yield*/, this.repo.update(editBlog)];
                     case 2:
                         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
@@ -270,7 +283,6 @@ var BlogController = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 3:
                         e_4 = _a.sent();
-                        console.error(e_4);
                         res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
