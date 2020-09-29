@@ -111,7 +111,7 @@ export default class UserController implements IController {
               userName: user.getUsername(), firstName: user.getFirstname(),
               lastName: user.getLastname(), bio: user.getBio(),
               blogDetails: blogDetails,
-              profileImagePath: user.getProfilePicPath()
+              profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
             });
           } else {
             //default to a JSON representation of the user profile information
@@ -119,7 +119,7 @@ export default class UserController implements IController {
               userName: user.getUsername(), firstName: user.getFirstname(),
               lastName: user.getLastname(), bio: user.getBio(),
               blogDetails: blogDetails,
-              profileImagePath: user.getProfilePicPath()
+              profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
             });
           }
         } else {
@@ -128,7 +128,7 @@ export default class UserController implements IController {
             //send back the user edit view
             res.render('ProfileEdit', {
               userName: user.getUsername(), firstName: user.getFirstname(),
-              lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
+              lastName: user.getLastname(), bio: user.getBio(), profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
             });
           } else {
             //send a JSON representation

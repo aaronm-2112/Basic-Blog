@@ -1,0 +1,1468 @@
+{
+	"info": {
+		"_postman_id": "bae4fabb-32a2-4025-8245-789317053fc9",
+		"name": "basic_blog",
+		"description": "A blog application.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User Tests",
+			"item": [
+				{
+					"name": "Login Flow",
+					"item": [
+						{
+							"name": "Login",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "16dc56a3-b565-474d-b214-21e0a7be2edf",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "df431308-b916-4718-8d41-8eeacbe4ea63",
+										"exec": [
+											"//status code tests\r",
+											"pm.test(\"Response should be 200\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(200);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 400\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(400);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 403\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(403);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Content type should be text/plain\", function(){\r",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"text/plain; charset=utf-8\");\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Cookie should be returned on success\", () => {\r",
+											"   pm.expect(pm.cookies.has('jwt')).to.be.true;\r",
+											"})\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/login",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"login"
+									]
+								},
+								"description": "A request to allow a user to login. Returns a JWT."
+							},
+							"response": []
+						},
+						{
+							"name": "Get User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dc190305-f583-4815-8375-55ca9692b9cf",
+										"exec": [
+											"pm.test(\"Response should be 200\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(200);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 406\", function(){\r",
+											"    pm.response.to.have.status(406);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 403 forbidden.\", () => {\r",
+											"    pm.response.to.have.status(403); \r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be a 400\", () => {\r",
+											"    pm.response.to.have.status(400); \r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be a 404\", () => {\r",
+											"    pm.response.to.have.status(404); \r",
+											"})\r",
+											"\r",
+											"pm.test(\"Accept, Response content type and body are json\", () => {\r",
+											"    //get the accept header value\r",
+											"    let accept = pm.iterationData.get(\"accept\");\r",
+											"    //assert the accept is application/json\r",
+											"    pm.expect(accept).to.eql(\"application/json\");\r",
+											"    //assert the content type in the response is eqal to the accept value\r",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+											"    //assert that the response body is json\r",
+											"    pm.response.to.have.jsonBody;\r",
+											"})\r",
+											"\r",
+											"pm.test(\"JSON body is acceptable\", () => {\r",
+											"    //parse the response data as json\r",
+											"    const jsonData = pm.response.json();\r",
+											"    //get the query editpage query value from the collection iteration data\r",
+											"    let edit = pm.iterationData.get(\"editPageValue\");\r",
+											"    //check if the edit value is false\r",
+											"    if(edit === \"false\"){\r",
+											"         //ensure all the response keys are returned\r",
+											"         pm.expect(jsonData).to.have.property('userName'); // passes\r",
+											"         pm.expect(jsonData).to.have.property('firstName'); // passes\r",
+											"         pm.expect(jsonData).to.have.property('lastName'); // passes\r",
+											"         pm.expect(jsonData).to.have.property('bio'); // passes\r",
+											"         pm.expect(jsonData).to.have.property('profileImagePath'); // passes\r",
+											"         pm.expect(jsonData).to.have.property('blogDetails'); // passes\r",
+											"    }else{\r",
+											"         //ensure all the response keys are returned\r",
+											"         pm.expect(jsonData).to.have.property('userName'); // passes\r",
+											"         pm.expect(jsonData).to.have.property('firstName'); // passes\r",
+											"         pm.expect(jsonData).to.have.property('lastName'); // passes\r",
+											"         pm.expect(jsonData).to.have.property('bio'); // passes\r",
+											"        pm.expect(jsonData).to.have.property('profileImagePath'); // passes\r",
+											"    }\r",
+											"    //the username --the only guranteed value -- needs to be at least length of 1\r",
+											"    pm.expect(jsonData.userName.length).to.be.gte(1);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Accept, Response content type is text/html\", () => {\r",
+											"     //get the accept header value\r",
+											"    let accept = pm.iterationData.get(\"accept\");\r",
+											"    //assert the accept is application/json\r",
+											"    pm.expect(accept).to.eql(\"text/html\");\r",
+											"    //assert that the response header's content type is text/html\r",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('text/html; charset=utf-8');\r",
+											"})\r",
+											"\r",
+											"//TODO: HTML response is acceptable\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "0657ba0d-ed72-4825-bbdb-2802fa2bce94",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "{{accept}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/users/{{username}}?editPage=false",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users",
+										"{{username}}"
+									],
+									"query": [
+										{
+											"key": "editPage",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "User logs in then their data is retrieved.",
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Signup Flow",
+					"item": [
+						{
+							"name": "Create User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "357eaf5f-7151-4ede-b149-fad77b8eecb2",
+										"exec": [
+											"//status code tests\r",
+											"pm.test(\"Response should be 201\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(201);\r",
+											"})\r",
+											"\r",
+											"//status code tests\r",
+											"pm.test(\"Response should be 400\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(400);\r",
+											"})\r",
+											"\r",
+											"//status code tests\r",
+											"pm.test(\"Response should be 406\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(406);\r",
+											"})\r",
+											"\r",
+											"//Testing the JSON body and content types\r",
+											"pm.test(\"Response content type header is application/json\", () => {\r",
+											"    //assert the content type in the response is eqal to the accept value\r",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response JSON body is acceptable\", () => {\r",
+											"    //assert that the response body is json\r",
+											"    pm.response.to.have.jsonBody;\r",
+											"    //parse the response data as json\r",
+											"    const jsonData = pm.response.json();\r",
+											"    //ensure all the response keys are returned\r",
+											"    pm.expect(jsonData).to.have.property('userid'); // passes\r",
+											"     //the username --the only guranteed value -- needs to be at least length of 1\r",
+											"    pm.expect(jsonData.userid).to.be.gte(1);\r",
+											"})\r",
+											"\r",
+											"//ensure the locatio header is set to find the created resource\r",
+											"pm.test(\"Location header is set\", () => {\r",
+											"    const jsonData = pm.response.json();\r",
+											"    let id = jsonData.userid; \r",
+											"    let location = pm.request.url + `/${id}`; \r",
+											"    pm.expect(pm.response.headers.get(\"Location\")).to.be.eql(location); \r",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/users",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users"
+									]
+								},
+								"description": "Creates a user in the /users resource."
+							},
+							"response": []
+						},
+						{
+							"name": "Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "0a2145f8-9ae1-4dbc-a1ac-18da5da35ba1",
+										"exec": [
+											"//status code tests\r",
+											"pm.test(\"Response should be 200\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(200);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 400\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(400);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 403\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(403);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Content type should be text/plain\", function(){\r",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"text/plain; charset=utf-8\");\r",
+											"})\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/login",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"login"
+									]
+								},
+								"description": "A request to allow a user to login. Returns a JWT."
+							},
+							"response": []
+						}
+					],
+					"description": "User creates an account and then logs in. ",
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Edit flow",
+					"item": [
+						{
+							"name": "Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "28088a4c-fc68-455c-8d59-558e14b68e3b",
+										"exec": [
+											"//status code tests\r",
+											"pm.test(\"Response should be 200\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(200);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 400\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(400);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 403\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(403);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Content type should be text/plain\", function(){\r",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"text/plain; charset=utf-8\");\r",
+											"})\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/login",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"login"
+									]
+								},
+								"description": "A request to allow a user to login. Returns a JWT."
+							},
+							"response": []
+						},
+						{
+							"name": "Update User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "110a7a42-2282-4533-b92f-1fcab81ca4c6",
+										"exec": [
+											"//status code tests\r",
+											"pm.test(\"Response should be 200\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(200);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 400\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(400);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response should be 406\", function(){\r",
+											"    //ensure proper status code\r",
+											"    pm.response.to.have.status(406);\r",
+											"})\r",
+											"\r",
+											"//Testing the JSON body and content types\r",
+											"pm.test(\"Response content type header is application/json\", () => {\r",
+											"    //assert the content type in the response is eqal to the accept value\r",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response JSON body is acceptable\", () => {\r",
+											"    //assert that the response body is json\r",
+											"    pm.response.to.have.jsonBody;\r",
+											"    //parse the response data as json\r",
+											"    const jsonData = pm.response.json();\r",
+											"    //ensure all the response keys are returned\r",
+											"    pm.expect(jsonData).to.have.property('userid'); // passes\r",
+											"    pm.expect(jsonData.userid).to.be.gte(1);\r",
+											"    pm.expect(jsonData).to.have.property('username'); // passes\r",
+											"    pm.expect(jsonData.username.length).to.be.gte(1);\r",
+											"    pm.expect(jsonData).to.have.property('password'); // passes\r",
+											"    pm.expect(jsonData.password.length).to.be.gte(1);\r",
+											"\r",
+											"    pm.expect(jsonData).to.have.property('firstname'); // passes\r",
+											"    pm.expect(jsonData).to.have.property('lastname'); // passes\r",
+											"    pm.expect(jsonData).to.have.property('bio'); // passes\r",
+											"    pm.expect(jsonData).to.have.property('profilepic'); // passes\r",
+											"})\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Accept",
+										"type": "text",
+										"value": "{{accept}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"firstName\": \"{{firstname}}\",\r\n    \"lastName\": \"{{lastname}}}\",\r\n    \"bio\": \"{{bio}}\",\r\n    \"profilePicPath\": \"{{profilePicPath}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/users",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "User logs in and then edits their profile.",
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Authentication Tests",
+					"item": [],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Login Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "7884695e-1bf2-40c7-8b97-28219ac4dd48",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "f7bed3dd-b981-403a-b2d5-84a8c6a1d340",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 200\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 403\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(403);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Content type should be text/plain\", function(){\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"text/plain; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Cookie should be returned on success\", () => {\r",
+									"   pm.expect(pm.cookies.has('jwt')).to.be.true;\r",
+									"})\r",
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"First User\",\n    \"password\": \"1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "A request to allow a user to login. Returns a JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile(html)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "text/html",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/users/First User?profile=true",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"First User"
+							],
+							"query": [
+								{
+									"key": "profile",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "ALl tests for the user routes.",
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Blog Tests",
+			"item": [
+				{
+					"name": "Get Blog",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "25e6cdd4-a994-41ed-a52f-b354853838da",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 200\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 403\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(403);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 406\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(406);\r",
+									"})\r",
+									"\r",
+									"//Testing the JSON body and content types\r",
+									"pm.test(\"Response content type header and Accept header are application/json\", () => {\r",
+									"    //assert that accept value is application/json\r",
+									"    let accept = pm.request.headers.get(\"Accept\"); \r",
+									"    pm.expect(accept).to.be.eql(\"application/json\"); \r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"//ensure the json body is valid in an application/json response\r",
+									"pm.test(\"Application/JSON body is valid\", () => {\r",
+									"    let jsonData = pm.response.json(); \r",
+									"     //ensure all the response keys are returned\r",
+									"    pm.expect(jsonData).to.have.property('title'); // passes\r",
+									"     //ensure all the response keys are returned\r",
+									"    pm.expect(jsonData).to.have.property('content'); // passes\r",
+									"     //ensure all the response keys are returned\r",
+									"    pm.expect(jsonData).to.have.property('username'); // passes\r",
+									"     //ensure all the response keys are returned\r",
+									"    pm.expect(jsonData).to.have.property('titleImagePath'); // passes\r",
+									"\r",
+									"})\r",
+									"\r",
+									"\r",
+									"//Testing the Content Type response header for text/html\r",
+									"pm.test(\"Response content type header and Accept header are text/html\", () => {\r",
+									"    //assert that accept value is application/json\r",
+									"    let accept = pm.request.headers.get(\"Accept\"); \r",
+									"    pm.expect(accept).to.be.eql(\"text/html\");\r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"text/html; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"//ensure the body is valid in an text/html response\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accet",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Accept",
+								"value": "{{accept}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/blogs/{{blogid}}?editPage={{edit}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"blogs",
+								"{{blogid}}"
+							],
+							"query": [
+								{
+									"key": "editPage",
+									"value": "{{edit}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Blogs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4f70a3f8-ed56-401d-8c1c-3ec55d56c14f",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 200\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 406\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(406);\r",
+									"})\r",
+									"\r",
+									"//response content type\r",
+									"pm.test(\"Response content type header is application/json\", () => {\r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response JSON body is acceptable\", () => {\r",
+									"    //assert that the response body is json\r",
+									"    pm.response.to.have.jsonBody;\r",
+									"    //parse the response data as json\r",
+									"    const blogsCollection = pm.response.json();\r",
+									"    //check if any blogs were returned\r",
+									"    if(blogsCollection.length >= 1) {\r",
+									"        for(let i=0; i < blogsCollection.length; i++){\r",
+									"        //if so ensure the first element has all of the required properties\r",
+									"        pm.expect(blogsCollection[i]).to.have.property('blogid'); // passes\r",
+									"        pm.expect(blogsCollection[i]).to.have.property('username'); // passes\r",
+									"        pm.expect(blogsCollection[i]).to.have.property('title'); // passes\r",
+									"        pm.expect(blogsCollection[i]).to.have.property('content'); // passes\r",
+									"        pm.expect(blogsCollection[i]).to.have.property('titleimagepath'); // passes\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "{{accept}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/blogs?param={{param}}&value={{value}}&key={{key}}&keyCondition={{keyCondition}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"blogs"
+							],
+							"query": [
+								{
+									"key": "param",
+									"value": "{{param}}"
+								},
+								{
+									"key": "value",
+									"value": "{{value}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "keyCondition",
+									"value": "{{keyCondition}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Blog",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "971f5a2f-f654-4c1c-aefc-7f0e5bd72b43",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 201\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(201);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 403\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(403);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 406\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(406);\r",
+									"})\r",
+									"\r",
+									"\r",
+									"//Testing the JSON body and content types\r",
+									"pm.test(\"Response content type header is application/json\", () => {\r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response JSON body is acceptable\", () => {\r",
+									"    //assert that the response body is json\r",
+									"    pm.response.to.have.jsonBody;\r",
+									"    //parse the response data as json\r",
+									"    const jsonData = pm.response.json();\r",
+									"    let id = jsonData.blogID; \r",
+									"     //the username --the only guranteed value -- needs to be at least length of 1\r",
+									"    pm.expect(id).to.be.gte(1);\r",
+									"})\r",
+									"\r",
+									"//ensure the locatio header is set to find the created resource\r",
+									"pm.test(\"Location header is set\", () => {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    let id = jsonData.blogID; \r",
+									"    let location = pm.request.url + `/${id}`; \r",
+									"    pm.expect(pm.response.headers.get(\"Location\")).to.be.eql(location); \r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Another Blog\",\r\n    \"content\": \"This is anther blog with content.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/blogs",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"blogs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patch blog",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ce81cb86-71e0-489c-b4fd-f4a06d4db95c",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 200\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 403\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(403);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 406\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(406);\r",
+									"})\r",
+									"\r",
+									"//json body testing//Testing the JSON body and content types\r",
+									"pm.test(\"Response content type header is application/json\", () => {\r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response JSON body is acceptable\", () => {\r",
+									"    //assert that the response body is json\r",
+									"    pm.response.to.have.jsonBody;\r",
+									"    //parse the response data as json\r",
+									"    const jsonData = pm.response.json();\r",
+									"    console.log(jsonData);\r",
+									"    //ensure all the response keys are returned\r",
+									"    pm.expect(jsonData).to.have.property('blogid'); // passes\r",
+									"    pm.expect(jsonData.blogid).to.be.gte(1);\r",
+									"    pm.expect(jsonData).to.have.property('title'); // passes\r",
+									"    pm.expect(jsonData).to.have.property('content'); // passes\r",
+									"    pm.expect(jsonData).to.have.property('username'); // passes\r",
+									"    pm.expect(jsonData.username.length).to.be.gte(1);\r",
+									"    pm.expect(jsonData).to.have.property('titleimagepath'); // passes\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\":\"{{content}}\",\r\n    \"title\":\"{{title}}\",\r\n    \"titleImagePath\": \"{{titleImagePath}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/blogs/{{blogid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"blogs",
+								"{{blogid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Comments Tests",
+			"item": [
+				{
+					"name": "Get Comments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8aaa76ba-8146-4903-87a3-0c4168214088",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 200\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 406\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(406);\r",
+									"})\r",
+									"\r",
+									"//response content type\r",
+									"pm.test(\"Response content type header is application/json\", () => {\r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response JSON body is acceptable\", () => {\r",
+									"    //assert that the response body is json\r",
+									"    pm.response.to.have.jsonBody;\r",
+									"    //parse the response data as json\r",
+									"    const commentsCollection = pm.response.json();\r",
+									"    //check if any blogs were returned\r",
+									"    if(commentsCollection.length >= 1) {\r",
+									"        for(let i=0; i < commentsCollection.length; i++){\r",
+									"        //if so ensure the first element has all of the required properties\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('commentid'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('username'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('blogid'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('content'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('reply'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('replyto'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('likes'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('likedby'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('deleted'); // passes\r",
+									"        pm.expect(commentsCollection[i]).to.have.property('created'); // passes\r",
+									"        }\r",
+									"    }\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"accept": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/comments",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"comments"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1c67eef9-3582-4ec5-b2f7-e8d9474ed412",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 200\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 406\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(406);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response content type header is application/json\", () => {\r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response JSON body is acceptable\", () => {\r",
+									"    //assert that the response body is json\r",
+									"    pm.response.to.have.jsonBody;\r",
+									"    //parse the response data as json\r",
+									"    const comment = pm.response.json();\r",
+									"    //check if any blogs were returned\r",
+									"        //if so ensure the first element has all of the required properties\r",
+									"        pm.expect(comment).to.have.property('commentid'); // passes\r",
+									"        pm.expect(comment).to.have.property('username'); // passes\r",
+									"        pm.expect(comment).to.have.property('blogid'); // passes\r",
+									"        pm.expect(comment).to.have.property('content'); // passes\r",
+									"        pm.expect(comment).to.have.property('reply'); // passes\r",
+									"        pm.expect(comment).to.have.property('replyto'); // passes\r",
+									"        pm.expect(comment).to.have.property('likes'); // passes\r",
+									"        pm.expect(comment).to.have.property('likedby'); // passes\r",
+									"        pm.expect(comment).to.have.property('deleted'); // passes\r",
+									"        pm.expect(comment).to.have.property('created'); // passes\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/comments/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"comments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cb41e5a8-db79-4c86-b11e-224e6a6ba579",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 201\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(201);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 406\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(406);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response content type header is application/json\", () => {\r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response JSON body is acceptable\", () => {\r",
+									"    //assert that the response body is json\r",
+									"    pm.response.to.have.jsonBody;\r",
+									"    //parse the response data as json\r",
+									"    const jsonData = pm.response.json();\r",
+									"    let id = jsonData.commentid; \r",
+									"     //the username --the only guranteed value -- needs to be at least length of 1\r",
+									"    pm.expect(id).to.be.gte(1);\r",
+									"})\r",
+									"\r",
+									"//ensure the locatio header is set to find the created resource\r",
+									"pm.test(\"Location header is set\", () => {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    let id = jsonData.commentid; \r",
+									"    let location = pm.request.url + `/${id}`; \r",
+									"    pm.expect(pm.response.headers.get(\"Location\")).to.be.eql(location); \r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\": \"OP this is hilarious\",\r\n    \"reply\": false,\r\n    \"replyto\": 0,\r\n    \"blogid\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/comments",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patch Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "16d67924-e3ef-4f88-a8b2-550286b0164e",
+								"exec": [
+									"//status code tests\r",
+									"pm.test(\"Response should be 200\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 400\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(400);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response should be 406\", function(){\r",
+									"    //ensure proper status code\r",
+									"    pm.response.to.have.status(406);\r",
+									"})\r",
+									"\r",
+									"\r",
+									"pm.test(\"Response content type header is application/json\", () => {\r",
+									"    //assert the content type in the response is eqal to the accept value\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response JSON body is acceptable\", () => {\r",
+									"    //assert that the response body is json\r",
+									"    pm.response.to.have.jsonBody;\r",
+									"    //parse the response data as json\r",
+									"    const comment = pm.response.json();\r",
+									"        //if so ensure the first element has all of the required properties\r",
+									"        pm.expect(comment).to.have.property('commentid'); // passes\r",
+									"        pm.expect(comment).to.have.property('username'); // passes\r",
+									"        pm.expect(comment).to.have.property('blogid'); // passes\r",
+									"        pm.expect(comment).to.have.property('content'); // passes\r",
+									"        pm.expect(comment).to.have.property('reply'); // passes\r",
+									"        pm.expect(comment).to.have.property('replyto'); // passes\r",
+									"        pm.expect(comment).to.have.property('likes'); // passes\r",
+									"        pm.expect(comment).to.have.property('likedby'); // passes\r",
+									"        pm.expect(comment).to.have.property('deleted'); // passes\r",
+									"        pm.expect(comment).to.have.property('created'); // passes\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\": \"The new content\",\r\n    \"like\": false,\r\n    \"deleted\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/comments/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"comments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Uploads",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e9fff4c0-b51a-41ad-97e3-cac607c0e2eb",
+						"exec": [
+							"//status code tests\r",
+							"pm.test(\"Response should be 201\", function(){\r",
+							"    //ensure proper status code\r",
+							"    pm.response.to.have.status(201);\r",
+							"})\r",
+							"\r",
+							"pm.test(\"Response should be 400\", function(){\r",
+							"    //ensure proper status code\r",
+							"    pm.response.to.have.status(400);\r",
+							"})\r",
+							"\r",
+							"pm.test(\"Response content type header is application/json\", () => {\r",
+							"    //assert the content type in the response is eqal to the accept value\r",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.eql(\"application/json; charset=utf-8\");\r",
+							"})\r",
+							"\r",
+							"//ensure the locatio header is set to find the created resource\r",
+							"pm.test(\"Location header is set\", () => {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    let imagePath = jsonData.imagePath; \r",
+							"    let location = \"http://localhost:3000\" + `/${imagePath}`; \r",
+							"    pm.expect(pm.response.headers.get(\"Location\")).to.be.eql(location); \r",
+							"})\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "image",
+							"contentType": "multipart/form-data",
+							"type": "file",
+							"src": "/C:/Users/Aaron/Pictures/IRA.PNG"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/uploads",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"uploads"
+					]
+				},
+				"description": "For uploading blog title pics or profile pics."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "027e5502-a3eb-4ec0-8e8a-67832d2e2c75",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "30a7c21d-a541-4267-a27d-f373bb413aa0",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

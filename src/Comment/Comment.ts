@@ -26,23 +26,84 @@ export default class Comment implements IComment {
     this.created = new Date();
   }
 
-  setCreatedDate(date: Date): void {
-    this.created = date;
-  }
 
-  getCreatedDate(): Date {
+
+  //getters
+  getCommentid(): number {
+    return this.commentid;
+  }
+  getUsername(): string {
+    return this.username;
+  }
+  getBlogid(): number {
+    return this.blogid;
+  }
+  getContent(): string {
+    return this.content;
+  }
+  getReply(): boolean {
+    return this.reply;
+  }
+  getReplyto(): number {
+    return this.replyto;
+  }
+  getLikes(): number {
+    return this.likes;
+  }
+  getLikedby(): string[] {
+    return this.likedby;
+  }
+  getDeleted(): boolean {
+    return this.deleted;
+  }
+  getCreated(): Date {
     return this.created;
   }
 
+
+  //setters
+  setCommentid(commentid: number): void {
+    this.commentid = commentid;
+  }
+  setUsername(username: string): void {
+    this.username = username;
+  }
+  setBlogid(blogid: number): void {
+    this.blogid = blogid;
+  }
+  setContent(content: string): void {
+    this.content = content;
+  }
+  setReply(reply: boolean): void {
+    this.reply = reply;
+  }
+  setReplyto(replyto: number): void {
+    this.replyto = replyto;
+  }
+  setLikes(likes: number): void {
+    this.likes = likes;
+  }
+  setLikedby(likedby: string[]): void {
+    this.likedby = likedby;
+  }
+  setDeleted(deleted: boolean): void {
+    this.deleted = deleted;
+  }
+  setCreated(created: Date): void {
+    this.created = created;
+  }
+
+
+
   //add a like to the comment's like count and the user who liked the comment to the comment's likedby collection
-  addLike(username: string): boolean {
+  addLike(username: string): void {
     if (!this.alreadyLiked(username)) {
       this.likes += 1;
       this.likedby.push(username);
-      return true;
+    } else {
+      throw new Error("Client already liked this comment");
     }
 
-    return false;
   }
 
   //determine if a user already liked this comment -- if so they cannot like it again
@@ -55,11 +116,10 @@ export default class Comment implements IComment {
   }
 
   //marks a comment as deleted, setting comment content to [deleted]
-  markDeleted(username: string): boolean {
-    //ensure incoming user owns the comment
-    if (this.username !== username) {
-      //comment not marked as deleted b/c user does not own the comment
-      return false;
+  markDeleted(username: string): void {
+
+    if (!this.isOwner(username)) {
+      throw new Error("Client does not own the comment");
     }
 
     //set deleted to true 
@@ -67,30 +127,28 @@ export default class Comment implements IComment {
 
     //set content to [deleted]
     this.content = "[deleted]";
-
-    //return true to indicate comment is marked as deleted
-    return true;
   }
 
   //edit the comment's content
-  editContent(username: string, content: string): boolean {
+  editContent(username: string, content: string): void {
     //ensure incoming user owns the comment
-    if (this.username !== username) {
+    if (!this.isOwner(username)) {
       //comment not marked as deleted b/c user does not own the comment
-      return false;
+      throw new Error("Client does not own the comment");
     }
 
     //check if the comment is marked as deleted
     if (this.deleted) {
       //cannot edit content when comment is marked as deleted
-      return false;
+      throw new Error("Comment is already deleted");
     }
 
     //edit the comment content
     this.content = content;
+  }
 
-    //return true
-    return true;
+  isOwner(username: string): boolean {
+    return this.username === username;
   }
 
 

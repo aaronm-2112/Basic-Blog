@@ -51,7 +51,6 @@ function Upload(app) {
             upload = multer_1.default({ dest: 'uploads/' });
             //create an image resource -- return unique image ID or image path
             //This blog hero image needs to be linked to a blog resource using the blog's Patch path.
-            //TODO: Return uri location in the header
             app.post('/uploads', auth.authenitcateJWT, upload.single("image"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
                 var imagePath;
                 return __generator(this, function (_a) {
@@ -64,14 +63,15 @@ function Upload(app) {
                             imagePath = path_1.default.normalize(imagePath);
                             //change \ to / in blog's path to the title image
                             imagePath = imagePath.replace(/\\/g, "/");
+                            //get rid of the quotation marls
+                            imagePath = imagePath.replace(/"/g, "");
                             console.log(imagePath);
                             //send back the imagepath to the user
-                            res.status(201).location("http://localhost:3000/" + imagePath).send(imagePath);
+                            res.status(201).location("http://localhost:3000/" + imagePath).send({ imagePath: imagePath });
                         }
                     }
                     catch (e) {
                         res.sendStatus(400);
-                        throw new Error(e);
                     }
                     return [2 /*return*/];
                 });

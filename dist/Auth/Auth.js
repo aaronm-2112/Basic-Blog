@@ -86,7 +86,7 @@ var Auth = /** @class */ (function () {
                     });
                 }
                 catch (e) {
-                    console.log("Error: " + e);
+                    //console.log("Error: " + e)
                     res.status(401).send("Error authenticating");
                 }
                 return [2 /*return*/];

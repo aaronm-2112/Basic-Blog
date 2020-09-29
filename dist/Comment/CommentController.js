@@ -66,7 +66,7 @@ var CommentControler = /** @class */ (function () {
                     case 0:
                         _c.trys.push([0, 5, , 6]);
                         //ensure header is application/json
-                        if (req.accepts('application/json') === false && req.accepts('text/html') === 'text/html') {
+                        if (req.accepts('application/json') === false) {
                             res.sendStatus(406);
                             return [2 /*return*/];
                         }
@@ -109,12 +109,18 @@ var CommentControler = /** @class */ (function () {
             });
         }); });
         //retrieve a particular comment resource
+        //Accept: application/json
+        //Response Content Type: application/json
         this.router.get('/comments/:commentid', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var cid, comment, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
+                        if (req.accepts('application/json') === false) {
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
                         cid = parseInt(req.params.commentid);
                         //verify the commentid is valid
                         if (cid <= 0 || isNaN(cid) || cid === undefined) {
@@ -137,16 +143,27 @@ var CommentControler = /** @class */ (function () {
         }); });
         //create a new comment resource and returnt the comment id
         //body parameters: content, reply, replyto, blogid
+        //Accept: application/json
+        //Response Content Type: application/json
         this.router.post('/comments', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var reply, replyto, content, blogid, username, comment, commentid, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
+                        if (req.accepts("application/json") === false) {
+                            res.sendStatus(406);
+                            return [2 /*return*/];
+                        }
                         reply = req.body.reply;
                         replyto = parseInt(req.body.replyto);
                         content = req.body.content;
                         blogid = parseInt(req.body.blogid);
+                        //verify the boolean is a boolean
+                        if (reply !== true && reply !== false) {
+                            res.sendStatus(400);
+                            return [2 /*return*/];
+                        }
                         //check if body parameters are valid
                         if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || content == undefined || isNaN(replyto)) {
                             //no query parameters or bad query parameters in set return
@@ -155,20 +172,20 @@ var CommentControler = /** @class */ (function () {
                         }
                         username = res.locals.userId;
                         comment = new Comment_1.default();
-                        comment.username = username;
-                        comment.blogid = blogid;
-                        comment.likes = 0; //0 likes because comment is being created
-                        comment.deleted = false; //comment is being created
-                        comment.reply = reply;
-                        comment.replyto = replyto;
-                        comment.content = content;
+                        comment.setUsername(username);
+                        comment.setBlogid(blogid);
+                        comment.setLikes(0); //0 likes because comment is being created
+                        comment.setDeleted(false); //comment is being created
+                        comment.setReply(reply);
+                        comment.setReplyto(replyto);
+                        comment.setContent(content);
                         return [4 /*yield*/, this.repo.create(comment)
                             //return the commentid
                         ];
                     case 1:
                         commentid = _a.sent();
                         //return the commentid
-                        res.status(201).location("http://localhost:3000/comments/" + commentid).send(commentid.toString());
+                        res.status(201).location("http://localhost:3000/comments/" + commentid).send({ commentid: commentid });
                         return [3 /*break*/, 3];
                     case 2:
                         e_3 = _a.sent();
@@ -180,9 +197,12 @@ var CommentControler = /** @class */ (function () {
             });
         }); });
         //update a particular comment resource - used for adding likes to a comment, editing comment text, marking as deleted
-        //body parameters: content, like, deleted, username
+        //A user can only like a particular comment one time. Deleted comments cannot be edited.
+        //Body parameters: content, like, deleted
         //Feels like a mixture of PUT and PATCH b/c the entire comment resource is being updated, howewver it is guranteed to only change 
         //the values the client passes into the body and is a cleaner implementation than my patches in the User and Blog controllers.
+        //Accept: application/json
+        //Response Content Type: application/json
         this.router.patch('/comments/:commentid', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var cid, comment, username, content, deleted, like, e_4;
             return __generator(this, function (_a) {
@@ -204,32 +224,20 @@ var CommentControler = /** @class */ (function () {
                         content = req.body.content;
                         deleted = req.body.deleted;
                         like = req.body.like;
-                        //check if content is not undefined
-                        if (content !== undefined) {
+                        //check if content is a string
+                        if (typeof content === 'string') {
                             //edit the comment content
-                            if (!comment.editContent(username, content)) {
-                                //if editing failed return forbidden status code
-                                res.sendStatus(403);
-                                return [2 /*return*/];
-                            }
-                        }
-                        //determine if user wants to mark the incoming comment as deleted
-                        if (deleted !== undefined && deleted !== "false") {
-                            //attempt to mark the comment as deleted
-                            if (!comment.markDeleted(username)) {
-                                //user does not own the comment and cannot mark it as deleted
-                                res.sendStatus(403);
-                                return [2 /*return*/];
-                            }
+                            comment.editContent(username, content);
                         }
                         //determine if user wants to add a like to the comment
-                        if (like !== undefined && like !== "false") {
+                        if (typeof like === 'boolean' && like !== false) {
                             //check if adding the like was not successful
-                            if (!comment.addLike(username)) {
-                                //return forbidden error if user could not add a like
-                                res.sendStatus(403);
-                                return [2 /*return*/];
-                            }
+                            comment.addLike(username);
+                        }
+                        //determine if user wants to mark the incoming comment as deleted
+                        if (typeof deleted === 'boolean' && deleted === true) {
+                            //attempt to mark the comment as deleted
+                            comment.markDeleted(username);
                         }
                         return [4 /*yield*/, this.repo.update(comment)];
                     case 2:
@@ -240,8 +248,7 @@ var CommentControler = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 3:
                         e_4 = _a.sent();
-                        res.sendStatus(400);
-                        console.error(e_4);
+                        e_4 === "Client does not own the comment" ? res.sendStatus(403) : res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }

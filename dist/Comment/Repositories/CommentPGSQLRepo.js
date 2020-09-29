@@ -164,6 +164,7 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         values.push(comment.likes);
                         values.push(comment.likedby);
                         values.push(comment.deleted);
+                        console.log(comment);
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 1:
                         result = _a.sent();
@@ -194,18 +195,21 @@ var CommentPGSQLRepo = /** @class */ (function () {
                     case 1:
                         result = _a.sent();
                         rows = result.rows;
+                        if (rows.length < 1) {
+                            throw new Error("No comment found");
+                        }
                         comment_1 = new Comment_1.default();
                         rows.forEach(function (row) {
-                            comment_1.commentid = row.commentid;
-                            comment_1.username = row.username;
-                            comment_1.blogid = row.blogid;
-                            comment_1.content = row.content;
-                            comment_1.reply = row.reply;
-                            comment_1.replyto = row.replyto;
-                            comment_1.likes = row.likes;
-                            comment_1.likedby = row.likedby;
-                            comment_1.deleted = row.deleted;
-                            comment_1.created = row.created;
+                            comment_1.setCommentid(row.commentid);
+                            comment_1.setUsername(row.username);
+                            comment_1.setBlogid(row.blogid);
+                            comment_1.setContent(row.content);
+                            comment_1.setReply(row.reply);
+                            comment_1.setReplyto(row.replyto);
+                            comment_1.setLikes(row.likes);
+                            comment_1.setLikedby(row.likedby);
+                            comment_1.setDeleted(row.deleted);
+                            comment_1.setCreated(row.created);
                         });
                         return [2 /*return*/, comment_1];
                     case 2:

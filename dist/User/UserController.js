@@ -127,7 +127,7 @@ var UserController = /** @class */ (function () {
                                     userName: user.getUsername(), firstName: user.getFirstname(),
                                     lastName: user.getLastname(), bio: user.getBio(),
                                     blogDetails: blogDetails_1,
-                                    profileImagePath: user.getProfilePicPath()
+                                    profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
                                 });
                             }
                             else {
@@ -136,7 +136,7 @@ var UserController = /** @class */ (function () {
                                     userName: user.getUsername(), firstName: user.getFirstname(),
                                     lastName: user.getLastname(), bio: user.getBio(),
                                     blogDetails: blogDetails_1,
-                                    profileImagePath: user.getProfilePicPath()
+                                    profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
                                 });
                             }
                         }
@@ -146,7 +146,7 @@ var UserController = /** @class */ (function () {
                                 //send back the user edit view
                                 res.render('ProfileEdit', {
                                     userName: user.getUsername(), firstName: user.getFirstname(),
-                                    lastName: user.getLastname(), bio: user.getBio(), profileImagePath: user.getProfilePicPath()
+                                    lastName: user.getLastname(), bio: user.getBio(), profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
                                 });
                             }
                             else {

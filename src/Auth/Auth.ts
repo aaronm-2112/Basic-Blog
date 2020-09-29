@@ -60,7 +60,7 @@ export default class Auth {
 
       });
     } catch (e) {
-      console.log("Error: " + e)
+      //console.log("Error: " + e)
       res.status(401).send("Error authenticating")
     }
 

@@ -51,7 +51,9 @@ async function updateUserInformation() {
     }
 
     //get the path data 
-    let imagePath = await uploadRes.json();
+    let imageJSON = await uploadRes.json();
+
+    let imagePath = imageJSON.imagePath;
 
     console.log(imagePath);
 
@@ -59,7 +61,7 @@ async function updateUserInformation() {
     let imagePathPatchRes = await fetch("http://localhost:3000/users", { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profilePicturePath: imagePath }) });
 
     //change location to profile
-    window.location.href = "/profile";
+    // window.location.href = "/users/First User?profile=true";
   } catch (e) {
     console.error(e);
   }

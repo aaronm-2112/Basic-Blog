@@ -130,6 +130,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       values.push(comment.likedby);
       values.push(comment.deleted);
 
+      console.log(comment);
       //execute the insertion
       let result = await this.pool.query(query, values);
 
@@ -162,19 +163,23 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       //extract the rows from the result
       let rows: any[] = result.rows;
 
+      if (rows.length < 1) {
+        throw new Error("No comment found");
+      }
+
       //traverse the result row and fill in comment values
       let comment: IComment = new Comment();
       rows.forEach(row => {
-        comment.commentid = row.commentid;
-        comment.username = row.username;
-        comment.blogid = row.blogid;
-        comment.content = row.content;
-        comment.reply = row.reply;
-        comment.replyto = row.replyto;
-        comment.likes = row.likes;
-        comment.likedby = row.likedby;
-        comment.deleted = row.deleted;
-        comment.created = row.created;
+        comment.setCommentid(row.commentid);
+        comment.setUsername(row.username);
+        comment.setBlogid(row.blogid);
+        comment.setContent(row.content);
+        comment.setReply(row.reply);
+        comment.setReplyto(row.replyto);
+        comment.setLikes(row.likes)
+        comment.setLikedby(row.likedby);
+        comment.setDeleted(row.deleted);
+        comment.setCreated(row.created);
       });
 
       return comment;
