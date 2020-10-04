@@ -3,6 +3,7 @@ import { searchParameters } from '../BlogSearchCriteria';
 import IBlog from '../IBlog';
 import Blog from '../Blog';
 import { Pool } from 'pg';
+import PGConnection from "../../Common/PGConnection";
 
 //purpose: perform basic crud ops with the blog table using postgresql.
 //         Used in controllers. Decouples database layer from higher level modules.
@@ -11,14 +12,14 @@ export default class BlogPGSQLRepo implements IBlogRepository {
   //the postgresql connection pool
   private pool: Pool;
 
-  constructor() {
+  constructor(connectionObj: PGConnection) {
     //create the connection pool
     this.pool = new Pool({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASS,
-      port: parseInt(process.env.DB_PORT as string)
+      user: connectionObj.getUser(),
+      host: connectionObj.getHost(),
+      database: connectionObj.getDatabase(),
+      password: connectionObj.getPassword(),
+      port: connectionObj.getPort()
     });
   }
 

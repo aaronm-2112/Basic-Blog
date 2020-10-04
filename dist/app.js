@@ -11,27 +11,37 @@ var path_1 = __importDefault(require("path"));
 var hbs_1 = __importDefault(require("hbs")); //templating engine
 var directory_1 = __importDefault(require("./Directory/directory"));
 var UserController_1 = __importDefault(require("./User/UserController"));
+var dbinit_1 = require("./dbinit");
+var PGConfig_1 = __importDefault(require("./Common/PGConfig"));
 var BlogController_1 = __importDefault(require("./Blog/BlogController"));
 var Uploads_1 = __importDefault(require("./Common/Resources/Uploads"));
 var login_1 = __importDefault(require("./Common/login"));
 var PGSQLRepo_1 = __importDefault(require("./User/Repositories/PGSQLRepo"));
 var BlogPGSQLRepo_1 = __importDefault(require("./Blog/Repositories/BlogPGSQLRepo"));
-var CommentPGSQLRepo_1 = __importDefault(require("./Comment/Repositories/CommentPGSQLRepo"));
-var CommentController_1 = __importDefault(require("./Comment/CommentController"));
+var CommentPGSQLRepo_1 = __importDefault(require("./Comments/Repositories/CommentPGSQLRepo"));
+var CommentController_1 = __importDefault(require("./Comments/CommentController"));
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //TODO: Add indices to the database properties being used for keyset pagination.
 //TODO: 1. Finish homepage refactor.                                   DONE
 //      2. Review all endpoints to ensure they follow REST guidelines. DONE
 //      3. Refactor any endpoints that do not.                         DONE
 //      4. Add rate limiting to the endpoints.                         Do After cloud move
-//      5. Test with Postman and any unit tests required for the models. Refactor controller applicaiton logic into models while doing so. 
-//      6. Add indices to the database to improve pagination speed.
+//      5. Test with Postman and any unit tests required for the models. Refactor controller applicaiton logic into models while doing so. [Done]
+//      6. Setup multiple environments - test, dev, prod [Done for DBs] [WIP for scripts and miscellaneous]
+//      7. Test the database queries using a test database 
+//      8. Add indices to the database to improve pagination speed.
+//      9. Move the application into a cloud environment - perhaps AWS with Elastic Beanstalk (as this can handle horizontal scaling-i hope without refactors  if didn't miss something- but isn't microsystem based). Finish environment setup to complete this step.
+//Set the node environment variable
+var CURRENT_ENV = process.argv[process.argv.length - 1];
+console.log(CURRENT_ENV);
+//create the connection config object for PGSQL
+var connection = PGConfig_1.default(CURRENT_ENV);
 //Used for development database changes. 
-// createDB().then(() => {
-//   console.log("Inited");
-// }).catch(e => {
-//   console.log(e);
-// })
+dbinit_1.createDB(connection).then(function () {
+    console.log("Inited");
+}).catch(function (e) {
+    console.log(e);
+});
 // Create a new express app instance
 var app = express_1.default();
 //direct express middleware to use routes/settings
@@ -65,15 +75,15 @@ app.set('views', viewsPath);
 var partialViewsPath = path_1.default.join(__dirname, '../Views/Partials');
 hbs_1.default.registerPartials(partialViewsPath);
 //register the user routes
-var userRepoPostgre = new PGSQLRepo_1.default();
-var blogRepoPostgre = new BlogPGSQLRepo_1.default();
+var userRepoPostgre = new PGSQLRepo_1.default(connection);
+var blogRepoPostgre = new BlogPGSQLRepo_1.default(connection);
 var usercont = new UserController_1.default(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 //register the blog routes 
 var blogcontroller = new BlogController_1.default(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
 //register the comment routes
-var commentRepo = new CommentPGSQLRepo_1.default();
+var commentRepo = new CommentPGSQLRepo_1.default(connection);
 var commentcontroller = new CommentController_1.default(commentRepo);
 commentcontroller.registerRoutes(app);
 //register the common routes-----------------

@@ -45,14 +45,14 @@ var pg_1 = require("pg");
 //         Used in controllers. Decouples database layer from higher level modules.
 //How it works: pool of connections is used to perform usercontroller requests on the blog data. Paramaterized queries are used for sql injection protection.
 var BlogPGSQLRepo = /** @class */ (function () {
-    function BlogPGSQLRepo() {
+    function BlogPGSQLRepo(connectionObj) {
         //create the connection pool
         this.pool = new pg_1.Pool({
-            user: process.env.DB_USER,
-            host: process.env.DB_HOST,
-            database: process.env.DB_DATABASE,
-            password: process.env.DB_PASS,
-            port: parseInt(process.env.DB_PORT)
+            user: connectionObj.getUser(),
+            host: connectionObj.getHost(),
+            database: connectionObj.getDatabase(),
+            password: connectionObj.getPassword(),
+            port: connectionObj.getPort()
         });
     }
     //find all blogs using a certain search criteria 

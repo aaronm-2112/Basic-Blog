@@ -2,6 +2,7 @@ import ICommentRepository from './ICommentRepository';
 import IComment from '../IComment';
 import Comment from '../Comment';
 import { Pool } from 'pg';
+import PGConnection from '../../Common/PGConnection';
 
 
 export default class CommentPGSQLRepo implements ICommentRepository {
@@ -9,14 +10,14 @@ export default class CommentPGSQLRepo implements ICommentRepository {
   //the postgresql connection pool
   private pool: Pool;
 
-  constructor() {
+  constructor(connectionObj: PGConnection) {
     //create the connection pool
     this.pool = new Pool({
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      password: process.env.DB_PASS,
-      port: parseInt(process.env.DB_PORT as string)
+      user: connectionObj.getUser(),
+      host: connectionObj.getHost(),
+      database: connectionObj.getDatabase(),
+      password: connectionObj.getPassword(),
+      port: connectionObj.getPort()
     });
   }
 
@@ -65,6 +66,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         }
       } else { //return top level comments 
         //check if flip is next or prev
+        console.log("In no reply zone");
         if (flip === 'next') {
           //construct query that return top level comments by likes
           query = query + `reply = false AND (likes, commentid) < ($${parameterNumber += 1}, $${parameterNumber += 1})  ORDER BY likes DESC, commentid DESC LIMIT 10`;
@@ -91,16 +93,16 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       rows.forEach(row => {
         //populate a comment object
         let comment: IComment = new Comment();
-        comment.commentid = row.commentid;
-        comment.username = row.username;
-        comment.blogid = row.blogid;
-        comment.content = row.content;
-        comment.reply = row.reply;
-        comment.replyto = row.replyto;
-        comment.likes = row.likes;
-        comment.likedby = row.likedby;
-        comment.deleted = row.deleted;
-        comment.created = row.created;
+        comment.setCommentid(row.commentid);
+        comment.setUsername(row.username);
+        comment.setBlogid(row.blogid);
+        comment.setContent(row.content);
+        comment.setReply(row.reply);
+        comment.setReplyto(row.replyto);
+        comment.setLikes(row.likes);
+        comment.setLikedby(row.likedby);
+        comment.setDeleted(row.deleted);
+        comment.setCreated(row.created);
 
         //add the comment object to the comments collection
         comments.push(comment);
@@ -117,7 +119,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
   async create(comment: IComment): Promise<number> {
     try {
       //create the query -- created and cid should be auto-created columns
-      let query: string = `INSERT INTO comments ( username, blogid, content, reply, replyto, likes, likedby, deleted)  VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING commentid`;
+      let query: string = `INSERT INTO comments ( username, blogid, content, reply, replyto, likes, likedby, deleted) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING commentid`;
 
       //add the comment values
       let values: Array<any> = new Array();
@@ -130,16 +132,11 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       values.push(comment.likedby);
       values.push(comment.deleted);
 
-      console.log(comment);
       //execute the insertion
       let result = await this.pool.query(query, values);
 
-      console.log(result);
-
       //retrieve the last rowID from the result object -- lastID is only populated when we use an insert
       let commentid: number = result.rows[0]["commentid"];
-
-      console.log(commentid);
 
       //returnt the comment id
       return commentid;
@@ -176,7 +173,7 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         comment.setContent(row.content);
         comment.setReply(row.reply);
         comment.setReplyto(row.replyto);
-        comment.setLikes(row.likes)
+        comment.setLikes(row.likes);
         comment.setLikedby(row.likedby);
         comment.setDeleted(row.deleted);
         comment.setCreated(row.created);
@@ -205,16 +202,16 @@ export default class CommentPGSQLRepo implements ICommentRepository {
 
       //fill the query values
       let queryValues: any[] = [];
-      queryValues.push(comment.username);
-      queryValues.push(comment.blogid);
-      queryValues.push(comment.content);
-      queryValues.push(comment.reply);
-      queryValues.push(comment.replyto);
-      queryValues.push(comment.likes);
-      queryValues.push(comment.likedby);
-      queryValues.push(comment.deleted);
-      queryValues.push(comment.created);
-      queryValues.push(comment.commentid);
+      queryValues.push(comment.getUsername());
+      queryValues.push(comment.getBlogid());
+      queryValues.push(comment.getContent());
+      queryValues.push(comment.getReply());
+      queryValues.push(comment.getReplyto());
+      queryValues.push(comment.getLikes());
+      queryValues.push(comment.getLikedby());
+      queryValues.push(comment.getDeleted());
+      queryValues.push(comment.getCreated());
+      queryValues.push(comment.getCommentid());
 
       //execute the query
       let result = await this.pool.query(query, queryValues);
@@ -223,16 +220,16 @@ export default class CommentPGSQLRepo implements ICommentRepository {
 
       let updatedComment: IComment = new Comment();
 
-      updatedComment.commentid = row.commentid;
-      updatedComment.username = row.username;
-      updatedComment.content = row.content;
-      updatedComment.created = row.created;
-      updatedComment.deleted = row.deleted;
-      updatedComment.likes = row.likes;
-      updatedComment.likedby = row.likedby;
-      updatedComment.reply = row.reply;
-      updatedComment.replyto = row.replyto;
-      updatedComment.blogid = row.blogid;
+      updatedComment.setCommentid(row.commentid);
+      updatedComment.setUsername(row.username);
+      updatedComment.setContent(row.content);
+      updatedComment.setCreated(row.created);
+      updatedComment.setDeleted(row.deleted);
+      updatedComment.setLikes(row.likes);
+      updatedComment.setLikedby(row.likedby);
+      updatedComment.setReply(row.reply);
+      updatedComment.setReplyto(row.replyto);
+      updatedComment.setBlogid(row.blogid);
 
 
       return updatedComment;

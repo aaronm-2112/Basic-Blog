@@ -8,6 +8,8 @@ import Directory from './Directory/directory';
 import IUserRepository from './User/Repositories/IRepository';
 import UserController from './User/UserController';
 import { createDB } from './dbinit';
+import config from './Common/PGConfig';
+import PGConnection from './Common/PGConnection';
 import IBlogRepository from './Blog/Repositories/IBlogRepository';
 import IController from './Controllers/IController';
 import BlogController from './Blog/BlogController';
@@ -15,8 +17,8 @@ import Upload from './Common/Resources/Uploads';
 import login from './Common/login';
 import UserPGSQLRepo from './User/Repositories/PGSQLRepo';
 import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
-import CommentPGSQLRepo from './Comment/Repositories/CommentPGSQLRepo';
-import CommentController from './Comment/CommentController';
+import CommentPGSQLRepo from './Comments/Repositories/CommentPGSQLRepo';
+import CommentController from './Comments/CommentController';
 
 //TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
 //TODO: Add indices to the database properties being used for keyset pagination.
@@ -24,16 +26,27 @@ import CommentController from './Comment/CommentController';
 //      2. Review all endpoints to ensure they follow REST guidelines. DONE
 //      3. Refactor any endpoints that do not.                         DONE
 //      4. Add rate limiting to the endpoints.                         Do After cloud move
-//      5. Test with Postman and any unit tests required for the models. Refactor controller applicaiton logic into models while doing so. 
-//      6. Add indices to the database to improve pagination speed.
+//      5. Test with Postman and any unit tests required for the models. Refactor controller applicaiton logic into models while doing so. [Done]
+//      6. Setup multiple environments - test, dev, prod [Done for DBs] [WIP for scripts and miscellaneous]
+//      7. Test the database queries using a test database 
+//      8. Add indices to the database to improve pagination speed.
+//      9. Move the application into a cloud environment - perhaps AWS with Elastic Beanstalk (as this can handle horizontal scaling-i hope without refactors  if didn't miss something- but isn't microsystem based). Finish environment setup to complete this step.
 
+
+//Set the node environment variable
+let CURRENT_ENV = process.argv[process.argv.length - 1];
+console.log(CURRENT_ENV);
+
+//create the connection config object for PGSQL
+let connection: PGConnection = config(CURRENT_ENV);
 
 //Used for development database changes. 
-// createDB().then(() => {
-//   console.log("Inited");
-// }).catch(e => {
-//   console.log(e);
-// })
+createDB(connection).then(() => {
+  console.log("Inited");
+}).catch(e => {
+  console.log(e);
+})
+
 
 // Create a new express app instance
 const app: express.Application = express();
@@ -79,8 +92,8 @@ hbs.registerPartials(partialViewsPath);
 
 
 //register the user routes
-let userRepoPostgre: IUserRepository = new UserPGSQLRepo();
-let blogRepoPostgre: IBlogRepository = new BlogPGSQLRepo();
+let userRepoPostgre: IUserRepository = new UserPGSQLRepo(connection);
+let blogRepoPostgre: IBlogRepository = new BlogPGSQLRepo(connection);
 let usercont: UserController = new UserController(userRepoPostgre, blogRepoPostgre);
 usercont.registerRoutes(app);
 
@@ -89,7 +102,7 @@ let blogcontroller: IController = new BlogController(blogRepoPostgre);
 blogcontroller.registerRoutes(app);
 
 //register the comment routes
-let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo();
+let commentRepo: CommentPGSQLRepo = new CommentPGSQLRepo(connection);
 let commentcontroller: IController = new CommentController(commentRepo);
 commentcontroller.registerRoutes(app);
 

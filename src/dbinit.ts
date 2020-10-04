@@ -1,42 +1,83 @@
-//Purpose: Something to create the database I want.
-import sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
+//Purpose: Initialize the database (whether the Database be PGSQL or other)
+//How: Each differing database will have its own createDB function. As of now the naming does not reflect this.
 import path from 'path';
-import IUser from './User/IUser';
-import pg from 'pg';
-import { Pool, Client } from 'pg';
+import { Client } from 'pg';
+import PGConnection from './Common/PGConnection';
 
 const dbPath = path.resolve(__dirname, 'blog.db');
 
-export async function createDB() {
+export async function createDB(connectionObj: PGConnection) {
   try {
-    //C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db
-    const db: Database = await open({
-      filename: "C:\\Users\\Aaron\\Desktop\\Basic-Blog\\dist\\blog.db",
-      driver: sqlite3.Database
-    })
-
-    await db.exec('DROP TABLE User');
-    await db.exec('DROP TABLE Blog');
-
-    //Create User table
-    let res = await db.exec('CREATE TABLE User (userID INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, email TEXT NOT NULL UNIQUE, firstname TEXT, lastname TEXT, bio TEXT, salt TEXT, profilePic TEXT)');
-
-    //Create blog table
-    let blogRes = await db.exec('CREATE TABLE Blog (blogID INTEGER PRIMARY KEY AUTOINCREMENT, username INTEGER, title TEXT NOT NULL, content TEXT, titleImagePath TEXT, FOREIGN KEY(username) REFERENCES User(username))');
-
-
-
-    await db.close();
-
     //Postgress db initilization
-
     const client = new Client({
-      user: 'postgres',
-      host: 'localhost',
-      database: 'blog',
-      password: 'cBKq#F!23JZQ9*:A',
-      port: 5432
+      user: connectionObj.getUser(),
+      host: connectionObj.getHost(),
+      database: connectionObj.getDatabase(),
+      password: connectionObj.getPassword(),
+      port: connectionObj.getPort()
+    });
+
+    await client.connect();
+
+    let pgRes;
+
+    //create the tables----------------------------------
+
+    //TABLE users
+    pgRes = await client.query(`CREATE TABLE users (
+        userid serial primary key,
+        username text not null unique,
+        password text not null,
+        email text not null unique,
+        firstname text,
+        lastname text,
+        bio text,
+        salt text, 
+        profilepic text
+    );`);
+
+    //TABLE blogs
+    pgRes = await client.query(`CREATE TABLE blogs ( 
+        blogid serial primary key, 
+        username text not null, 
+        title text not null, 
+        content text, 
+        titleimagepath text, 
+        foreign key(username) references users(username));`);
+
+
+    //TABLE comments
+    pgRes = await client.query(`CREATE TABLE comments ( 
+        commentid serial primary key, 
+        username text not null, 
+        blogid integer not null, 
+        content text not null, 
+        reply boolean not null, 
+        replyto integer not null, 
+        likes integer not null, 
+        likedby text[] default array[]::text[], 
+        deleted boolean not null, 
+        created timestamp default current_timestamp, 
+        foreign key(username) references users(username), 
+        foreign key(blogid) references blogs(blogid));`)
+
+    //end the client's connection
+    await client.end()
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function resetDB(connectionObj: PGConnection) {
+  try {
+    //Postgress db initilization
+    const client = new Client({
+      user: connectionObj.getUser(),
+      host: connectionObj.getHost(),
+      database: connectionObj.getDatabase(),
+      password: connectionObj.getPassword(),
+      port: connectionObj.getPort()
     });
 
     await client.connect();
@@ -44,49 +85,53 @@ export async function createDB() {
     let pgRes;
 
     //drop the tables if they exist
-    //pgRes = await client.query(`DROP TABLE users CASCADE`);
-    // console.log(pgRes);
+    pgRes = await client.query(`DROP TABLE users CASCADE`).catch((e) => console.log("OOps"));
+    pgRes = await client.query('DROP TABLE blogs CASCADE').catch((e) => console.log("OOps"));
+    pgRes = await client.query(`DROP TABLE comments CASCADE`).catch((e) => console.log("OOps"));
+  } catch (e) {
+    console.log(e)
+  }
+}
 
-    //gRes = await client.query('DROP TABLE blogs');
-    // console.log(pgRes);
+//Test data that is used for database testing
+export async function populateDBWithTestData(connectionObj: PGConnection) {
+  try {
+    //Postgress db connection config
+    const client = new Client({
+      user: connectionObj.getUser(),
+      host: connectionObj.getHost(),
+      database: connectionObj.getDatabase(),
+      password: connectionObj.getPassword(),
+      port: connectionObj.getPort()
+    });
 
-    //create the tables
+    await client.connect();
 
-    //TABLE users
-    // pgRes = await client.query(`CREATE TABLE users (
-    //     userid serial primary key,
-    //     username text not null unique,
-    //     password text not null,
-    //     email text not null unique,
-    //     firstname text,
-    //     lastname text,
-    //     bio text,
-    //     salt text, 
-    //     profilepic text
-    // );`);
+    //insert a test user
+    let pgRes = await client.query(`INSERT INTO users (userid, username, password, email, firstname, lastname, bio, salt, profilepic) 
+                                VALUES ('2', 'First User', '1234', 'aaron.m@gmail.com', 'aaron', 'g', 'my bio', '#r4', '/uploads/1234' )`);
 
-    //console.log(pgRes);
+    //insert a test blog
+    pgRes = await client.query(`INSERT INTO blogs (blogid, username, title, content, titleimagepath) 
+                                VALUES ('1', 'First User', 'Blog One', 'First blog', '/uploads/1233')`);
 
-    //TABLE blogs
-    // pgRes = await client.query(`CREATE TABLE blogs (blogid serial primary key, username text not null, title text not null, content text, titleimagepath text, foreign key(username) references users(username));`);
+    //insert test comments----------------------
 
-    // console.log(pgRes);
+    //a top level comment in blog 1 
+    pgRes = await client.query(`INSERT INTO comments ( username, blogid, content, reply, replyto, likes, created, deleted)
+                                VALUES               ('First User', '1', 'Good blog!', 'false', '0', '0', '2000-12-31','false')`);
 
+    //The 2nd top level comment in blog 1
+    pgRes = await client.query(`INSERT INTO comments (username, blogid, content, reply, replyto, likes, created, deleted)
+                                VALUES               ('First User', '1', 'Okay blog!', 'false', '0', '0', '2000-12-31','false')`);
 
-    //DROP TABLE comments
-    pgRes = await client.query(`DROP TABLE comments`);
-
-    //TABLE comments --TODO: No reply instead only use replyto?
-    pgRes = await client.query(`CREATE TABLE comments (commentid serial primary key, username text not null, blogid integer not null, content text not null, reply boolean not null, replyto integer not null, likes integer not null, likedby text[], deleted boolean not null, created timestamp default current_timestamp, foreign key(username) references users(username), foreign key(blogid) references blogs(blogid));`)
-
-    console.log(pgRes);
+    //A reply to the second top level comment in blog 1
+    pgRes = await client.query(`INSERT INTO comments ( username, blogid, content, reply, replyto, likes, created, deleted)
+                                VALUES               ('First User', '1', 'Not okay blog!', 'true', '2', '0', '2000-12-31','false')`);
 
     //end the client's connection
     await client.end()
-
-
-
   } catch (e) {
-    console.error(e);
+    console.log(e)
   }
 }
