@@ -107,13 +107,29 @@ export async function populateDBWithTestData(connectionObj: PGConnection) {
 
     await client.connect();
 
-    //insert a test user
-    let pgRes = await client.query(`INSERT INTO users (userid, username, password, email, firstname, lastname, bio, salt, profilepic) 
-                                VALUES ('2', 'First User', '1234', 'aaron.m@gmail.com', 'aaron', 'g', 'my bio', '#r4', '/uploads/1234' )`);
+    //insert test users-------------------------
 
-    //insert a test blog
-    pgRes = await client.query(`INSERT INTO blogs (blogid, username, title, content, titleimagepath) 
-                                VALUES ('1', 'First User', 'Blog One', 'First blog', '/uploads/1233')`);
+    //user 1 - First User
+    let pgRes = await client.query(`INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) 
+                                    VALUES            ('First User', '1234', 'aaron.m@gmail.com', 'aaron', 'g', 'my bio', '#r4', '/uploads/1234' )`);
+
+    //user 2 - Second User
+    pgRes = await client.query(`INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) 
+                                VALUES            ('Second User', '1234', 'jerry.m@gmail.com', 'aaron', 'g', 'my bio', '#r4', '/uploads/1234' )`);
+
+    //insert test blogs-------------------------
+
+    //blog 1 created by First User
+    pgRes = await client.query(`INSERT INTO blogs (username, title, content, titleimagepath) 
+                                VALUES            ('First User', 'Blog One', 'First blog', '/uploads/1233')`);
+
+    //blog 2 created by First User
+    pgRes = await client.query(`INSERT INTO blogs (username, title, content, titleimagepath) 
+                                VALUES            ('First User', 'Blog Two', 'Second blog', '/uploads/1233')`);
+
+    // //blog 3 created by Second User
+    pgRes = await client.query(`INSERT INTO blogs (username, title, content, titleimagepath) 
+                                VALUES            ('Second User', 'Blog One', 'First blog', '/uploads/1233')`);
 
     //insert test comments----------------------
 
@@ -125,7 +141,7 @@ export async function populateDBWithTestData(connectionObj: PGConnection) {
     pgRes = await client.query(`INSERT INTO comments (username, blogid, content, reply, replyto, likes, created, deleted)
                                 VALUES               ('First User', '1', 'Okay blog!', 'false', '0', '0', '2000-12-31','false')`);
 
-    //A reply to the second top level comment in blog 1
+    // //A reply to the second top level comment in blog 1
     pgRes = await client.query(`INSERT INTO comments ( username, blogid, content, reply, replyto, likes, created, deleted)
                                 VALUES               ('First User', '1', 'Not okay blog!', 'true', '2', '0', '2000-12-31','false')`);
 

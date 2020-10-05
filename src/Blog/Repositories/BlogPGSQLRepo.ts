@@ -4,6 +4,7 @@ import IBlog from '../IBlog';
 import Blog from '../Blog';
 import { Pool } from 'pg';
 import PGConnection from "../../Common/PGConnection";
+import { errorMonitor } from "events";
 
 //purpose: perform basic crud ops with the blog table using postgresql.
 //         Used in controllers. Decouples database layer from higher level modules.
@@ -37,12 +38,9 @@ export default class BlogPGSQLRepo implements IBlogRepository {
         //query = `SELECT * FROM blogs WHERE ${searchBy} = $1 AND blogid < ${key} AND blogid >= ${key} - 10 LIMIT 10`;
         query = `SELECT * FROM blogs WHERE ${searchBy} = $1 AND blogid < ${key} ORDER BY blogid DESC LIMIT 10`;
       } else {
-        //TODO: Handle more appropriately
-        //unaccepted condition return 
-        return [];
+        throw new Error("Condition not acceptable");
       }
 
-      //SELECT blogID, username, title, content, titleimagepath FROM blogs WHERE ${searchBy} = $1
       //create the collection of query values
       let values: string[] = [];
 
@@ -62,11 +60,11 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //place results into the blog array 
       rows.forEach(row => {
         blog = new Blog(); //TODO: Find better way to create a deep copy
-        blog.blogid = row.blogid;
-        blog.title = row.title;
-        blog.titleimagepath = row.titleimagepath;
-        blog.username = row.username;
-        blog.content = row.content;
+        blog.setBlogid(row.blogid);
+        blog.setTitle(row.title);
+        blog.setTitleimagepath(row.titleimagepath);
+        blog.setUsername(row.username);
+        blog.setContent(row.content);
         //push blog into blog array 
         blogs.push(blog);
       });
@@ -99,11 +97,11 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //place the row data into a blog object and return it
       let blog: IBlog = new Blog();
 
-      blog.blogid = row.blogid;
-      blog.title = row.title;
-      blog.titleimagepath = row.titleimagepath;
-      blog.content = row.content;
-      blog.username = row.username;
+      blog.setBlogid(row.blogid);
+      blog.setTitle(row.title);
+      blog.setTitleimagepath(row.titleimagepath);
+      blog.setContent(row.content);
+      blog.setUsername(row.username);
 
       return blog;
     } catch (e) {
@@ -118,20 +116,15 @@ export default class BlogPGSQLRepo implements IBlogRepository {
 
       //prepare the insert values -- order matters
       let values: string[] = [];
-      values.push(blog.username);
-      values.push(blog.title);
-      values.push(blog.content);
-      //values.push(blog.titleImagePath);
+      values.push(blog.getUsername());
+      values.push(blog.getTitle());
+      values.push(blog.getContent());
 
       //execute the insertion
       let result = await this.pool.query(query, values);
 
-      console.log(result);
-
       //retrieve the last rowID from the result object -- lastID is only populated when we use an insert
       let blogID: number = result.rows[0]["blogid"];
-
-      console.log(blogID);
 
       //return database
       return blogID;
@@ -142,11 +135,10 @@ export default class BlogPGSQLRepo implements IBlogRepository {
   }
 
   //upddate any changes that occur to the blog. Do not update BlogID
+  //TODO: Refactor the entries method as this will not work when properties are made private
   async update(blog: IBlog): Promise<IBlog> {
     try {
-      console.log("In update");
-
-      //check if blogID is filled -- TODO move out of repo?
+      //check if blogID is filled
       if (blog.blogid < 0) {
         throw new Error("No ID");
       }
@@ -164,7 +156,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //traverse the blog's entries
       for (var entry in blogEntries) {
         //determine which blog properties need to be updated
-        if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogid' && blogEntries[entry][0] !== "username") { //empty string not acceptable update value
+        if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogid' && blogEntries[entry][0] !== "username" && typeof (blogEntries[entry][1]) !== 'function') { //empty string not acceptable update value nor is a function (for getters and setters)
           //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
           queryProperties.push(blogEntries[entry][0] + ` = $${parameterNumber}`);
           //push the blog property value into the list of query values
@@ -177,8 +169,6 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //create the update query
       let query: string = `UPDATE blogs SET ` + queryProperties.join(',') + ` WHERE blogid = $${parameterNumber} RETURNING *`;
 
-      console.log(query);
-
       //add the blogID to the queryValues list
       queryValues.push(blog.blogid.toString());
 
@@ -190,11 +180,11 @@ export default class BlogPGSQLRepo implements IBlogRepository {
 
       //create an updated blog
       let updatedBlog: IBlog = new Blog();
-      updatedBlog.username = row.username;
-      updatedBlog.blogid = row.blogid;
-      updatedBlog.content = row.content;
-      updatedBlog.title = row.title;
-      updatedBlog.titleimagepath = row.titleimagepath;
+      updatedBlog.setUsername(row.username);
+      updatedBlog.setBlogid(row.blogid);
+      updatedBlog.setContent(row.content);
+      updatedBlog.setTitle(row.title);
+      updatedBlog.setTitleimagepath(row.titleimagepath);
 
       return updatedBlog;
     } catch (e) {
@@ -204,24 +194,24 @@ export default class BlogPGSQLRepo implements IBlogRepository {
 
   }
 
-  async delete(blog: IBlog): Promise<Boolean> {
-    try {
+  // //TODO: 
+  // async delete(blog: IBlog): Promise<Boolean> {
+  //   try {
 
-      //prepare the blog deletion statement
-      let query = `DELETE FROM Blog WHERE blogid = $1`;
+  //     //prepare the blog deletion statement
+  //     let query = `DELETE FROM Blog WHERE blogid = $1`;
 
-      //collect the query values
-      let values: string[] = [];
-      values.push(blog.blogid.toString());
+  //     //collect the query values
+  //     let values: string[] = [];
+  //     values.push(blog.blogid.toString());
 
-      //execute the delete query
-      await this.pool.query(query, values);
+  //     //execute the delete query
+  //     await this.pool.query(query, values);
 
-      return true;
+  //     return true;
 
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
-  }
+  //   } catch (e) {
+  //     throw new Error(e)
+  //   }
+  // }
 }

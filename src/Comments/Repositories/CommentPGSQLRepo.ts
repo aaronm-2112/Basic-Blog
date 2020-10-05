@@ -66,7 +66,6 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         }
       } else { //return top level comments 
         //check if flip is next or prev
-        console.log("In no reply zone");
         if (flip === 'next') {
           //construct query that return top level comments by likes
           query = query + `reply = false AND (likes, commentid) < ($${parameterNumber += 1}, $${parameterNumber += 1})  ORDER BY likes DESC, commentid DESC LIMIT 10`;
@@ -115,7 +114,6 @@ export default class CommentPGSQLRepo implements ICommentRepository {
     }
   }
 
-  //TODO: Make values array more typescript. 
   async create(comment: IComment): Promise<number> {
     try {
       //create the query -- created and cid should be auto-created columns
@@ -123,14 +121,14 @@ export default class CommentPGSQLRepo implements ICommentRepository {
 
       //add the comment values
       let values: Array<any> = new Array();
-      values.push(comment.username);
-      values.push(comment.blogid);
-      values.push(comment.content);
-      values.push(comment.reply);
-      values.push(comment.replyto);
-      values.push(comment.likes);
-      values.push(comment.likedby);
-      values.push(comment.deleted);
+      values.push(comment.getUsername());
+      values.push(comment.getBlogid());
+      values.push(comment.getContent());
+      values.push(comment.getReply());
+      values.push(comment.getReplyto());
+      values.push(comment.getLikes());
+      values.push(comment.getLikedby());
+      values.push(comment.getDeleted());
 
       //execute the insertion
       let result = await this.pool.query(query, values);

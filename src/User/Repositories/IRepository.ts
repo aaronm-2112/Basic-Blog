@@ -5,7 +5,7 @@ import { UserQueryParameters } from '../UserQueryParameters';
 
 // Interface of basic C.R.U.D operations for the User database entity
 export default interface IUserRepository {
-  findAll(searchBy: UserQueryParameters, searchValue: string): Promise<IUser[]>;
+  //findAll(searchBy: UserQueryParameters, searchValue: string): Promise<IUser[]>;
   find(username: string): Promise<IUser>;
   create(user: IUser): Promise<number>;
   update(user: IUser): Promise<IUser>;

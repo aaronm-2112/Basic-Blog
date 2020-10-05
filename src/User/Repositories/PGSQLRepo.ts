@@ -22,47 +22,47 @@ export default class UserPGSQLRepo implements IRepository {
     });
   }
 
-  async findAll(searchBy: UserQueryParameters, searchValue: string): Promise<IUser[]> {
-    try {
-      //create a parameterized query
-      let query: string = `SELECT * FROM users WHERE ${searchBy} = $1`;
+  // async findAll(searchBy: UserQueryParameters, searchValue: string): Promise<IUser[]> {
+  //   try {
+  //     //create a parameterized query
+  //     let query: string = `SELECT * FROM users WHERE ${searchBy} = $1`;
 
-      //prepare the searchValue for use in the query
-      let values: Array<string> = new Array<string>();
-      values.push(searchValue);
+  //     //prepare the searchValue for use in the query
+  //     let values: Array<string> = new Array<string>();
+  //     values.push(searchValue);
 
-      //execute the query and store the result
-      let res = await this.pool.query(query, values);
+  //     //execute the query and store the result
+  //     let res = await this.pool.query(query, values);
 
-      //extract the query rows from the result
-      let rows: any[] = res.rows;
+  //     //extract the query rows from the result
+  //     let rows: any[] = res.rows;
 
-      //create a collection of users that matches findAll's return type
-      let users: IUser[] = [];
+  //     //create a collection of users that matches findAll's return type
+  //     let users: IUser[] = [];
 
-      //load the row values into the user collection
-      rows.forEach(row => {
-        //create a new user and populate its properties
-        let user: IUser = new User();
-        user.userid = row.userid;
-        user.setUsername(row.username);
-        user.setPassword(row.password);
-        user.setEmail(row.email);
-        user.setFirstname(row.firstname);
-        user.setLastname(row.lastname);
-        //user.setSalt(row.salt);
-        user.setProfilePicPath(row.profilepic);
+  //     //load the row values into the user collection
+  //     rows.forEach(row => {
+  //       //create a new user and populate its properties
+  //       let user: IUser = new User();
+  //       user.userid = row.userid;
+  //       user.setUsername(row.username);
+  //       user.setPassword(row.password);
+  //       user.setEmail(row.email);
+  //       user.setFirstname(row.firstname);
+  //       user.setLastname(row.lastname);
+  //       //user.setSalt(row.salt);
+  //       user.setProfilePicPath(row.profilepic);
 
-        //push the user into the users collection
-        users.push(user);
-      });
+  //       //push the user into the users collection
+  //       users.push(user);
+  //     });
 
-      //return the resulting query rows
-      return users;
-    } catch (e) {
-      throw new Error(e);
-    }
-  }
+  //     //return the resulting query rows
+  //     return users;
+  //   } catch (e) {
+  //     throw new Error(e);
+  //   }
+  // }
 
   //TODO: use search criteria and searchby values
   async find(username: string): Promise<IUser> {

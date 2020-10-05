@@ -1,8 +1,3 @@
-// blogid: number;
-// username: string;
-// title: string;
-// content: string;
-// titleimagepath: string;
 import Blog from '../../Blog/Blog'
 
 //Getters and setter tests------------------------------------
