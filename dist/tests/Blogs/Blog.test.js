@@ -3,11 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// blogid: number;
-// username: string;
-// title: string;
-// content: string;
-// titleimagepath: string;
 var Blog_1 = __importDefault(require("../../Blog/Blog"));
 //Getters and setter tests------------------------------------
 test("Setters and getters for blogid are correct", function () {

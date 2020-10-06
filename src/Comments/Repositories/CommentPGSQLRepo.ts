@@ -158,8 +158,8 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       //extract the rows from the result
       let rows: any[] = result.rows;
 
-      if (rows.length < 1) {
-        throw new Error("No comment found");
+      if (!rows.length) {
+        throw new Error("Not found");
       }
 
       //traverse the result row and fill in comment values
@@ -213,6 +213,10 @@ export default class CommentPGSQLRepo implements ICommentRepository {
 
       //execute the query
       let result = await this.pool.query(query, queryValues);
+
+      if (!result.rows.length) {
+        throw new Error("Not found");
+      }
 
       let row: any = result.rows[0];
 

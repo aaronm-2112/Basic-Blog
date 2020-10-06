@@ -13,6 +13,12 @@ var User = /** @class */ (function () {
         this.salt = "";
         this.profilepic = "";
     }
+    User.prototype.setUserid = function (id) {
+        this.userid = id;
+    };
+    User.prototype.getUserid = function () {
+        return this.userid;
+    };
     User.prototype.getUsername = function () {
         return this.username;
     };
@@ -30,12 +36,6 @@ var User = /** @class */ (function () {
     };
     User.prototype.setEmail = function (email) {
         this.email = email;
-    };
-    User.prototype.getUserID = function () {
-        return this.userid;
-    };
-    User.prototype.setUserID = function (id) {
-        this.userid = id;
     };
     User.prototype.getFirstname = function () {
         return this.firstname;

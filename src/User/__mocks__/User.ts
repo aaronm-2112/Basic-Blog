@@ -1,9 +1,8 @@
 // Import this named export into your test file:
 const mock = jest.fn().mockImplementation(() => {
-
   return {
     userid: 1,
-    username: "Other User",
+    username: "First User",
     password: "1234",
     email: "air.m@gmail.com",
     firstname: "a",
@@ -30,6 +29,7 @@ const mock = jest.fn().mockImplementation(() => {
     setProfilePicPath: jest.fn((value: number) => { }),
     getProfilePicPath: jest.fn(() => { return "path/to/pic" })
   };
+
 });
 
 export default mock

@@ -1,5 +1,7 @@
 //Purpose: Control signup/login flow on the anonymous homepage
 
+const BASE_URL = document.currentScript.getAttribute('base_url') //1)
+console.log(BASE_URL)
 async function login() {
   try {
     const url = "http://localhost:3000/login";

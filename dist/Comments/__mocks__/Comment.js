@@ -2,26 +2,26 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import this named export into your test file:
 var mock = jest.fn().mockImplementation(function () {
-    var mockSetCommentid = jest.fn();
-    var mockGetCommentid = jest.fn(function () { return 2; });
-    var mockSetBlogid = jest.fn();
-    var mockGetBlogid = jest.fn();
-    var mockSetUsername = jest.fn();
-    var mockGetUsername = jest.fn(function () { return "First user"; });
-    var mockSetContent = jest.fn();
-    var mockGetContent = jest.fn();
-    var mockSetReply = jest.fn();
-    var mockGetReply = jest.fn();
-    var mockSetReplyto = jest.fn();
-    var mockGetReplyto = jest.fn();
-    var mockSetLikes = jest.fn();
-    var mockGetLikes = jest.fn(function () { return 1; });
-    var mockSetLikedby = jest.fn();
-    var mockGetLikedby = jest.fn();
-    var mockSetDeleted = jest.fn();
-    var mockGetDeleted = jest.fn();
-    var mockSetCreated = jest.fn();
-    var mockGetCreated = jest.fn();
+    var mockSetCommentid = jest.fn(function (value) { });
+    var mockGetCommentid = jest.fn(function () { return 1; });
+    var mockSetBlogid = jest.fn(function (value) { });
+    var mockGetBlogid = jest.fn(function () { return 1; });
+    var mockSetUsername = jest.fn(function (value) { });
+    var mockGetUsername = jest.fn(function () { return "First User"; });
+    var mockSetContent = jest.fn(function (value) { });
+    var mockGetContent = jest.fn(function () { return "Mock content"; });
+    var mockSetReply = jest.fn(function (value) { });
+    var mockGetReply = jest.fn(function () { return true; });
+    var mockSetReplyto = jest.fn(function (value) { });
+    var mockGetReplyto = jest.fn(function () { return 1; });
+    var mockSetLikes = jest.fn(function (value) { });
+    var mockGetLikes = jest.fn(function () { return 0; });
+    var mockSetLikedby = jest.fn(function (value) { });
+    var mockGetLikedby = jest.fn(function () { return []; });
+    var mockSetDeleted = jest.fn(function (value) { });
+    var mockGetDeleted = jest.fn(function () { return false; });
+    var mockSetCreated = jest.fn(function (value) { });
+    var mockGetCreated = jest.fn(function () { return new Date(2000, 12, 31); });
     return {
         commentid: 1,
         blogid: 1,

@@ -123,16 +123,16 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         rows.forEach(function (row) {
                             //populate a comment object
                             var comment = new Comment_1.default();
-                            comment.commentid = row.commentid;
-                            comment.username = row.username;
-                            comment.blogid = row.blogid;
-                            comment.content = row.content;
-                            comment.reply = row.reply;
-                            comment.replyto = row.replyto;
-                            comment.likes = row.likes;
-                            comment.likedby = row.likedby;
-                            comment.deleted = row.deleted;
-                            comment.created = row.created;
+                            comment.setCommentid(row.commentid);
+                            comment.setUsername(row.username);
+                            comment.setBlogid(row.blogid);
+                            comment.setContent(row.content);
+                            comment.setReply(row.reply);
+                            comment.setReplyto(row.replyto);
+                            comment.setLikes(row.likes);
+                            comment.setLikedby(row.likedby);
+                            comment.setDeleted(row.deleted);
+                            comment.setCreated(row.created);
                             //add the comment object to the comments collection
                             comments_1.push(comment);
                         });
@@ -146,7 +146,6 @@ var CommentPGSQLRepo = /** @class */ (function () {
             });
         });
     };
-    //TODO: Make values array more typescript. 
     CommentPGSQLRepo.prototype.create = function (comment) {
         return __awaiter(this, void 0, void 0, function () {
             var query, values, result, commentid, e_2;
@@ -156,14 +155,14 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         _a.trys.push([0, 2, , 3]);
                         query = "INSERT INTO comments ( username, blogid, content, reply, replyto, likes, likedby, deleted) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING commentid";
                         values = new Array();
-                        values.push(comment.username);
-                        values.push(comment.blogid);
-                        values.push(comment.content);
-                        values.push(comment.reply);
-                        values.push(comment.replyto);
-                        values.push(comment.likes);
-                        values.push(comment.likedby);
-                        values.push(comment.deleted);
+                        values.push(comment.getUsername());
+                        values.push(comment.getBlogid());
+                        values.push(comment.getContent());
+                        values.push(comment.getReply());
+                        values.push(comment.getReplyto());
+                        values.push(comment.getLikes());
+                        values.push(comment.getLikedby());
+                        values.push(comment.getDeleted());
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 1:
                         result = _a.sent();
@@ -192,11 +191,10 @@ var CommentPGSQLRepo = /** @class */ (function () {
                     case 1:
                         result = _a.sent();
                         rows = result.rows;
-                        if (rows.length < 1) {
-                            throw new Error("No comment found");
+                        if (!rows.length) {
+                            throw new Error("Not found");
                         }
                         comment_1 = new Comment_1.default();
-                        console.log(comment_1);
                         rows.forEach(function (row) {
                             comment_1.setCommentid(row.commentid);
                             comment_1.setUsername(row.username);
@@ -227,31 +225,34 @@ var CommentPGSQLRepo = /** @class */ (function () {
                         _a.trys.push([0, 2, , 3]);
                         query = "UPDATE comments SET \n                                  username = $1, \n                                  blogid = $2,  \n                                  content = $3,\n                                  reply = $4,\n                                  replyto = $5,\n                                  likes = $6,\n                                  likedby = $7,\n                                  deleted = $8,\n                                  created = $9\n                                  WHERE commentid = $10 RETURNING *";
                         queryValues = [];
-                        queryValues.push(comment.username);
-                        queryValues.push(comment.blogid);
-                        queryValues.push(comment.content);
-                        queryValues.push(comment.reply);
-                        queryValues.push(comment.replyto);
-                        queryValues.push(comment.likes);
-                        queryValues.push(comment.likedby);
-                        queryValues.push(comment.deleted);
-                        queryValues.push(comment.created);
-                        queryValues.push(comment.commentid);
+                        queryValues.push(comment.getUsername());
+                        queryValues.push(comment.getBlogid());
+                        queryValues.push(comment.getContent());
+                        queryValues.push(comment.getReply());
+                        queryValues.push(comment.getReplyto());
+                        queryValues.push(comment.getLikes());
+                        queryValues.push(comment.getLikedby());
+                        queryValues.push(comment.getDeleted());
+                        queryValues.push(comment.getCreated());
+                        queryValues.push(comment.getCommentid());
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         result = _a.sent();
+                        if (!result.rows.length) {
+                            throw new Error("Not found");
+                        }
                         row = result.rows[0];
                         updatedComment = new Comment_1.default();
-                        updatedComment.commentid = row.commentid;
-                        updatedComment.username = row.username;
-                        updatedComment.content = row.content;
-                        updatedComment.created = row.created;
-                        updatedComment.deleted = row.deleted;
-                        updatedComment.likes = row.likes;
-                        updatedComment.likedby = row.likedby;
-                        updatedComment.reply = row.reply;
-                        updatedComment.replyto = row.replyto;
-                        updatedComment.blogid = row.blogid;
+                        updatedComment.setCommentid(row.commentid);
+                        updatedComment.setUsername(row.username);
+                        updatedComment.setContent(row.content);
+                        updatedComment.setCreated(row.created);
+                        updatedComment.setDeleted(row.deleted);
+                        updatedComment.setLikes(row.likes);
+                        updatedComment.setLikedby(row.likedby);
+                        updatedComment.setReply(row.reply);
+                        updatedComment.setReplyto(row.replyto);
+                        updatedComment.setBlogid(row.blogid);
                         return [2 /*return*/, updatedComment];
                     case 2:
                         e_4 = _a.sent();

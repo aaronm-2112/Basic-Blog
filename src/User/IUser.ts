@@ -11,14 +11,14 @@ export default interface IUser {
   salt: string;
   profilepic: string;
 
+  setUserid(id: Number): void;
+  getUserid(): Number;
   getUsername(): String;
   setUsername(username: String): void;
   getPassword(): string;
   setPassword(password: string): void;
   getEmail(): String;
   setEmail(email: String): void;
-  getUserID(): Number;
-  //setUserID(id: Number): void;
   getFirstname(): String;
   setFirstname(firstname: String): void;
   getLastname(): String;

@@ -1,13 +1,13 @@
-//Purpose: Test the PGSQL comment repository queries for correctness.
+//Purpose: Basic tests to look for PGSQL comment repository queries for errors.
 
 import CommentRepository from '../../Comments/Repositories/CommentPGSQLRepo'
 import Comment from '../../Comments/Comment'
 import { createDB, resetDB, populateDBWithTestData } from '../../dbinit'
 import PGConnection from '../../Common/PGConnection'
+import { mocked } from 'ts-jest/utils'
 
 jest.mock('../../Comments/Comment')
 jest.mock('../../Common/PGConnection')
-
 
 
 /*
@@ -22,9 +22,7 @@ Extras(steps that are optional but can be beneficial):
 
 */
 
-//TODO: Do not use mock here?
-describe("Comment repository testing", () => {
-
+describe("PGSQL Comment repository testing suite", () => {
 
   beforeEach(async () => {
     //the mock connection object connects to the testing database
@@ -42,7 +40,7 @@ describe("Comment repository testing", () => {
     expect(commentid).toBeGreaterThanOrEqual(1)
   })
 
-  test("Finding a comment returns all of the correct comment values", async () => {
+  test("Find returns the expected comment with the expected property values", async () => {
     let mockConnectionObject = new PGConnection()
     let repo: CommentRepository = new CommentRepository(mockConnectionObject)
     let comment = await repo.find(1)
@@ -56,6 +54,12 @@ describe("Comment repository testing", () => {
     expect(comment.setLikes).toHaveBeenCalledWith(0)
     expect(comment.setCreated).toHaveBeenCalledWith(new Date(2000, 11, 31))
     expect(comment.setDeleted).toHaveBeenCalledWith(false)
+  })
+
+  test("Find throws error when searching for a comment that does not exist", async () => {
+    let mockConnectionObject = new PGConnection()
+    let repo: CommentRepository = new CommentRepository(mockConnectionObject)
+    await expect(repo.find(5)).rejects.toThrowError("Error: Not found")
   })
 
   test("Findall returns all of the top level comments in blog 1 with the correct values", async () => {
@@ -89,6 +93,13 @@ describe("Comment repository testing", () => {
 
   })
 
+  test("Findall returns no comments when searching for comments in a blog that does not exist", async () => {
+    let mockConnectionObject = new PGConnection()
+    let repo: CommentRepository = new CommentRepository(mockConnectionObject)
+    let comments = await repo.findAll(20, false, 0, "likes", 1000, 1000, "next")
+    expect(comments.length).toBe(0)
+  })
+
   test("Update successfully updates a row and returns a comment with the changes applied", async () => {
     let mockConnectionObject = new PGConnection()
     let repo: CommentRepository = new CommentRepository(mockConnectionObject)
@@ -120,4 +131,74 @@ describe("Comment repository testing", () => {
     expect(mockUpdatedComment.setDeleted).toHaveBeenCalledWith(false)
   })
 
+  test("Update throws an error when updating a comment that does not exist", async () => {
+    let mockConnectionObject = new PGConnection()
+    let repo: CommentRepository = new CommentRepository(mockConnectionObject)
+    mocked(Comment).mockImplementation((): Comment => {
+      const mockSetCommentid = jest.fn((value: number) => { })
+      const mockGetCommentid = jest.fn((): number => { return 30 })
+      const mockSetBlogid = jest.fn((value: number) => { })
+      const mockGetBlogid = jest.fn((): number => { return 1 })
+      const mockSetUsername = jest.fn((value: string) => { })
+      const mockGetUsername = jest.fn((): string => { return "First User" })
+      const mockSetContent = jest.fn((value: string) => { })
+      const mockGetContent = jest.fn((): string => { return "Mock content" })
+      const mockSetReply = jest.fn((value: boolean) => { })
+      const mockGetReply = jest.fn((): boolean => { return true })
+      const mockSetReplyto = jest.fn((value: number) => { })
+      const mockGetReplyto = jest.fn((): number => { return 1 })
+      const mockSetLikes = jest.fn((value: number) => { })
+      const mockGetLikes = jest.fn((): number => { return 0 })
+      const mockSetLikedby = jest.fn((value: string[]) => { })
+      const mockGetLikedby = jest.fn((): string[] => { return [] })
+      const mockSetDeleted = jest.fn((value: boolean) => { })
+      const mockGetDeleted = jest.fn((): boolean => { return false })
+      const mockSetCreated = jest.fn((value: Date) => { })
+      const mockGetCreated = jest.fn((): Date => { return new Date(2000, 12, 31) })
+      const mockAddLike = jest.fn((username: string): void => { })
+      const mockAlreadyLiked = jest.fn((username: string): boolean => { return false })
+      const mockMarkDeleted = jest.fn((username: string): void => { })
+      const mockEditContent = jest.fn((username: string, content: string): void => { })
+      const mockIsOwner = jest.fn((username: string): boolean => { return false })
+      return {
+        commentid: 1,
+        blogid: 1,
+        username: "First User",
+        content: "First comment",
+        reply: false,
+        replyto: 0,
+        likes: 1,
+        likedby: ["First User"],
+        deleted: false,
+        created: new Date(2000, 12, 31),
+        setCommentid: mockSetCommentid,
+        getCommentid: mockGetCommentid,
+        setBlogid: mockSetBlogid,
+        getBlogid: mockGetBlogid,
+        setUsername: mockSetUsername,
+        getUsername: mockGetUsername,
+        setContent: mockSetContent,
+        getContent: mockGetContent,
+        setReply: mockSetReply,
+        getReply: mockGetReply,
+        setReplyto: mockSetReplyto,
+        getReplyto: mockGetReplyto,
+        setLikes: mockSetLikes,
+        getLikes: mockGetLikes,
+        setLikedby: mockSetLikedby,
+        getLikedby: mockGetLikedby,
+        setDeleted: mockSetDeleted,
+        getDeleted: mockGetDeleted,
+        setCreated: mockSetCreated,
+        getCreated: mockGetCreated,
+        addLike: mockAddLike,
+        alreadyLiked: mockAlreadyLiked,
+        markDeleted: mockMarkDeleted,
+        editContent: mockEditContent,
+        isOwner: mockIsOwner
+      };
+    })
+    let mockComment = new Comment()
+    await expect(repo.update(mockComment)).rejects.toThrowError("Error: Not found")
+  })
 })

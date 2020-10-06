@@ -91,6 +91,10 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //execute the query
       let result = await this.pool.query(query, values);
 
+      if (!result.rows.length) {
+        throw new Error("Not found")
+      }
+
       //get the row from the result
       let row = result.rows[0];
 
@@ -175,6 +179,10 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //execute the update query
       let result = await this.pool.query(query, queryValues);
 
+      if (!result.rows.length) {
+        throw new Error("Not found");
+      }
+
       //get the updated row
       let row: any = result.rows[0];
 
@@ -188,7 +196,6 @@ export default class BlogPGSQLRepo implements IBlogRepository {
 
       return updatedBlog;
     } catch (e) {
-      console.log(e);
       throw new Error(e);
     }
 

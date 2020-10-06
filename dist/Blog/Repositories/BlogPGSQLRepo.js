@@ -76,9 +76,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                             query = "SELECT * FROM blogs WHERE " + searchBy + " = $1 AND blogid < " + key + " ORDER BY blogid DESC LIMIT 10";
                         }
                         else {
-                            //TODO: Handle more appropriately
-                            //unaccepted condition return 
-                            return [2 /*return*/, []];
+                            throw new Error("Condition not acceptable");
                         }
                         values = [];
                         //add the search value to the value collection
@@ -91,11 +89,11 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         //place results into the blog array 
                         rows.forEach(function (row) {
                             blog_1 = new Blog_1.default(); //TODO: Find better way to create a deep copy
-                            blog_1.blogid = row.blogid;
-                            blog_1.title = row.title;
-                            blog_1.titleimagepath = row.titleimagepath;
-                            blog_1.username = row.username;
-                            blog_1.content = row.content;
+                            blog_1.setBlogid(row.blogid);
+                            blog_1.setTitle(row.title);
+                            blog_1.setTitleimagepath(row.titleimagepath);
+                            blog_1.setUsername(row.username);
+                            blog_1.setContent(row.content);
                             //push blog into blog array 
                             blogs_1.push(blog_1);
                         });
@@ -125,13 +123,16 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 1:
                         result = _a.sent();
+                        if (!result.rows.length) {
+                            throw new Error("Not found");
+                        }
                         row = result.rows[0];
                         blog = new Blog_1.default();
-                        blog.blogid = row.blogid;
-                        blog.title = row.title;
-                        blog.titleimagepath = row.titleimagepath;
-                        blog.content = row.content;
-                        blog.username = row.username;
+                        blog.setBlogid(row.blogid);
+                        blog.setTitle(row.title);
+                        blog.setTitleimagepath(row.titleimagepath);
+                        blog.setContent(row.content);
+                        blog.setUsername(row.username);
                         return [2 /*return*/, blog];
                     case 2:
                         e_2 = _a.sent();
@@ -150,15 +151,13 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         _a.trys.push([0, 2, , 3]);
                         query = "INSERT INTO blogs ( username, title, content) VALUES ($1, $2, $3) RETURNING blogid";
                         values = [];
-                        values.push(blog.username);
-                        values.push(blog.title);
-                        values.push(blog.content);
+                        values.push(blog.getUsername());
+                        values.push(blog.getTitle());
+                        values.push(blog.getContent());
                         return [4 /*yield*/, this.pool.query(query, values)];
                     case 1:
                         result = _a.sent();
-                        console.log(result);
                         blogID = result.rows[0]["blogid"];
-                        console.log(blogID);
                         //return database
                         return [2 /*return*/, blogID];
                     case 2:
@@ -171,6 +170,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
         });
     };
     //upddate any changes that occur to the blog. Do not update BlogID
+    //TODO: Refactor the entries method as this will not work when properties are made private
     BlogPGSQLRepo.prototype.update = function (blog) {
         return __awaiter(this, void 0, void 0, function () {
             var queryProperties, queryValues, blogEntries, parameterNumber, entry, query, result, row, updatedBlog, e_4;
@@ -178,8 +178,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        console.log("In update");
-                        //check if blogID is filled -- TODO move out of repo?
+                        //check if blogID is filled
                         if (blog.blogid < 0) {
                             throw new Error("No ID");
                         }
@@ -190,7 +189,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         //traverse the blog's entries
                         for (entry in blogEntries) {
                             //determine which blog properties need to be updated
-                            if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogid' && blogEntries[entry][0] !== "username") { //empty string not acceptable update value
+                            if (blogEntries[entry][1] !== undefined && blogEntries[entry][1] !== null && blogEntries[entry][0] !== 'blogid' && blogEntries[entry][0] !== "username" && typeof (blogEntries[entry][1]) !== 'function') { //empty string not acceptable update value nor is a function (for getters and setters)
                                 //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
                                 queryProperties.push(blogEntries[entry][0] + (" = $" + parameterNumber));
                                 //push the blog property value into the list of query values
@@ -200,49 +199,25 @@ var BlogPGSQLRepo = /** @class */ (function () {
                             }
                         }
                         query = "UPDATE blogs SET " + queryProperties.join(',') + (" WHERE blogid = $" + parameterNumber + " RETURNING *");
-                        console.log(query);
                         //add the blogID to the queryValues list
                         queryValues.push(blog.blogid.toString());
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         result = _a.sent();
+                        if (!result.rows.length) {
+                            throw new Error("Not found");
+                        }
                         row = result.rows[0];
                         updatedBlog = new Blog_1.default();
-                        updatedBlog.username = row.username;
-                        updatedBlog.blogid = row.blogid;
-                        updatedBlog.content = row.content;
-                        updatedBlog.title = row.title;
-                        updatedBlog.titleimagepath = row.titleimagepath;
+                        updatedBlog.setUsername(row.username);
+                        updatedBlog.setBlogid(row.blogid);
+                        updatedBlog.setContent(row.content);
+                        updatedBlog.setTitle(row.title);
+                        updatedBlog.setTitleimagepath(row.titleimagepath);
                         return [2 /*return*/, updatedBlog];
                     case 2:
                         e_4 = _a.sent();
-                        console.log(e_4);
                         throw new Error(e_4);
-                    case 3: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    BlogPGSQLRepo.prototype.delete = function (blog) {
-        return __awaiter(this, void 0, void 0, function () {
-            var query, values, e_5;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        query = "DELETE FROM Blog WHERE blogid = $1";
-                        values = [];
-                        values.push(blog.blogid.toString());
-                        //execute the delete query
-                        return [4 /*yield*/, this.pool.query(query, values)];
-                    case 1:
-                        //execute the delete query
-                        _a.sent();
-                        return [2 /*return*/, true];
-                    case 2:
-                        e_5 = _a.sent();
-                        console.log(e_5);
-                        return [2 /*return*/, false];
                     case 3: return [2 /*return*/];
                 }
             });

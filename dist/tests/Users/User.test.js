@@ -7,8 +7,8 @@ var User_1 = __importDefault(require("../../User/User"));
 //Setter and getter testing---------------------------------------------------------
 test("Setters and getters for userid are correct", function () {
     var user = new User_1.default();
-    user.setUserID(1);
-    expect(user.getUserID()).toBe(1);
+    user.setUserid(1);
+    expect(user.getUserid()).toBe(1);
 });
 test("Setters and getters for username are correct", function () {
     var user = new User_1.default();

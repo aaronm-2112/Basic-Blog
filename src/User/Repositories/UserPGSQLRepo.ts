@@ -22,48 +22,6 @@ export default class UserPGSQLRepo implements IRepository {
     });
   }
 
-  // async findAll(searchBy: UserQueryParameters, searchValue: string): Promise<IUser[]> {
-  //   try {
-  //     //create a parameterized query
-  //     let query: string = `SELECT * FROM users WHERE ${searchBy} = $1`;
-
-  //     //prepare the searchValue for use in the query
-  //     let values: Array<string> = new Array<string>();
-  //     values.push(searchValue);
-
-  //     //execute the query and store the result
-  //     let res = await this.pool.query(query, values);
-
-  //     //extract the query rows from the result
-  //     let rows: any[] = res.rows;
-
-  //     //create a collection of users that matches findAll's return type
-  //     let users: IUser[] = [];
-
-  //     //load the row values into the user collection
-  //     rows.forEach(row => {
-  //       //create a new user and populate its properties
-  //       let user: IUser = new User();
-  //       user.userid = row.userid;
-  //       user.setUsername(row.username);
-  //       user.setPassword(row.password);
-  //       user.setEmail(row.email);
-  //       user.setFirstname(row.firstname);
-  //       user.setLastname(row.lastname);
-  //       //user.setSalt(row.salt);
-  //       user.setProfilePicPath(row.profilepic);
-
-  //       //push the user into the users collection
-  //       users.push(user);
-  //     });
-
-  //     //return the resulting query rows
-  //     return users;
-  //   } catch (e) {
-  //     throw new Error(e);
-  //   }
-  // }
-
   //TODO: use search criteria and searchby values
   async find(username: string): Promise<IUser> {
     try {
@@ -108,7 +66,6 @@ export default class UserPGSQLRepo implements IRepository {
 
   async create(user: IUser): Promise<number> {
     try {
-      console.log("In create");
       //Generate a salt for the user
       let salt: string = await generateUserSalt();
 
@@ -163,15 +120,12 @@ export default class UserPGSQLRepo implements IRepository {
 
       //traverse the blog's entries
       for (var entry in userEntries) {
-        //console.log(userEntries[entry][0] + userEntries[entry][1]);
         //determine which user properties need to be updated -- and do not update those which can't be
-        if (userEntries[entry][0] !== 'username' && userEntries[entry][1] !== "" && userEntries[entry][0] !== 'salt' && userEntries[entry][0] !== 'userid' && userEntries[entry][0] !== 'email') { //empty string not acceptable update value
+        if (userEntries[entry][0] !== 'username' && userEntries[entry][1] !== "" && userEntries[entry][0] !== 'salt' && userEntries[entry][0] !== 'userid' && userEntries[entry][0] !== 'email' && typeof (userEntries[entry][1]) !== 'function') { //empty string not acceptable update value
           //push the blog property into the list of query properties -- add '= ?' to ready the prepared statement
           queryProperties.push(userEntries[entry][0] + ` = $${parameterNumber}`);
           //push the blog property value into the list of query values
           queryValues.push(userEntries[entry][1]);
-          console.log(userEntries[entry][0] + userEntries[entry][1]);
-
           //increment parameter value
           parameterNumber += 1;
         }
@@ -187,11 +141,17 @@ export default class UserPGSQLRepo implements IRepository {
       let result = await this.pool.query(query, queryValues);
 
       //extract the returned row from the result
-      let row: any = result.rows[0];
+      let rows: any = result.rows;
+
+      if (!rows.length) {
+        throw new Error("Not found");
+      }
+
+      let row = rows[0];
 
       //create a user with the row properties
       let updatedUser: IUser = new User();
-      updatedUser.userid = row.userid;
+      updatedUser.setUserid(row.userid);
       updatedUser.setProfilePicPath(row.profilepic);
       updatedUser.setEmail(row.email);
       updatedUser.setFirstname(row.firstname);
@@ -199,7 +159,6 @@ export default class UserPGSQLRepo implements IRepository {
       updatedUser.setUsername(row.username);
       updatedUser.setBio(row.bio);
       updatedUser.setPassword(row.password);
-
 
       return updatedUser;
     } catch (e) {

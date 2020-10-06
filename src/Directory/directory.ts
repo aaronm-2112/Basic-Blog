@@ -34,12 +34,14 @@ export default class Directory {
         if (userID.id.length) {
           //if so render homepage with a link to the user profile
           res.render('Homepage', {
-            links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile + `${userID.id}?profilePage=true`]]
+            links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile + `${userID.id}?profilePage=true`]],
+            base_url: process.env.BASE_URL as string
           });
         } else {
           //render homepage without a link to the user profile
           res.render('Homepage', {
-            links: [["home", this.paths.root], ["search", this.paths.search]]
+            links: [["home", this.paths.root], ["search", this.paths.search]],
+            base_url: process.env.BASE_URL as string
           });
         }
       } catch (e) {

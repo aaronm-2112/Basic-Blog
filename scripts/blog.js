@@ -1,6 +1,8 @@
 //blogid global
 var blogid;
 
+console.log(document.currentScript.getAttribute('base_url')); //cheese
+
 //gets the blogid fromthe url
 const getBlogid = () => {
   let url = document.URL;

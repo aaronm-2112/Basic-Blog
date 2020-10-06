@@ -50,7 +50,56 @@ function createDB(connectionObj) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 9, , 10]);
+                    _a.trys.push([0, 6, , 7]);
+                    client = new pg_1.Client({
+                        user: connectionObj.getUser(),
+                        host: connectionObj.getHost(),
+                        database: connectionObj.getDatabase(),
+                        password: connectionObj.getPassword(),
+                        port: connectionObj.getPort()
+                    });
+                    return [4 /*yield*/, client.connect()];
+                case 1:
+                    _a.sent();
+                    pgRes = void 0;
+                    return [4 /*yield*/, client.query("CREATE TABLE users (\n        userid serial primary key,\n        username text not null unique,\n        password text not null,\n        email text not null unique,\n        firstname text,\n        lastname text,\n        bio text,\n        salt text, \n        profilepic text\n    );")];
+                case 2:
+                    //create the tables----------------------------------
+                    //TABLE users
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE TABLE blogs ( \n        blogid serial primary key, \n        username text not null, \n        title text not null, \n        content text, \n        titleimagepath text, \n        foreign key(username) references users(username));")];
+                case 3:
+                    //TABLE blogs
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE TABLE comments ( \n        commentid serial primary key, \n        username text not null, \n        blogid integer not null, \n        content text not null, \n        reply boolean not null, \n        replyto integer not null, \n        likes integer not null, \n        likedby text[] default array[]::text[], \n        deleted boolean not null, \n        created timestamp default current_timestamp, \n        foreign key(username) references users(username), \n        foreign key(blogid) references blogs(blogid));")
+                        //end the client's connection
+                    ];
+                case 4:
+                    //TABLE comments
+                    pgRes = _a.sent();
+                    //end the client's connection
+                    return [4 /*yield*/, client.end()];
+                case 5:
+                    //end the client's connection
+                    _a.sent();
+                    return [3 /*break*/, 7];
+                case 6:
+                    e_1 = _a.sent();
+                    console.error(e_1);
+                    return [3 /*break*/, 7];
+                case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.createDB = createDB;
+function resetDB(connectionObj) {
+    return __awaiter(this, void 0, void 0, function () {
+        var client, pgRes, e_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 5, , 6]);
                     client = new pg_1.Client({
                         user: connectionObj.getUser(),
                         host: connectionObj.getHost(),
@@ -72,45 +121,25 @@ function createDB(connectionObj) {
                     return [4 /*yield*/, client.query("DROP TABLE comments CASCADE").catch(function (e) { return console.log("OOps"); })];
                 case 4:
                     pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("CREATE TABLE users (\n        userid serial primary key,\n        username text not null unique,\n        password text not null,\n        email text not null unique,\n        firstname text,\n        lastname text,\n        bio text,\n        salt text, \n        profilepic text\n    );")];
+                    return [3 /*break*/, 6];
                 case 5:
-                    //create the tables----------------------------------
-                    //TABLE users
-                    pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("CREATE TABLE blogs ( \n        blogid serial primary key, \n        username text not null, \n        title text not null, \n        content text, \n        titleimagepath text, \n        foreign key(username) references users(username));")];
-                case 6:
-                    //TABLE blogs
-                    pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("CREATE TABLE comments ( \n        commentid serial primary key, \n        username text not null, \n        blogid integer not null, \n        content text not null, \n        reply boolean not null, \n        replyto integer not null, \n        likes integer not null, \n        likedby text[], \n        deleted boolean not null, \n        created timestamp default current_timestamp, \n        foreign key(username) references users(username), \n        foreign key(blogid) references blogs(blogid));")
-                        //end the client's connection
-                    ];
-                case 7:
-                    //TABLE comments
-                    pgRes = _a.sent();
-                    //end the client's connection
-                    return [4 /*yield*/, client.end()];
-                case 8:
-                    //end the client's connection
-                    _a.sent();
-                    return [3 /*break*/, 10];
-                case 9:
-                    e_1 = _a.sent();
-                    console.error(e_1);
-                    return [3 /*break*/, 10];
-                case 10: return [2 /*return*/];
+                    e_2 = _a.sent();
+                    console.log(e_2);
+                    return [3 /*break*/, 6];
+                case 6: return [2 /*return*/];
             }
         });
     });
 }
-exports.createDB = createDB;
+exports.resetDB = resetDB;
 //Test data that is used for database testing
 function populateDBWithTestData(connectionObj) {
     return __awaiter(this, void 0, void 0, function () {
-        var client, pgRes, e_2;
+        var client, pgRes, e_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 6, , 7]);
+                    _a.trys.push([0, 11, , 12]);
                     client = new pg_1.Client({
                         user: connectionObj.getUser(),
                         host: connectionObj.getHost(),
@@ -121,28 +150,50 @@ function populateDBWithTestData(connectionObj) {
                     return [4 /*yield*/, client.connect()];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, client.query("INSERT INTO users (userid, username, password, email, firstname, lastname, bio, salt, profilepic) \n                                VALUES ('2', 'First User', '1234', 'aaron.m@gmail.com', 'aaron', 'g', 'my bio', '#r4', '/uploads/1234' )")];
+                    return [4 /*yield*/, client.query("INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) \n                                    VALUES            ('First User', '1234', 'aaron.m@gmail.com', 'aaron', 'g', 'my bio', '#r4', '/uploads/1234' )")];
                 case 2:
                     pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("INSERT INTO blogs (blogid, username, title, content, titleimagepath) \n                                VALUES ('1', 'First User', 'Blog One', 'First blog', '/uploads/1233')")];
+                    return [4 /*yield*/, client.query("INSERT INTO users (username, password, email, firstname, lastname, bio, salt, profilepic) \n                                VALUES            ('Second User', '1234', 'jerry.m@gmail.com', 'aaron', 'g', 'my bio', '#r4', '/uploads/1234' )")];
                 case 3:
-                    //insert a test blog
+                    //user 2 - Second User
                     pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("INSERT INTO comments ( commentid, username, blogid, content, reply, replyto, likes, created, deleted)\n                                VALUES ('2','First User', '1', 'Good blog!', 'false', '0', '0', '2000-12-31','false')")];
+                    return [4 /*yield*/, client.query("INSERT INTO blogs (username, title, content, titleimagepath) \n                                VALUES            ('First User', 'Blog One', 'First blog', '/uploads/1233')")];
                 case 4:
-                    //insert a test comment
+                    //insert test blogs-------------------------
+                    //blog 1 created by First User
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("INSERT INTO blogs (username, title, content, titleimagepath) \n                                VALUES            ('First User', 'Blog Two', 'Second blog', '/uploads/1233')")];
+                case 5:
+                    //blog 2 created by First User
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("INSERT INTO blogs (username, title, content, titleimagepath) \n                                VALUES            ('Second User', 'Blog One', 'First blog', '/uploads/1233')")];
+                case 6:
+                    // //blog 3 created by Second User
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("INSERT INTO comments ( username, blogid, content, reply, replyto, likes, created, deleted)\n                                VALUES               ('First User', '1', 'Good blog!', 'false', '0', '0', '2000-12-31','false')")];
+                case 7:
+                    //insert test comments----------------------
+                    //a top level comment in blog 1 
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("INSERT INTO comments (username, blogid, content, reply, replyto, likes, created, deleted)\n                                VALUES               ('First User', '1', 'Okay blog!', 'false', '0', '0', '2000-12-31','false')")];
+                case 8:
+                    //The 2nd top level comment in blog 1
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("INSERT INTO comments ( username, blogid, content, reply, replyto, likes, created, deleted)\n                                VALUES               ('First User', '1', 'Not okay blog!', 'true', '2', '0', '2000-12-31','false')")];
+                case 9:
+                    // //A reply to the second top level comment in blog 1
                     pgRes = _a.sent();
                     //end the client's connection
                     return [4 /*yield*/, client.end()];
-                case 5:
+                case 10:
                     //end the client's connection
                     _a.sent();
-                    return [3 /*break*/, 7];
-                case 6:
-                    e_2 = _a.sent();
-                    console.log(e_2);
-                    return [3 /*break*/, 7];
-                case 7: return [2 /*return*/];
+                    return [3 /*break*/, 12];
+                case 11:
+                    e_3 = _a.sent();
+                    console.log(e_3);
+                    return [3 /*break*/, 12];
+                case 12: return [2 /*return*/];
             }
         });
     });

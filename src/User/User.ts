@@ -24,6 +24,13 @@ export default class User implements IUser {
     this.profilepic = "";
   }
 
+  setUserid(id: Number): void {
+    this.userid = id;
+  }
+  getUserid(): Number {
+    return this.userid;
+  }
+
   getUsername(): String {
     return this.username;
   }
@@ -46,14 +53,6 @@ export default class User implements IUser {
 
   setEmail(email: String): void {
     this.email = email;
-  }
-
-  getUserID(): Number {
-    return this.userid;
-  }
-
-  setUserID(id: Number): void {
-    this.userid = id;
   }
 
   getFirstname(): String {
