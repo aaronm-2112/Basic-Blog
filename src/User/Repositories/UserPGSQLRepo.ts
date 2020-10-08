@@ -47,7 +47,7 @@ export default class UserPGSQLRepo implements IRepository {
 
       // fill out the user object and return it
       rows.forEach(row => {
-        user.userid = row["userid"];
+        user.setUserid(row["userid"]);
         user.setEmail(row["email"]);
         user.setBio(row["bio"]);
         user.setFirstname(row["firstname"]);

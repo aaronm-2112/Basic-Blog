@@ -258,7 +258,7 @@ describe("PGSQL Blog repository testing suite", function () {
                 case 0:
                     mockConnectionObject = new PGConnection_1.default();
                     repo = new BlogPGSQLRepo_1.default(mockConnectionObject);
-                    utils_1.mocked(Blog_1.default).mockImplementation(function () {
+                    utils_1.mocked(Blog_1.default, true).mockImplementation(function () {
                         var mockSetBlogid = jest.fn(function (value) { });
                         var mockGetBlogid = jest.fn(function () { return 4; });
                         var mockSetUsername = jest.fn(function (value) { });

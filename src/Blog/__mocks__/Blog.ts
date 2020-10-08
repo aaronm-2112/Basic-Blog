@@ -1,7 +1,7 @@
 // Import this named export into your test file:
 const mock = jest.fn().mockImplementation(() => {
   const mockSetBlogid = jest.fn((value: number) => { })
-  const mockGetBlogid = jest.fn(() => { return 4 })
+  const mockGetBlogid = jest.fn(() => { return 1 })
   const mockSetUsername = jest.fn((value: string) => { })
   const mockGetUsername = jest.fn(() => { return "First User" })
   const mockSetTitle = jest.fn((value: string) => { })

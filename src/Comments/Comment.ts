@@ -1,5 +1,9 @@
 import IComment from './IComment';
-
+/*
+Note: kept interfaces but moved properties to base classes due to jest making private properties 
+     inaccesible and me not finding a suitable workaround that would be worth it 
+     -- not worth it in that i don't need the extra extensibility in this project.
+*/
 export default class Comment implements IComment {
   commentid: number; //pk
   username: string; //fk to users

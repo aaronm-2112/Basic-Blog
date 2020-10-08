@@ -79,7 +79,7 @@ var UserController = /** @class */ (function () {
                     (either in a profile page form or a edit page form) so this is not an unacceptable use of them.
         */
         this.router.get('/users/:userid', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var usernamePassedIn, user, verifiedUsername, blogs, blogDetails_1, edit, e_1;
+            var usernamePassedIn, user, verifiedUsername, blogs, blogDetails_1, BASE_URL_1, edit, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -109,13 +109,14 @@ var UserController = /** @class */ (function () {
                             res.sendStatus(403);
                             return [2 /*return*/];
                         }
-                        return [4 /*yield*/, this.blogRepository.findAll(BlogSearchCriteria_1.searchParameters.Username, user.username, "0", ">")];
+                        return [4 /*yield*/, this.blogRepository.findAll(BlogSearchCriteria_1.searchParameters.Username, user.getUsername(), "0", ">")];
                     case 2:
                         blogs = _a.sent();
                         blogDetails_1 = new Array();
+                        BASE_URL_1 = process.env.BASE_URL;
                         //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
                         blogs.forEach(function (blog) {
-                            blogDetails_1.push({ title: blog.title, editPath: "http://localhost:3000/blogs/" + blog.blogid + "?edit=true", viewPath: "http://localhost:3000/blogs/" + blog.blogid + "?edit=false" });
+                            blogDetails_1.push({ title: blog.getTitle(), editPath: BASE_URL_1 + "/blogs/" + blog.getBlogid() + "?editPage=true", viewPath: BASE_URL_1 + "/blogs/" + blog.getBlogid() + "?editPage=false" });
                         });
                         edit = req.query.editPage;
                         //check if edit was left undefined or marked false
@@ -127,7 +128,8 @@ var UserController = /** @class */ (function () {
                                     userName: user.getUsername(), firstName: user.getFirstname(),
                                     lastName: user.getLastname(), bio: user.getBio(),
                                     blogDetails: blogDetails_1,
-                                    profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
+                                    profileImagePath: BASE_URL_1 + "/" + user.getProfilePicPath(),
+                                    BASE_URL: BASE_URL_1
                                 });
                             }
                             else {
@@ -136,7 +138,7 @@ var UserController = /** @class */ (function () {
                                     userName: user.getUsername(), firstName: user.getFirstname(),
                                     lastName: user.getLastname(), bio: user.getBio(),
                                     blogDetails: blogDetails_1,
-                                    profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
+                                    profileImagePath: BASE_URL_1 + "/" + user.getProfilePicPath()
                                 });
                             }
                         }
@@ -146,7 +148,8 @@ var UserController = /** @class */ (function () {
                                 //send back the user edit view
                                 res.render('ProfileEdit', {
                                     userName: user.getUsername(), firstName: user.getFirstname(),
-                                    lastName: user.getLastname(), bio: user.getBio(), profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
+                                    lastName: user.getLastname(), bio: user.getBio(), profileImagePath: BASE_URL_1 + "/" + user.getProfilePicPath(),
+                                    BASE_URL: BASE_URL_1
                                 });
                             }
                             else {
@@ -154,7 +157,7 @@ var UserController = /** @class */ (function () {
                                 res.status(200).send({
                                     userName: user.getUsername(), firstName: user.getFirstname(),
                                     lastName: user.getLastname(), bio: user.getBio(),
-                                    profileImagePath: user.getProfilePicPath()
+                                    profileImagePath: BASE_URL_1 + "/" + user.getProfilePicPath()
                                 });
                             }
                         }
@@ -171,7 +174,7 @@ var UserController = /** @class */ (function () {
         //Body parameters: username, email, password, firstname, lastname, bio
         //Accept: 'application/json'
         this.router.post('/users', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var password, email, username, user, firstname, lastname, bio, userid, e_2;
+            var password, email, username, user, firstname, lastname, bio, userid, BASE_URL, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -212,8 +215,9 @@ var UserController = /** @class */ (function () {
                         return [4 /*yield*/, this.userRepository.create(user)];
                     case 1:
                         userid = _a.sent();
+                        BASE_URL = process.env.BASE_URL;
                         //return the userid and status code
-                        res.status(201).location("http://localhost:3000/users/" + userid).send({ userid: userid });
+                        res.status(201).location(BASE_URL + "/users/" + userid).send({ userid: userid });
                         return [3 /*break*/, 3];
                     case 2:
                         e_2 = _a.sent();
@@ -243,7 +247,6 @@ var UserController = /** @class */ (function () {
                         lastName = req.body.lastName;
                         bio = req.body.bio;
                         profilePicPath = req.body.profilePicturePath;
-                        console.log(profilePicPath);
                         user = new User_1.default();
                         user.setUsername(userName);
                         if (req.body.firstName !== undefined) {

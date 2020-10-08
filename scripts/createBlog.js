@@ -1,3 +1,5 @@
+const BASE_URL = document.currentScript.getAttribute('base_url')
+
 //upload the blog content to the blog creation route
 async function createBlog() {
   try {
@@ -10,39 +12,36 @@ async function createBlog() {
     imageFormData.append("image", bannerImage);
 
     //create the hero image resource
-    let result = await fetch('http://localhost:3000/uploads', { method: 'POST', body: imageFormData });
-
-    console.log(result);
+    let result = await fetch(`${BASE_URL}/uploads`, { method: 'POST', body: imageFormData });
 
     //get the image path
-    let imagePath = await result.json();
+    let imagePathData = await result.json();
 
-    console.log(imagePath);
+    let imagePath = imagePathData.imagePath;
 
     //get text content from the blog creation form
     let content = document.getElementById("content").value;
     let title = document.getElementById("title").value;
 
-    console.log("Upload the blog content");
-
     //create the blog resource using the text content
-    let blogResult = await fetch(`http://localhost:3000/blogs`,
+    let blogResult = await fetch(`${BASE_URL}/blogs`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, title }) });
 
-    console.log(blogResult);
-
     //get the blogID from the request
-    let blogID = await blogResult.json();
+    let blogData = await blogResult.json();
+    let blogID = blogData.blogID;
+
 
     //patch the blog at /blog/:blogID with the path to the hero image 
-    let patchResult = await fetch(`http://localhost:3000/blogs/${blogID}`, {
+    let patchResult = await fetch(`${BASE_URL}/blogs/${blogID}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titleImagePath: imagePath })
     });
 
     //check for success status code
-    if (patchResult.status === 204) {
-      console.log("Blog created!");
-      window.location.pathname = `/blogs/${blogID}/false`;
+    if (patchResult.status === 200) {
+      // let string = `/blogs/${blogID}?editPage=false`
+      //console.log(string)
+      window.location.href = `/blogs/${blogID}?editPage=false`;
     } else {
       console.log("Error creating blog!");
     }

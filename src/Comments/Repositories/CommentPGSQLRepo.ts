@@ -46,14 +46,13 @@ export default class CommentPGSQLRepo implements ICommentRepository {
         if (orderBy === 'date') {
           //check if flip is next
           if (flip === 'next') {
-            //-----query returns 10 replies newer than that of the given commentid - which acts as the keyset pagination key in this query
+            //-----query returns 10 replies newer than that of the given commentid value - which acts as the keyset pagination key in this query
             query = query + `replyto = $${parameterNumber += 1} AND commentid > $${parameterNumber += 1} ORDER BY created ASC, commentid ASC LIMIT 10`;
           } else {
             //------query returns 10 replies older than that of the given commentid
             query = query + `replyto = $${parameterNumber += 1} AND commentid < $${parameterNumber += 1} ORDER BY created ASC, commentid ASC LIMIT 10`;
           }
-
-          //add the query values
+          //acts as the reply to comment indicator
           queryValues.push(replyTo);
           queryValues.push(cid);
         } else {//return replies ordered by likes
@@ -263,15 +262,15 @@ export default class CommentPGSQLRepo implements ICommentRepository {
       rows.forEach(row => {
         //populate a comment object
         let comment: IComment = new Comment();
-        comment.commentid = row.commentid;
-        comment.username = row.username;
-        comment.blogid = row.blogid;
-        comment.content = row.content;
-        comment.reply = row.reply;
-        comment.replyto = row.replyto;
-        comment.likes = row.likes;
-        comment.deleted = row.deleted;
-        comment.created = row.created;
+        comment.setCommentid(row.commentid);
+        comment.setUsername(row.username);
+        comment.setBlogid(row.blogid);
+        comment.setContent(row.content);
+        comment.setReply(row.reply);
+        comment.setReplyto(row.replyto);
+        comment.setLikes(row.likes);
+        comment.setDeleted(row.deleted);
+        comment.setCreated(row.created);
 
         //add the comment object to the comments collection
         comments.push(comment);

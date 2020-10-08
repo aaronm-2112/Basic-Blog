@@ -146,7 +146,7 @@ var CommentControler = /** @class */ (function () {
         //Accept: application/json
         //Response Content Type: application/json
         this.router.post('/comments', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var reply, replyto, content, blogid, username, comment, commentid, e_3;
+            var reply, replyto, content, blogid, username, comment, commentid, BASE_URL, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -179,13 +179,12 @@ var CommentControler = /** @class */ (function () {
                         comment.setReply(reply);
                         comment.setReplyto(replyto);
                         comment.setContent(content);
-                        return [4 /*yield*/, this.repo.create(comment)
-                            //return the commentid
-                        ];
+                        return [4 /*yield*/, this.repo.create(comment)];
                     case 1:
                         commentid = _a.sent();
+                        BASE_URL = process.env.BASE_URL;
                         //return the commentid
-                        res.status(201).location("http://localhost:3000/comments/" + commentid).send({ commentid: commentid });
+                        res.status(201).location(BASE_URL + "/comments/" + commentid).send({ commentid: commentid });
                         return [3 /*break*/, 3];
                     case 2:
                         e_3 = _a.sent();

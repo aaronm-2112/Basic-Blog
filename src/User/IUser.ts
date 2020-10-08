@@ -1,16 +1,7 @@
 //Purpose: Provide an interface for User entities. 
 
 export default interface IUser {
-  userid: Number;
-  username: String;
-  password: String;
-  email: String;
-  firstname: String;
-  lastname: String;
-  bio: String;
-  salt: string;
-  profilepic: string;
-
+  //getters and setters
   setUserid(id: Number): void;
   getUserid(): Number;
   getUsername(): String;
@@ -29,7 +20,6 @@ export default interface IUser {
   setSalt(salt: string): void;
   getProfilePicPath(): string;
   setProfilePicPath(path: string): void;
-
   //check if the incoming username matches the current user's username
   usernameMatches(incomingUsername: string): boolean;
 

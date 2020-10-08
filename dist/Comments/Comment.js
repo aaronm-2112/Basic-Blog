@@ -1,5 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/*
+Note: kept interfaces but moved properties to base classes due to jest making private properties
+     inaccesible and me not finding a suitable workaround that would be worth it
+     -- not worth it in that i don't need the extra extensibility in this project.
+*/
 var Comment = /** @class */ (function () {
     //TODO(but likely won't): Query a time server for a consistent creation date across all user systems.  
     function Comment() {

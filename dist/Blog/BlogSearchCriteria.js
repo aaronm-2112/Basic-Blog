@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var searchParameters;
 (function (searchParameters) {
     searchParameters["Title"] = "title";
-    searchParameters["BlogID"] = "blogID";
+    searchParameters["BlogID"] = "blogid";
     searchParameters["Username"] = "username";
     searchParameters["TitleImagePath"] = "titleImagePath";
 })(searchParameters = exports.searchParameters || (exports.searchParameters = {}));

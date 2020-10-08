@@ -1,3 +1,5 @@
+const BASE_URL = document.currentScript.getAttribute('base_url')
+
 function getBlogID() {
   //get the url 
   let url = window.location.href;
@@ -29,7 +31,7 @@ async function patchContent() {
     let content = document.getElementById("content").value;
 
     //send patch request 
-    let response = await fetch(`http://localhost:3000/blog/${blogID}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) });
+    let response = await fetch(`${BASE_URL}/blog/${blogID}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) });
 
 
     console.log(response);
@@ -53,7 +55,7 @@ async function patchTitle() {
     console.log(title);
 
     //send patch request to the /blog/:blogID
-    let response = await fetch(`http://localhost:3000/blog/${blogID}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title }) });
+    let response = await fetch(`${BASE_URL}/blog/${blogID}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title }) });
 
 
     console.log(response);
@@ -77,7 +79,7 @@ async function patchBannerImage() {
     imageFormData.append("image", bannerImage);
 
     //post the new image content to the uploads section
-    let postResult = await fetch('http://localhost:3000/uploads', { method: 'POST', body: imageFormData });
+    let postResult = await fetch(`${BASE_URL}/uploads`, { method: 'POST', body: imageFormData });
 
     //get the image path
     let titleImagePath = await postResult.json();
@@ -86,7 +88,7 @@ async function patchBannerImage() {
     let blogID = getBlogID();
 
     //patch the blog with new imagePath
-    let response = await fetch(`http://localhost:3000/blog/${blogID}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titleImagePath }) });
+    let response = await fetch(`${BASE_URL}/blog/${blogID}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titleImagePath }) });
 
   } catch (e) {
     console.log(e);

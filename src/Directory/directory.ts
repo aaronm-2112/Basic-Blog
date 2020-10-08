@@ -61,17 +61,23 @@ export default class Directory {
       //determine if the user is signed in
       if (userID.id.length) {
         //send entire navigatin options
-        res.render('Search', { links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile]] });
+        res.render('Search', {
+          links: [["home", this.paths.root], ["search", this.paths.search], ["profile", this.paths.profile]],
+          BASE_URL: process.env.BASE_URL
+        });
       } else {
         //no profile option
-        res.render('Search', { links: [["home", this.paths.root], ["search", this.paths.search]] });
+        res.render('Search', {
+          links: [["home", this.paths.root], ["search", this.paths.search]],
+          BASE_URL: process.env.BASE_URL
+        });
       }
     })
 
 
     //render the blog creation page
     this.router.get('/blog', this.auth.authenitcateJWT, (req: Request, res: Response) => {
-      res.render('CreateBlog');
+      res.render('CreateBlog', { BASE_URL: process.env.BASE_URL });
     })
 
     //render wildcard path -- needs to be after all routes defined in other paths too

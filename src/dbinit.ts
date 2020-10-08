@@ -36,6 +36,9 @@ export async function createDB(connectionObj: PGConnection) {
         profilepic text
     );`);
 
+    //create user index
+    pgRes = await client.query(`CREATE UNIQUE INDEX usrs_username_idx ON users(username)`)
+
     //TABLE blogs
     pgRes = await client.query(`CREATE TABLE blogs ( 
         blogid serial primary key, 
@@ -45,6 +48,10 @@ export async function createDB(connectionObj: PGConnection) {
         titleimagepath text, 
         foreign key(username) references users(username));`);
 
+    //create blog indices to speed pagination
+    pgRes = await client.query(`CREATE INDEX blogs_username_idx ON blogs(username)`);
+
+    pgRes = await client.query(`CREATE INDEX blogs_title_idx ON blogs(title)`);
 
     //TABLE comments
     pgRes = await client.query(`CREATE TABLE comments ( 
@@ -60,6 +67,11 @@ export async function createDB(connectionObj: PGConnection) {
         created timestamp default current_timestamp, 
         foreign key(username) references users(username), 
         foreign key(blogid) references blogs(blogid));`)
+
+    //create comments indices
+    pgRes = await client.query(`CREATE INDEX created_idx ON comments(created)`)
+    pgRes = await client.query(`CREATE INDEX likes_idx ON comments(likes)`);
+
 
     //end the client's connection
     await client.end()

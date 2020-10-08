@@ -1,5 +1,4 @@
 "use strict";
-//Purpose:  A concrete implementation of the blog interface 
 Object.defineProperty(exports, "__esModule", { value: true });
 //TODO: Add getters and setters
 var Blog = /** @class */ (function () {

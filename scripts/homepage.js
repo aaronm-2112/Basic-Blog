@@ -1,14 +1,15 @@
 //Purpose: Control signup/login flow on the anonymous homepage
 
-const BASE_URL = document.currentScript.getAttribute('base_url') //1)
+const BASE_URL = document.currentScript.getAttribute('base_url')
 console.log(BASE_URL)
+
+
 async function login() {
   try {
-    const url = "http://localhost:3000/login";
+    const url = `${BASE_URL}/login`;
 
     let username = document.getElementById("uname-login").value;
     let password = document.getElementById("pword-login").value;
-    console.log(username + password);
 
 
     const Data = {
@@ -35,12 +36,11 @@ async function login() {
 
 async function signup() {
   try {
-    const url = "http://localhost:3000/users";
+    const url = `${BASE_URL}/users`;
 
     let email = document.getElementById("email").value;
     let username = document.getElementById("uname-signup").value;
     let password = document.getElementById("pword-signup").value;
-    console.log(email + username + password);
 
 
     const Data = {

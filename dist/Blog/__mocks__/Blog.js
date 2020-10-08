@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Import this named export into your test file:
 var mock = jest.fn().mockImplementation(function () {
     var mockSetBlogid = jest.fn(function (value) { });
-    var mockGetBlogid = jest.fn(function () { return 4; });
+    var mockGetBlogid = jest.fn(function () { return 1; });
     var mockSetUsername = jest.fn(function (value) { });
     var mockGetUsername = jest.fn(function () { return "First User"; });
     var mockSetTitle = jest.fn(function (value) { });

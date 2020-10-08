@@ -23,7 +23,12 @@ export default function config(node_env: string): PGConnection {
         break;
 
       case process.env.NODE_ENV_PROD:
-        throw new Error("No production setup yet")
+        connectionObject.setUser(process.env.DB_USER as string);
+        connectionObject.setHost(process.env.DB_HOST as string);
+        connectionObject.setDatabase(process.env.DB_DATABASE_PROD as string);
+        connectionObject.setPassword(process.env.DB_PASS as string);
+        connectionObject.setPort(parseInt(process.env.DB_PORT as string));
+        break;
       default:
         throw new Error("No environment selected")
     }

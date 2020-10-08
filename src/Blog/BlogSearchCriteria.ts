@@ -2,7 +2,7 @@
 
 export enum searchParameters {
   Title = "title",
-  BlogID = "blogID",
+  BlogID = "blogid",
   Username = "username",
   TitleImagePath = "titleImagePath"
 } 

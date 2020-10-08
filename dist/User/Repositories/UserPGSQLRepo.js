@@ -74,7 +74,7 @@ var UserPGSQLRepo = /** @class */ (function () {
                         user_1 = new User_1.default();
                         // fill out the user object and return it
                         rows.forEach(function (row) {
-                            user_1.userid = row["userid"];
+                            user_1.setUserid(row["userid"]);
                             user_1.setEmail(row["email"]);
                             user_1.setBio(row["bio"]);
                             user_1.setFirstname(row["firstname"]);

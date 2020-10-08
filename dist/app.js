@@ -20,29 +20,39 @@ var UserPGSQLRepo_1 = __importDefault(require("./User/Repositories/UserPGSQLRepo
 var BlogPGSQLRepo_1 = __importDefault(require("./Blog/Repositories/BlogPGSQLRepo"));
 var CommentPGSQLRepo_1 = __importDefault(require("./Comments/Repositories/CommentPGSQLRepo"));
 var CommentController_1 = __importDefault(require("./Comments/CommentController"));
-//TODO: Make userid primary key and actually reference it in the blogs table of PGSQL database implementation and SQLIte implementation. 
-//TODO: Add indices to the database properties being used for keyset pagination.
-//TODO: 1. Finish homepage refactor.                                              [DONE]
-//      2. Review all endpoints to ensure they follow REST guidelines.            [DONE]
-//      3. Refactor any endpoints that do not.                                    [DONE]
-//      4. Add rate limiting to the endpoints.                         Do After cloud move
-//      5. Test with Postman and any unit tests required for the models. Refactor controller applicaiton logic into models while doing so. [Done]
-//      6. Setup multiple environments - test, dev, prod [Done for DBs] [WIP for scripts and miscellaneous]
-//      7. Basic testing of the database queries using a test database            [DONE]
-//      8. Add indices to the database to improve pagination speed.
-//      9. Refactor model interfaces into base classes?
-//      10. Move the application into a cloud environment - perhaps AWS with Elastic Beanstalk (as this can handle horizontal scaling-i hope without refactors  if didn't miss something- but isn't microsystem based). Finish environment setup to complete this step.
+var RateLimiter_1 = require("./Common/RateLimiter");
+/*
+TODO:
+     1. Finish homepage refactor.                                              [DONE]
+     2. Review all endpoints to ensure they follow REST guidelines.            [DONE]
+     3. Refactor any endpoints that do not.                                    [DONE]
+     4. Add rate limiting to the endpoints.                                    [WIP]
+     5. Test with Postman and any unit tests required for the models.
+        Refactor controller applicaiton logic into models while doing so.      [Done]
+     6. Setup multiple environments - test, dev, prod                          [Done]
+     7. Basic testing of the database queries using a test database            [DONE]
+     8. Add indices to the database to improve pagination speed.               [DONE]
+     9. Refactor interfaces into base classes                                  [Done*]
+*/
 //Set the node environment variable
 var CURRENT_ENV = process.argv[process.argv.length - 1];
-console.log(CURRENT_ENV);
 //create the connection config object for PGSQL
 var connection = PGConfig_1.default(CURRENT_ENV);
 //Used for development database changes. 
-dbinit_1.createDB(connection).then(function () {
-    console.log("Inited");
-}).catch(function (e) {
-    console.log(e);
-});
+if (CURRENT_ENV !== 'PROD') {
+    dbinit_1.resetDB(connection).then(function () {
+        dbinit_1.createDB(connection);
+    }).then(function () {
+        console.log("DB Inited");
+    }).catch(function (e) {
+        console.log(e);
+    });
+}
+else { //production environment
+    dbinit_1.createDB(connection).then(function () {
+        console.log("Database Initialized");
+    });
+}
 // Create a new express app instance
 var app = express_1.default();
 //direct express middleware to use routes/settings
@@ -50,6 +60,8 @@ app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({
     extended: true
 }));
+//rate limit to 5000 requests every 24 hrs
+app.use(RateLimiter_1.rateLimiterUsingThirdParty);
 //static path we need to set up
 //To operate with images (or other static files) with Node.js configure static paths
 app.use('/uploads', express_1.default.static('uploads'));

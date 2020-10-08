@@ -24,7 +24,12 @@ function config(node_env) {
                 connectionObject.setPort(parseInt(process.env.DB_PORT));
                 break;
             case process.env.NODE_ENV_PROD:
-                throw new Error("No production setup yet");
+                connectionObject.setUser(process.env.DB_USER);
+                connectionObject.setHost(process.env.DB_HOST);
+                connectionObject.setDatabase(process.env.DB_DATABASE_PROD);
+                connectionObject.setPassword(process.env.DB_PASS);
+                connectionObject.setPort(parseInt(process.env.DB_PORT));
+                break;
             default:
                 throw new Error("No environment selected");
         }

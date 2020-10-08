@@ -42,7 +42,6 @@ export default class BlogController implements IController {
         if (searchByValue !== "" && searchByValue !== undefined) {
           //decode the searchbyvalue passed in
           searchByValue = decodeURIComponent(searchByValue);
-          console.log(searchByValue);
 
           //create the blog collection
           let blogs: IBlog[]
@@ -83,74 +82,79 @@ export default class BlogController implements IController {
         //retrieve the blog object with it's ID
         let blog: IBlog = await this.repo.find(searchParameters.BlogID, blogID);
 
-        //set path to the image from the Views directory [views are in /Views] using absolute paths
-        //TODO: Use env to get absolute path not hardcoded string
-        let imagePath: string = "http://localhost:3000/" + path.normalize(blog.titleimagepath);
+        console.log(blog)
+
+        const BASE_URL = process.env.BASE_URL;
+
+        let imagePath: string;
+        if (blog.getTitleimagepath() !== null) {
+          //set path to the image from the Views directory [views are in /Views] using absolute paths
+          imagePath = `${BASE_URL}/` + path.normalize(blog.getTitleimagepath());
+        } else {
+          imagePath = "";
+        }
+
+        console.log(imagePath);
 
         //get the edit query parameter
         let edit: string = req.query.editPage as string;
 
-        //check if user wants to view the blog in a json representation
-        if (req.accepts('application/json') === 'application/json') {
+        //check if client does not wants text/html
+        if (req.accepts('text/html') === 'text/html') {
+          //check the value of edit
+          if (edit !== undefined && edit !== "false") {
+
+            //get the userID from the cookie
+            let userID: { id: string } = { id: "" };
+            this.auth.setSubject(req.cookies["jwt"], userID);
+
+            //check if a userID was extracted from the incoming JWT
+            if (!userID.id.length) {
+              //if not return because there is no way to verify if the incoming user owns the blog they want to edit
+              res.sendStatus(403);
+              return;
+            }
+
+            //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
+            if (userID.id === blog.getUsername()) {
+              //render the edit blog template
+              res.render('EditBlog', {
+                titleImagePath: imagePath,
+                title: blog.getTitle(),
+                username: blog.getUsername(),
+                content: blog.getContent(),
+                BASE_URL
+              });
+              return;
+            } else {
+              //user does not have access
+              res.sendStatus(403);
+              return;
+            }
+          } else {
+            //render the viewable blog template with the blog's properties
+            res.render('Blog', {
+              titleImagePath: imagePath,
+              title: blog.getTitle(),
+              username: blog.getUsername(),
+              content: blog.getContent(),
+              BASE_URL
+            });
+          }
+          //check if user wants to view the blog in a json representa
+        } else if (req.accepts('application/json') === 'application/json') {
           //if so send json representation of their 
           res.status(200).send({
             titleImagePath: imagePath,
-            title: blog.title,
-            username: blog.username,
-            content: blog.content
+            title: blog.getTitle(),
+            username: blog.getUsername(),
+            content: blog.getContent()
           });
-          return;
-        }
-
-        //check if client does not wants text/html
-        if (req.accepts('text/html') === false) {
-          //if so send not acceptable status code
+        } else { //no accepted representation
           res.sendStatus(406);
-          return;
-        }
-
-        //check the value of edit
-        if (edit !== undefined && edit !== "false") {
-
-          //get the userID from the cookie
-          let userID: { id: string } = { id: "" };
-          this.auth.setSubject(req.cookies["jwt"], userID);
-
-          //check if a userID was extracted from the incoming JWT
-          if (!userID.id.length) {
-            //if not return because there is no way to verify if the incoming user owns the blog they want to edit
-            res.sendStatus(403);
-            return;
-          }
-
-          //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
-          if (userID.id === blog.username) {
-            //render the edit blog template
-            res.render('EditBlog', {
-              titleImagePath: imagePath,
-              title: blog.title,
-              username: blog.username,
-              content: blog.content
-            });
-            return;
-          } else {
-            //user does not have access
-            res.sendStatus(403);
-            return;
-          }
-        } else {
-          //render the viewable blog template with the blog's properties
-          res.render('Blog', {
-            titleImagePath: imagePath,
-            title: blog.title,
-            username: blog.username,
-            content: blog.content
-          });
         }
       } catch (e) {
         res.sendStatus(400);
-        console.log(e);
-        throw new Error(e);
       }
     });
 
@@ -170,20 +174,31 @@ export default class BlogController implements IController {
         //create a blog resource
         let blog: IBlog = new Blog();
 
+        let username: string = res.locals.userId;
+        let content: string = req.body.content;
+        let title: string = req.body.title;
+
+        if (username === undefined || content === undefined || title === undefined) {
+          res.sendStatus(400);
+          return;
+        }
+
         //set the username -- foreign key for the Blog entity that connects it to the User entity
-        blog.username = res.locals.userId;
+        blog.setUsername(username);
 
         //set the content of the blog
-        blog.content = req.body.content;
+        blog.setContent(content);
 
         //set the title of the blog
-        blog.title = req.body.title;
+        blog.setTitle(title);
 
         //create the blog in the database 
         let blogID: number = await this.repo.create(blog);
 
+        const BASE_URL = process.env.BASE_URL;
+
         //return the blog id to the user
-        res.status(201).location(`http://localhost:3000/blogs/${blogID}`).send({ blogID });
+        res.status(201).location(`${BASE_URL}/blogs/${blogID}`).send({ blogID });
       } catch (e) {
         res.sendStatus(400);
         throw new Error(e);
@@ -224,22 +239,19 @@ export default class BlogController implements IController {
           return;
         }
 
-        //store incoming request parameters 
-        let editBlog: IBlog = new Blog();
-
         //determine which blog properties are being patched based off request body parameters
         if (content !== undefined) {
-          editBlog.setContent(content);
+          blog.setContent(content);
         }
 
         //blog title
         if (title !== undefined) {
-          editBlog.setTitle(title);
+          blog.setTitle(title);
         }
 
         //blog's path to titleimage
         if (titleimagepath !== undefined) {
-          editBlog.setTitleimagepath(titleimagepath);
+          blog.setTitleimagepath(titleimagepath);
         }
 
         //set the blogid to a number
@@ -252,10 +264,10 @@ export default class BlogController implements IController {
         }
 
         //set blog object's blogID using the incoming request parameter
-        editBlog.setBlogid(blogidNumber);
+        blog.setBlogid(blogidNumber);
 
         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
-        blog = await this.repo.update(editBlog);
+        blog = await this.repo.update(blog);
 
         //send no content success
         res.status(200).send(blog);

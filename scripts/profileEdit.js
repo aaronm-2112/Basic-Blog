@@ -1,10 +1,12 @@
+const BASE_URL = document.currentScript.getAttribute('base_url')
+
 //add update event to update button 
 document.getElementById("update").addEventListener("click", updateUserInformation);
 
 //request user information get updated
 async function updateUserInformation() {
   //define uri
-  let uri = "http://localhost:3000/users";
+  let uri = `${BASE_URL}/users`;
 
   //get user information 
   let firstName = document.getElementById("fname").value;
@@ -39,7 +41,7 @@ async function updateUserInformation() {
     imageProfileForm.append("image", bannerImage);
 
     //upload the profile image
-    let uploadRes = await fetch("http://localhost:3000/uploads", { method: "POST", body: imageProfileForm });
+    let uploadRes = await fetch(`${BASE_URL}/uploads`, { method: "POST", body: imageProfileForm });
 
     console.log(uploadRes);
 
@@ -58,7 +60,7 @@ async function updateUserInformation() {
     console.log(imagePath);
 
     //patch the user with the new profile pic data
-    let imagePathPatchRes = await fetch("http://localhost:3000/users", { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profilePicturePath: imagePath }) });
+    let imagePathPatchRes = await fetch(`${BASE_URL}/users`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profilePicturePath: imagePath }) });
 
     //change location to profile
     // window.location.href = "/users/First User?profile=true";

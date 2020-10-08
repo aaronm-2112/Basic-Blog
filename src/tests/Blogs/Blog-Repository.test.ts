@@ -5,6 +5,7 @@ import PGConnection from '../../Common/PGConnection'
 import { searchParameters } from '../../Blog/BlogSearchCriteria'
 import { mocked } from 'ts-jest/utils'
 
+
 jest.mock('../../Blog/Blog')
 jest.mock('../../Common/PGConnection')
 
@@ -123,7 +124,7 @@ describe("PGSQL Blog repository testing suite", () => {
   test("Update throws an error when the blog does not exist", async () => {
     let mockConnectionObject = new PGConnection()
     let repo = new BlogRepository(mockConnectionObject)
-    mocked(Blog).mockImplementation((): Blog => {
+    mocked(Blog, true).mockImplementation((): Blog => {
       const mockSetBlogid = jest.fn((value: number) => { })
       const mockGetBlogid = jest.fn((): number => { return 4 })
       const mockSetUsername = jest.fn((value: string) => { })
@@ -135,6 +136,7 @@ describe("PGSQL Blog repository testing suite", () => {
       const mockSetTitleimagepath = jest.fn((value: string) => { })
       const mockGetTitleimagepath = jest.fn((): string => { return "/path/to/image" })
       const mockCreator = jest.fn((username: string): boolean => { return false })
+
       return {
         blogid: 4,
         username: "First User",
@@ -154,6 +156,7 @@ describe("PGSQL Blog repository testing suite", () => {
         creator: mockCreator
       }
     })
+
     let mockBlog = new Blog()
     await expect(repo.update(mockBlog)).rejects.toThrowError("Error: Not found")
   })

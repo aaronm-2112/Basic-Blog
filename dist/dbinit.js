@@ -50,7 +50,7 @@ function createDB(connectionObj) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 6, , 7]);
+                    _a.trys.push([0, 11, , 12]);
                     client = new pg_1.Client({
                         user: connectionObj.getUser(),
                         host: connectionObj.getHost(),
@@ -67,27 +67,47 @@ function createDB(connectionObj) {
                     //create the tables----------------------------------
                     //TABLE users
                     pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("CREATE TABLE blogs ( \n        blogid serial primary key, \n        username text not null, \n        title text not null, \n        content text, \n        titleimagepath text, \n        foreign key(username) references users(username));")];
+                    return [4 /*yield*/, client.query("CREATE UNIQUE INDEX usrs_username_idx ON users(username)")
+                        //TABLE blogs
+                    ];
                 case 3:
+                    //create user index
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE TABLE blogs ( \n        blogid serial primary key, \n        username text not null, \n        title text not null, \n        content text, \n        titleimagepath text, \n        foreign key(username) references users(username));")];
+                case 4:
                     //TABLE blogs
                     pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE INDEX blogs_username_idx ON blogs(username)")];
+                case 5:
+                    //create blog indices to speed pagination
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE INDEX blogs_title_idx ON blogs(title)")];
+                case 6:
+                    pgRes = _a.sent();
                     return [4 /*yield*/, client.query("CREATE TABLE comments ( \n        commentid serial primary key, \n        username text not null, \n        blogid integer not null, \n        content text not null, \n        reply boolean not null, \n        replyto integer not null, \n        likes integer not null, \n        likedby text[] default array[]::text[], \n        deleted boolean not null, \n        created timestamp default current_timestamp, \n        foreign key(username) references users(username), \n        foreign key(blogid) references blogs(blogid));")
-                        //end the client's connection
+                        //create comments indices
                     ];
-                case 4:
+                case 7:
                     //TABLE comments
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE INDEX created_idx ON comments(created)")];
+                case 8:
+                    //create comments indices
+                    pgRes = _a.sent();
+                    return [4 /*yield*/, client.query("CREATE INDEX likes_idx ON comments(likes)")];
+                case 9:
                     pgRes = _a.sent();
                     //end the client's connection
                     return [4 /*yield*/, client.end()];
-                case 5:
+                case 10:
                     //end the client's connection
                     _a.sent();
-                    return [3 /*break*/, 7];
-                case 6:
+                    return [3 /*break*/, 12];
+                case 11:
                     e_1 = _a.sent();
                     console.error(e_1);
-                    return [3 /*break*/, 7];
-                case 7: return [2 /*return*/];
+                    return [3 /*break*/, 12];
+                case 12: return [2 /*return*/];
             }
         });
     });

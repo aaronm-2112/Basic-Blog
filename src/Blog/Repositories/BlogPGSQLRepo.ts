@@ -133,8 +133,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       //return database
       return blogID;
     } catch (e) {
-      console.log(e);
-      return -1;
+      throw new Error(e);
     }
   }
 
@@ -143,7 +142,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
   async update(blog: IBlog): Promise<IBlog> {
     try {
       //check if blogID is filled
-      if (blog.blogid < 0) {
+      if (blog.getBlogid() < 0) {
         throw new Error("No ID");
       }
 
@@ -174,7 +173,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
       let query: string = `UPDATE blogs SET ` + queryProperties.join(',') + ` WHERE blogid = $${parameterNumber} RETURNING *`;
 
       //add the blogID to the queryValues list
-      queryValues.push(blog.blogid.toString());
+      queryValues.push(blog.getBlogid().toString());
 
       //execute the update query
       let result = await this.pool.query(query, queryValues);

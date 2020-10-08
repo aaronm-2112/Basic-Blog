@@ -162,8 +162,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         return [2 /*return*/, blogID];
                     case 2:
                         e_3 = _a.sent();
-                        console.log(e_3);
-                        return [2 /*return*/, -1];
+                        throw new Error(e_3);
                     case 3: return [2 /*return*/];
                 }
             });
@@ -179,7 +178,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         //check if blogID is filled
-                        if (blog.blogid < 0) {
+                        if (blog.getBlogid() < 0) {
                             throw new Error("No ID");
                         }
                         queryProperties = [];
@@ -200,7 +199,7 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         }
                         query = "UPDATE blogs SET " + queryProperties.join(',') + (" WHERE blogid = $" + parameterNumber + " RETURNING *");
                         //add the blogID to the queryValues list
-                        queryValues.push(blog.blogid.toString());
+                        queryValues.push(blog.getBlogid().toString());
                         return [4 /*yield*/, this.pool.query(query, queryValues)];
                     case 1:
                         result = _a.sent();

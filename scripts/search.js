@@ -1,6 +1,9 @@
+const BASE_URL = document.currentScript.getAttribute('base_url')
+
 //cache of the next blog results and the previous blog results
 var nextResults = [];
 var previousResults = [];
+
 
 //TODO 3: Refine search by adding pagination to front end and back end if necessary(e.g., if we show 15 results we do not need to collect all 1000 matching blogs for the user) [WIP]
 //script that searches by the client's keywords and returns a set of results
@@ -91,7 +94,7 @@ async function getNextResults() {
     //check if there are any cached results for the next set of blog results
     if (nextResults.length === 0) {
       //send query request to the blog controller
-      let response = await fetch(`http://localhost:3000/blogs?param=${param}&value=${value}&key=${blogid}&keyCondition=>`, {
+      let response = await fetch(`${BASE_URL}/blogs?param=${param}&value=${value}&key=${blogid}&keyCondition=>`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
 
@@ -162,7 +165,7 @@ async function getPrevResults() {
     //check if there are any cached results for the next set of blog results
     if (previousResults.length === 0) {
       //send query request to the blog controller
-      let response = await fetch(`http://localhost:3000/blogs?param=${param}&value=${value}&key=${blogid}&keyCondition=<`, {
+      let response = await fetch(`${BASE_URL}/blogs?param=${param}&value=${value}&key=${blogid}&keyCondition=<`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }
       });
 
@@ -202,7 +205,7 @@ async function display(blogs) {
     //set the username
     username = blogs[i].username;
     //construct the path to the blog  -- blogID and if editing or not
-    blogurl = `http://localhost:3000/blogs/${blogs[i].blogid}?edit=false`;
+    blogurl = `${BASE_URL}/blogs/${blogs[i].blogid}?editPage=false`;
 
     //create the title DOM element
     let DOMTitle = document.createElement('p');

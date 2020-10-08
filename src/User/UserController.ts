@@ -89,14 +89,16 @@ export default class UserController implements IController {
         }
 
         //Get the user's first 10 blogs
-        let blogs: IBlog[] = await this.blogRepository.findAll(searchParameters.Username, (user.username as string), "0", ">");
+        let blogs: IBlog[] = await this.blogRepository.findAll(searchParameters.Username, (user.getUsername() as string), "0", ">");
 
         //store front end blog information
         let blogDetails: Array<{ title: string, editPath: string, viewPath: string }> = new Array<{ title: string, editPath: string, viewPath: string }>();
 
+        const BASE_URL = process.env.BASE_URL
+
         //Extract the title and blogID and place them into a structure with the paths to edit and view blogs
         blogs.forEach(blog => {
-          blogDetails.push({ title: blog.title, editPath: `http://localhost:3000/blogs/${blog.blogid}?edit=true`, viewPath: `http://localhost:3000/blogs/${blog.blogid}?edit=false` })
+          blogDetails.push({ title: blog.getTitle(), editPath: `${BASE_URL}/blogs/${blog.getBlogid()}?editPage=true`, viewPath: `${BASE_URL}/blogs/${blog.getBlogid()}?editPage=false` })
         });
 
         //extract the query parameter
@@ -111,7 +113,8 @@ export default class UserController implements IController {
               userName: user.getUsername(), firstName: user.getFirstname(),
               lastName: user.getLastname(), bio: user.getBio(),
               blogDetails: blogDetails,
-              profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
+              profileImagePath: `${BASE_URL}/` + user.getProfilePicPath(),
+              BASE_URL
             });
           } else {
             //default to a JSON representation of the user profile information
@@ -119,7 +122,7 @@ export default class UserController implements IController {
               userName: user.getUsername(), firstName: user.getFirstname(),
               lastName: user.getLastname(), bio: user.getBio(),
               blogDetails: blogDetails,
-              profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
+              profileImagePath: `${BASE_URL}/` + user.getProfilePicPath()
             });
           }
         } else {
@@ -128,14 +131,15 @@ export default class UserController implements IController {
             //send back the user edit view
             res.render('ProfileEdit', {
               userName: user.getUsername(), firstName: user.getFirstname(),
-              lastName: user.getLastname(), bio: user.getBio(), profileImagePath: "http://localhost:3000/" + user.getProfilePicPath()
+              lastName: user.getLastname(), bio: user.getBio(), profileImagePath: `${BASE_URL}/` + user.getProfilePicPath(),
+              BASE_URL
             });
           } else {
             //send a JSON representation
             res.status(200).send({
               userName: user.getUsername(), firstName: user.getFirstname(),
               lastName: user.getLastname(), bio: user.getBio(),
-              profileImagePath: user.getProfilePicPath()
+              profileImagePath: `${BASE_URL}/` + user.getProfilePicPath()
             });
           }
         }
@@ -200,8 +204,10 @@ export default class UserController implements IController {
         //insert the user into the database 
         let userid: number = await this.userRepository.create(user);
 
+        const BASE_URL = process.env.BASE_URL;
+
         //return the userid and status code
-        res.status(201).location(`http://localhost:3000/users/${userid}`).send({ userid });
+        res.status(201).location(`${BASE_URL}/users/${userid}`).send({ userid });
       }
       catch (e) {
         console.log(e);
@@ -229,8 +235,6 @@ export default class UserController implements IController {
         let lastName: string = req.body.lastName;
         let bio: string = req.body.bio;
         let profilePicPath: string = req.body.profilePicturePath;
-
-        console.log(profilePicPath);
 
         //populate user information in the user object
         let user: IUser = new User();

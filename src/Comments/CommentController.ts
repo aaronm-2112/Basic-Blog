@@ -51,7 +51,6 @@ export default class CommentControler implements IController {
         let commentid: number = parseInt(req.query.commentid as string) || 1000;
         let flip: string = req.query.flip as string || "next";
 
-
         //check if query parameters are valid
         if (blogid === undefined || isNaN(blogid) || reply === undefined || replyto === undefined || orderby === undefined || likes === undefined || commentid === undefined || flip === undefined, isNaN(commentid)) {
           //no query parameters or bad query parameters in set return
@@ -115,7 +114,6 @@ export default class CommentControler implements IController {
     //Response Content Type: application/json
     this.router.post('/comments', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
       try {
-
         if (req.accepts("application/json") === false) {
           res.sendStatus(406);
           return;
@@ -157,8 +155,10 @@ export default class CommentControler implements IController {
         //create the comment in the database
         let commentid: number = await this.repo.create(comment)
 
+        const BASE_URL = process.env.BASE_URL;
+
         //return the commentid
-        res.status(201).location(`http://localhost:3000/comments/${commentid}`).send({ commentid });
+        res.status(201).location(`${BASE_URL}/comments/${commentid}`).send({ commentid });
 
       } catch (e) {
         console.log(e);

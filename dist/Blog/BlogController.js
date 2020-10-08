@@ -73,7 +73,6 @@ var BlogController = /** @class */ (function () {
                         if (!(searchByValue !== "" && searchByValue !== undefined)) return [3 /*break*/, 7];
                         //decode the searchbyvalue passed in
                         searchByValue = decodeURIComponent(searchByValue);
-                        console.log(searchByValue);
                         blogs = void 0;
                         _a = searchBy;
                         switch (_a) {
@@ -113,7 +112,7 @@ var BlogController = /** @class */ (function () {
         //Accept options: text/html or application/json
         //Response Content Type: text/html or application/json
         this.router.get('/blogs/:blogID', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blogID, blog, imagePath, edit, userID, e_2;
+            var blogID, blog, BASE_URL, imagePath, edit, userID, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -122,67 +121,77 @@ var BlogController = /** @class */ (function () {
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogID)];
                     case 1:
                         blog = _a.sent();
-                        imagePath = "http://localhost:3000/" + path_1.default.normalize(blog.titleimagepath);
+                        console.log(blog);
+                        BASE_URL = process.env.BASE_URL;
+                        imagePath = void 0;
+                        if (blog.getTitleimagepath() !== null) {
+                            //set path to the image from the Views directory [views are in /Views] using absolute paths
+                            imagePath = BASE_URL + "/" + path_1.default.normalize(blog.getTitleimagepath());
+                        }
+                        else {
+                            imagePath = "";
+                        }
+                        console.log(imagePath);
                         edit = req.query.editPage;
-                        //check if user wants to view the blog in a json representation
-                        if (req.accepts('application/json') === 'application/json') {
+                        //check if client does not wants text/html
+                        if (req.accepts('text/html') === 'text/html') {
+                            //check the value of edit
+                            if (edit !== undefined && edit !== "false") {
+                                userID = { id: "" };
+                                this.auth.setSubject(req.cookies["jwt"], userID);
+                                //check if a userID was extracted from the incoming JWT
+                                if (!userID.id.length) {
+                                    //if not return because there is no way to verify if the incoming user owns the blog they want to edit
+                                    res.sendStatus(403);
+                                    return [2 /*return*/];
+                                }
+                                //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
+                                if (userID.id === blog.getUsername()) {
+                                    //render the edit blog template
+                                    res.render('EditBlog', {
+                                        titleImagePath: imagePath,
+                                        title: blog.getTitle(),
+                                        username: blog.getUsername(),
+                                        content: blog.getContent(),
+                                        BASE_URL: BASE_URL
+                                    });
+                                    return [2 /*return*/];
+                                }
+                                else {
+                                    //user does not have access
+                                    res.sendStatus(403);
+                                    return [2 /*return*/];
+                                }
+                            }
+                            else {
+                                //render the viewable blog template with the blog's properties
+                                res.render('Blog', {
+                                    titleImagePath: imagePath,
+                                    title: blog.getTitle(),
+                                    username: blog.getUsername(),
+                                    content: blog.getContent(),
+                                    BASE_URL: BASE_URL
+                                });
+                            }
+                            //check if user wants to view the blog in a json representa
+                        }
+                        else if (req.accepts('application/json') === 'application/json') {
                             //if so send json representation of their 
                             res.status(200).send({
                                 titleImagePath: imagePath,
-                                title: blog.title,
-                                username: blog.username,
-                                content: blog.content
+                                title: blog.getTitle(),
+                                username: blog.getUsername(),
+                                content: blog.getContent()
                             });
-                            return [2 /*return*/];
                         }
-                        //check if client does not wants text/html
-                        if (req.accepts('text/html') === false) {
-                            //if so send not acceptable status code
+                        else { //no accepted representation
                             res.sendStatus(406);
-                            return [2 /*return*/];
-                        }
-                        //check the value of edit
-                        if (edit !== undefined && edit !== "false") {
-                            userID = { id: "" };
-                            this.auth.setSubject(req.cookies["jwt"], userID);
-                            //check if a userID was extracted from the incoming JWT
-                            if (!userID.id.length) {
-                                //if not return because there is no way to verify if the incoming user owns the blog they want to edit
-                                res.sendStatus(403);
-                                return [2 /*return*/];
-                            }
-                            //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
-                            if (userID.id === blog.username) {
-                                //render the edit blog template
-                                res.render('EditBlog', {
-                                    titleImagePath: imagePath,
-                                    title: blog.title,
-                                    username: blog.username,
-                                    content: blog.content
-                                });
-                                return [2 /*return*/];
-                            }
-                            else {
-                                //user does not have access
-                                res.sendStatus(403);
-                                return [2 /*return*/];
-                            }
-                        }
-                        else {
-                            //render the viewable blog template with the blog's properties
-                            res.render('Blog', {
-                                titleImagePath: imagePath,
-                                title: blog.title,
-                                username: blog.username,
-                                content: blog.content
-                            });
                         }
                         return [3 /*break*/, 3];
                     case 2:
                         e_2 = _a.sent();
                         res.sendStatus(400);
-                        console.log(e_2);
-                        throw new Error(e_2);
+                        return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }
             });
@@ -193,7 +202,7 @@ var BlogController = /** @class */ (function () {
         //Accept: application/json
         //Response Content Type: Application/json
         this.router.post('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blog, blogID, e_3;
+            var blog, username, content, title, blogID, BASE_URL, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -204,17 +213,25 @@ var BlogController = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         blog = new Blog_1.default();
+                        username = res.locals.userId;
+                        content = req.body.content;
+                        title = req.body.title;
+                        if (username === undefined || content === undefined || title === undefined) {
+                            res.sendStatus(400);
+                            return [2 /*return*/];
+                        }
                         //set the username -- foreign key for the Blog entity that connects it to the User entity
-                        blog.username = res.locals.userId;
+                        blog.setUsername(username);
                         //set the content of the blog
-                        blog.content = req.body.content;
+                        blog.setContent(content);
                         //set the title of the blog
-                        blog.title = req.body.title;
+                        blog.setTitle(title);
                         return [4 /*yield*/, this.repo.create(blog)];
                     case 1:
                         blogID = _a.sent();
+                        BASE_URL = process.env.BASE_URL;
                         //return the blog id to the user
-                        res.status(201).location("http://localhost:3000/blogs/" + blogID).send({ blogID: blogID });
+                        res.status(201).location(BASE_URL + "/blogs/" + blogID).send({ blogID: blogID });
                         return [3 /*break*/, 3];
                     case 2:
                         e_3 = _a.sent();
@@ -229,7 +246,7 @@ var BlogController = /** @class */ (function () {
         //Accept: application/json
         //Response Content Type: application/json
         this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userID, blogid, title, content, titleimagepath, blog, editBlog, blogidNumber, e_4;
+            var userID, blogid, title, content, titleimagepath, blog, blogidNumber, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -253,18 +270,17 @@ var BlogController = /** @class */ (function () {
                             res.sendStatus(403);
                             return [2 /*return*/];
                         }
-                        editBlog = new Blog_1.default();
                         //determine which blog properties are being patched based off request body parameters
                         if (content !== undefined) {
-                            editBlog.setContent(content);
+                            blog.setContent(content);
                         }
                         //blog title
                         if (title !== undefined) {
-                            editBlog.setTitle(title);
+                            blog.setTitle(title);
                         }
                         //blog's path to titleimage
                         if (titleimagepath !== undefined) {
-                            editBlog.setTitleimagepath(titleimagepath);
+                            blog.setTitleimagepath(titleimagepath);
                         }
                         blogidNumber = parseInt(blogid);
                         //check if blogidNumber is NaN
@@ -273,8 +289,8 @@ var BlogController = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         //set blog object's blogID using the incoming request parameter
-                        editBlog.setBlogid(blogidNumber);
-                        return [4 /*yield*/, this.repo.update(editBlog)];
+                        blog.setBlogid(blogidNumber);
+                        return [4 /*yield*/, this.repo.update(blog)];
                     case 2:
                         //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
                         blog = _a.sent();

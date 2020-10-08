@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// Can implement an interface for a User if it will become necessary in the future. 
+/*
+Note: kept interfaces but moved properties to base classes due to jest making private properties
+     inaccesible and me not finding a suitable workaround that would be worth it
+     -- not worth it in that i don't need the extra extensibility in this project.
+*/
 var User = /** @class */ (function () {
     function User() {
         this.userid = 0;

@@ -1,5 +1,10 @@
-//Purpose:  A concrete implementation of the blog interface 
 
+/*
+Purpose:  A concrete implementation of the blog interface 
+Note: kept interfaces but moved properties to base classes due to jest making private properties 
+     inaccesible and me not finding a suitable workaround that would be worth it 
+     -- not worth it in that i don't need the extra extensibility in this project.
+*/
 import IBlog from "./IBlog";
 
 

@@ -1,13 +1,13 @@
+const BASE_URL = document.currentScript.getAttribute('base_url')
+
 //blogid global
 var blogid;
-
-console.log(document.currentScript.getAttribute('base_url')); //cheese
 
 //gets the blogid fromthe url
 const getBlogid = () => {
   let url = document.URL;
-  url = url.slice(0, url.lastIndexOf('/')); ///blog/id
-  blogid = url.slice(url.lastIndexOf('/') + 1); //id
+  blogid = url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('/') + 2); //
+  console.log(blogid)
 
 }
 
@@ -23,13 +23,15 @@ async function loadAllComments(mouseEvent = 0, likes = 1000, commentid = 1000, f
     clearTopLevelComments();
 
     //retrieve the blog's top level comments, if they exist
-    let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=false&replyto=0&orderby=likes&likes=${likes}&commentid=${commentid}&flip=${flip}`, {
+    let response = await fetch(`${BASE_URL}/comments?blog=${blogid}&reply=false&replyto=0&orderby=likes&likes=${likes}&commentid=${commentid}&flip=${flip}`, {
       method: 'GET', headers: { 'Content-Type': 'application/json' }
     });
 
     //grab the comment data out of the response and store them in a top level comment collection
     let topLevelComments = [];
     topLevelComments = await response.json();
+
+    console.log(topLevelComments)
 
     let bid = blogid.toString();
     let cid = 0;
@@ -41,14 +43,16 @@ async function loadAllComments(mouseEvent = 0, likes = 1000, commentid = 1000, f
     for (let i = 0; i < topLevelComments.length; i++) {
 
       cid = topLevelComments[i].commentid.toString();
+      console.log(cid)
 
       //-----use the commentid as replyto of the current top level comment to fetch that comment's replies ordered by date
       let res =
-        await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${cid}&orderby=date&likes=0&commentid=0&flip=next`, {
+        await fetch(`${BASE_URL}/comments?blog=${blogid}&reply=true&replyto=${cid}&orderby=date&likes=0&commentid=${cid}&flip=next`, {
           method: 'GET', headers: { 'Content-Type': 'application/json' }
         });
       //-----grab the replies out of the server response and load them into the key value reply collection
       let commentReplies = await res.json();
+      console.log(commentReplies)
       //-----create a comment and return the HTML reply section created for it --this houses all replies to the comment
       let replySection = displayComment(topLevelComments[i]);
       //-----traverse through the replies for that top level comment
@@ -142,7 +146,7 @@ async function paginateReplies(topLevelCommentid, flip) {
     }
 
     //fetch the next/previous 10 replies
-    let response = await fetch(`http://localhost:3000/comments?blog=${blogid}&reply=true&replyto=${topLevelCommentid}&orderby=date&likes=0&commentid=${replyid}&flip=${flip}`, {
+    let response = await fetch(`${BASE_URL}/comments?blog=${blogid}&reply=true&replyto=${topLevelCommentid}&orderby=date&likes=0&commentid=${replyid}&flip=${flip}`, {
       method: 'GET', headers: { 'Content-Type': 'application/json' }
     });
 
@@ -172,8 +176,6 @@ async function createTopLevelComment() {
     //grab the user's top level comment content 
     let content = document.getElementById('user-top-level-comment-content').value;
 
-    console.log(content);
-
     //set the reply value
     let reply = false;
 
@@ -181,7 +183,7 @@ async function createTopLevelComment() {
     let replyto = 0;
 
     //send the comment data to the server
-    let res = await fetch(`http://localhost:3000/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, reply, replyto, blogid }) });
+    let res = await fetch(`${BASE_URL}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, reply, replyto, blogid }) });
 
     //check if successful comment creation
     if (res.status !== 201) {
@@ -189,10 +191,13 @@ async function createTopLevelComment() {
     }
 
     //retrieve commentid
-    let cid = await res.json();
+    let commentData = await res.json();
+
+    let cid = commentData.commentid;
+
 
     //retrieve the comment the user created
-    res = await fetch(`http://localhost:3000/comments/${cid}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+    res = await fetch(`${BASE_URL}/comments/${cid}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
 
     let comment = await res.json();
 
@@ -343,13 +348,15 @@ document.addEventListener('click', async function (e) {
       let replyto = commentid;
       let content = replySection.firstChild.value;
 
-      let res = await fetch('http://localhost:3000/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, reply, replyto, blogid }) });
+      let res = await fetch(`${BASE_URL}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, reply, replyto, blogid }) });
 
       //get the repliy's cid
-      let cid = await res.json();
+      let commentData = await res.json();
+
+      let cid = commentData.commentid;
 
       //fetch the new reply data and display it at the bottom of the reply section it belongs to
-      res = await fetch(`http://localhost:3000/comments/${cid}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+      res = await fetch(`${BASE_URL}/comments/${cid}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
 
       //extract the comment from the json response
       let userReply = await res.json();
@@ -434,7 +441,7 @@ document.addEventListener('click', async function (e) {
 
 
       //update the comment's data
-      let res = await fetch(`http://localhost:3000/comments/${cid}`,
+      let res = await fetch(`${BASE_URL}/comments/${cid}`,
         {
           method: 'PATCH', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ like: true })
