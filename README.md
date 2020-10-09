@@ -32,12 +32,18 @@ Goals for the backend, testing suites, and frontend
                   taken because this was a smaller project, general design principles, including SOLID, were followed to make the previous claim possible.
               Notable elements for imporvements: DTO and mappers would help frontend to backend interaction. Breaking repository code into smaller units for update
                                                  code in the repositories would increase their unit test-ability. 
-  -Database Layer: The database layer avoids repeat data across tables and uses foreign keys to maintain referential integrity. 
+  -Database Layer: The database layer avoids repeat data across tables and uses foreign keys to maintain referential integrity. Indices are also used on columns
+                   that are essential to keyset pagination of comments and blogs. 
 
 2. Testing Suites
    -Postman: In order to ensure the API endpoints functioned as expected each resource has a set of tests that are included in the Postman json file in the project.
-   -Unit Tests: Jest unit tests of the models(Comment, Blog, and User) were created to 
+             Notable elements for improvement: Test setup and structure could use improvement.
+   -Unit Tests: Jest unit tests of the models(Comment, Blog, and User) were created to help catch application logic errors. The same is true for tests of the
+                repositories, though these tests are a middle ground between unit and integration tests. 
+                Notable elements for improvement: The testing suite for the repositories could use more advanced tests of comment and blog pagination.
+   
 
 3. Frontend
-    -
+   The frontend did not have any goals in terms of presentation or design. Consequently, the presentation is spartan and the code is less well designed than the typescript 
+   code in the backend. The frontend was made primarily to reinforce that my backend design made "sense" and was usable by a frontend client. 
 
