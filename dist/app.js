@@ -21,12 +21,13 @@ var BlogPGSQLRepo_1 = __importDefault(require("./Blog/Repositories/BlogPGSQLRepo
 var CommentPGSQLRepo_1 = __importDefault(require("./Comments/Repositories/CommentPGSQLRepo"));
 var CommentController_1 = __importDefault(require("./Comments/CommentController"));
 var RateLimiter_1 = require("./Common/RateLimiter");
+var helmet_csp_1 = __importDefault(require("helmet-csp"));
 /*
 TODO:
      1. Finish homepage refactor.                                              [DONE]
      2. Review all endpoints to ensure they follow REST guidelines.            [DONE]
      3. Refactor any endpoints that do not.                                    [DONE]
-     4. Add rate limiting to the endpoints.                                    [WIP]
+     4. Add rate limiting to the endpoints.                                    [Done]
      5. Test with Postman and any unit tests required for the models.
         Refactor controller applicaiton logic into models while doing so.      [Done]
      6. Setup multiple environments - test, dev, prod                          [Done]
@@ -62,6 +63,23 @@ app.use(body_parser_1.default.urlencoded({
 }));
 //rate limit to 5000 requests every 24 hrs
 app.use(RateLimiter_1.rateLimiterUsingThirdParty);
+//use cors [not utilized much in the project]
+app.use(cors_1.default({
+    origin: [
+        'http://localhost:3000'
+    ],
+    credentials: true
+}));
+app.use(helmet_csp_1.default({
+    directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        upgradeInsecureRequests: [],
+    },
+    reportOnly: false,
+}));
 //static path we need to set up
 //To operate with images (or other static files) with Node.js configure static paths
 app.use('/uploads', express_1.default.static('uploads'));
@@ -69,13 +87,6 @@ app.use('/uploads', express_1.default.static('uploads'));
 app.use('/scripts', express_1.default.static('scripts'));
 //tell app to use the cookie parser
 app.use(cookie_parser_1.default());
-//use cors
-app.use(cors_1.default({
-    origin: [
-        'http://localhost:3000'
-    ],
-    credentials: true
-}));
 // Only parse query parameters into strings, not objects
 app.set('query parser', 'simple');
 //Direct express to use Handlebars templating engine for rendering the app's pages

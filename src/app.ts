@@ -20,6 +20,7 @@ import BlogPGSQLRepo from './Blog/Repositories/BlogPGSQLRepo';
 import CommentPGSQLRepo from './Comments/Repositories/CommentPGSQLRepo';
 import CommentController from './Comments/CommentController';
 import { rateLimiterUsingThirdParty } from './Common/RateLimiter'
+import csp from "helmet-csp";
 /*
 TODO: 
      1. Finish homepage refactor.                                              [DONE]
@@ -65,9 +66,30 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-
 //rate limit to 5000 requests every 24 hrs
 app.use(rateLimiterUsingThirdParty);
+
+//use cors [not utilized much in the project]
+app.use(cors({
+  origin: [
+    'http://localhost:3000'
+  ],
+  credentials: true
+}));
+
+
+app.use(
+  csp({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      upgradeInsecureRequests: [],
+    },
+    reportOnly: false,
+  })
+);
 
 //static path we need to set up
 //To operate with images (or other static files) with Node.js configure static paths
@@ -79,13 +101,6 @@ app.use('/scripts', express.static('scripts'));
 //tell app to use the cookie parser
 app.use(cookieParser());
 
-//use cors
-app.use(cors({
-  origin: [
-    'http://localhost:3000'
-  ],
-  credentials: true
-}));
 
 // Only parse query parameters into strings, not objects
 app.set('query parser', 'simple');
