@@ -53,4 +53,5 @@ Goals for the backend, testing suites, and frontend
 
 After thoughts:
    -Using express-validator would make validating body and query parameters more secure and simple.
+   -Make the database connection errors a 500 status code rather than a 400 to be more accurate
 
