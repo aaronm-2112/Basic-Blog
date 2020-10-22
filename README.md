@@ -48,4 +48,9 @@ Goals for the backend, testing suites, and frontend
 3. Frontend
    The frontend did not have any goals in terms of presentation or design. Consequently, the presentation is spartan and the code is less well designed than the typescript 
    code in the backend. The frontend was made primarily to reinforce that my backend design made "sense" and was usable by a frontend client. 
+   
+   
+
+After thoughts:
+   -Using express-validator would make validating body and query parameters more secure and simple.
 
