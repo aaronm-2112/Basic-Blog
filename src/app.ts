@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import 'express-async-errors'
 import cors from 'cors';
 import path from 'path';
 import hbs from 'hbs'; //templating engine
@@ -21,6 +22,7 @@ import CommentPGSQLRepo from './Comments/Repositories/CommentPGSQLRepo';
 import CommentController from './Comments/CommentController';
 import { rateLimiterUsingThirdParty } from './Common/RateLimiter'
 import csp from "helmet-csp";
+import { handler } from './Middlewares/error-handler'
 /*
 TODO: 
      1. Finish homepage refactor.                                              [DONE]
@@ -147,6 +149,9 @@ login(app, userRepoPostgre).then(res => {
 //Setup the app's filesystem 
 let staticDirectory: Directory = new Directory();
 staticDirectory.registerRoutes(app);
+
+// catch errors 
+app.use(handler)
 
 export default app;
 

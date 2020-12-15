@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var cookie_parser_1 = __importDefault(require("cookie-parser"));
+require("express-async-errors");
 var cors_1 = __importDefault(require("cors"));
 var path_1 = __importDefault(require("path"));
 var hbs_1 = __importDefault(require("hbs")); //templating engine
@@ -22,6 +23,7 @@ var CommentPGSQLRepo_1 = __importDefault(require("./Comments/Repositories/Commen
 var CommentController_1 = __importDefault(require("./Comments/CommentController"));
 var RateLimiter_1 = require("./Common/RateLimiter");
 var helmet_csp_1 = __importDefault(require("helmet-csp"));
+var error_handler_1 = require("./Middlewares/error-handler");
 /*
 TODO:
      1. Finish homepage refactor.                                              [DONE]
@@ -121,4 +123,6 @@ login_1.default(app, userRepoPostgre).then(function (res) {
 //Setup the app's filesystem 
 var staticDirectory = new directory_1.default();
 staticDirectory.registerRoutes(app);
+// catch errors 
+app.use(error_handler_1.handler);
 exports.default = app;

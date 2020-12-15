@@ -41,6 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var fs_1 = __importDefault(require("fs"));
+var NotAuthenticatedError_1 = require("../Common/Errors/NotAuthenticatedError");
 var Auth = /** @class */ (function () {
     //private PUBLIC_KEY: string;
     function Auth() {
@@ -52,43 +53,34 @@ var Auth = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             var token, PUBLIC_KEY;
             return __generator(this, function (_a) {
-                try {
-                    token = req.cookies["jwt"];
-                    if (!token) {
-                        return [2 /*return*/, res.status(401)]; //not authenticated
+                token = req.cookies["jwt"];
+                if (!token) {
+                    throw new NotAuthenticatedError_1.NotAuthenticatedError();
+                }
+                PUBLIC_KEY = fs_1.default.readFileSync('C:\\Users\\Aaron\\Desktop\\Basic-Blog\\src\\Auth\\rsa.pem');
+                //verify the token
+                jsonwebtoken_1.default.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] }, function (err, payload) {
+                    //check for error in the decoding 
+                    if (err) {
+                        throw new NotAuthenticatedError_1.NotAuthenticatedError();
                     }
-                    PUBLIC_KEY = fs_1.default.readFileSync('C:\\Users\\Aaron\\Desktop\\Basic-Blog\\src\\Auth\\rsa.pem');
-                    //verify the token
-                    jsonwebtoken_1.default.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] }, function (err, payload) {
-                        //check for error in the decoding 
-                        if (err) {
-                            res.status(401).send("Error authenticating");
-                            return;
-                        }
-                        //check if payload is undefined --if not undefined the token is valid
-                        if (payload === undefined) {
-                            res.status(401).send("Error authenticating");
-                            return;
-                        }
-                        //make the payload keys accessible -- token interface is: {iat: string, sub: string, expires: string} as well as other keys
-                        var accessiblePayload = payload;
-                        //get the subject from the payload
-                        var subject = accessiblePayload.sub;
-                        //verify the subject exists
-                        if (subject === undefined || subject === null || subject === '') {
-                            res.status(401).send("Error authenticating");
-                            return;
-                        }
-                        // attach subject information to res.locals to persist the information to endpoint
-                        res.locals.userId = subject;
-                        //continue flow to endpoint
-                        next();
-                    });
-                }
-                catch (e) {
-                    //console.log("Error: " + e)
-                    res.status(401).send("Error authenticating");
-                }
+                    //check if payload is undefined --if not undefined the token is valid
+                    if (payload === undefined) {
+                        throw new NotAuthenticatedError_1.NotAuthenticatedError();
+                    }
+                    //make the payload keys accessible -- token interface is: {iat: string, sub: string, expires: string} as well as other keys
+                    var accessiblePayload = payload;
+                    //get the subject from the payload
+                    var subject = accessiblePayload.sub;
+                    //verify the subject exists
+                    if (subject === undefined || subject === null || subject === '') {
+                        throw new NotAuthenticatedError_1.NotAuthenticatedError();
+                    }
+                    // attach subject information to res.locals to persist the information to endpoint
+                    res.locals.userId = subject;
+                    //continue flow to endpoint
+                    next();
+                });
                 return [2 /*return*/];
             });
         });
