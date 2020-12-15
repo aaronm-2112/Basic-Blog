@@ -40,10 +40,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
+var path_1 = __importDefault(require("path"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
 var Blog_1 = __importDefault(require("./Blog"));
 var BlogSearchCriteria_1 = require("./BlogSearchCriteria");
-var path_1 = __importDefault(require("path"));
+var BadRequestError_1 = require("../Common/Errors/BadRequestError");
+var NotAcceptableError_1 = require("../Common/Errors/NotAcceptableError");
 var BlogController = /** @class */ (function () {
     function BlogController(repo) {
         this.repo = repo;
@@ -201,24 +203,23 @@ var BlogController = /** @class */ (function () {
         //Body parameters: title, content
         //Accept: application/json
         //Response Content Type: Application/json
+        // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
         this.router.post('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blog, username, content, title, blogID, BASE_URL, e_3;
+            var blog, username, content, title, blogID, BASE_URL;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
                         //check if the request's Accept header matches the response Content Type header
-                        if (req.accepts("application/json") === false) {
-                            res.sendStatus(406);
-                            return [2 /*return*/];
+                        if (!req.accepts("application/json")) {
+                            throw new NotAcceptableError_1.NotAcceptableError();
                         }
                         blog = new Blog_1.default();
                         username = res.locals.userId;
                         content = req.body.content;
                         title = req.body.title;
+                        // validate the request properties
                         if (username === undefined || content === undefined || title === undefined) {
-                            res.sendStatus(400);
-                            return [2 /*return*/];
+                            throw new BadRequestError_1.BadRequestError();
                         }
                         //set the username -- foreign key for the Blog entity that connects it to the User entity
                         blog.setUsername(username);
@@ -232,12 +233,7 @@ var BlogController = /** @class */ (function () {
                         BASE_URL = process.env.BASE_URL;
                         //return the blog id to the user
                         res.status(201).location(BASE_URL + "/blogs/" + blogID).send({ blogID: blogID });
-                        return [3 /*break*/, 3];
-                    case 2:
-                        e_3 = _a.sent();
-                        res.sendStatus(400);
-                        throw new Error(e_3);
-                    case 3: return [2 /*return*/];
+                        return [2 /*return*/];
                 }
             });
         }); });
@@ -246,7 +242,7 @@ var BlogController = /** @class */ (function () {
         //Accept: application/json
         //Response Content Type: application/json
         this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userID, blogid, title, content, titleimagepath, blog, blogidNumber, e_4;
+            var userID, blogid, title, content, titleimagepath, blog, blogidNumber, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -298,7 +294,7 @@ var BlogController = /** @class */ (function () {
                         res.status(200).send(blog);
                         return [3 /*break*/, 4];
                     case 3:
-                        e_4 = _a.sent();
+                        e_3 = _a.sent();
                         res.sendStatus(400);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
