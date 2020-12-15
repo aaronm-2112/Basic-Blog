@@ -4,7 +4,7 @@ import IBlog from '../IBlog';
 import Blog from '../Blog';
 import { Pool } from 'pg';
 import PGConnection from "../../Common/PGConnection";
-import { errorMonitor } from "events";
+import { rejects } from "assert";
 
 //purpose: perform basic crud ops with the blog table using postgresql.
 //         Used in controllers. Decouples database layer from higher level modules.
@@ -79,20 +79,22 @@ export default class BlogPGSQLRepo implements IBlogRepository {
 
   //return the resulting row that meets the search criteria
   //if a searchBy value returns more than one row, then only the first row values are returned to the client.
-  async find(searchBy: searchParameters, value: string): Promise<IBlog> {
+  async find(searchBy: searchParameters, value: string): Promise<IBlog | null> {
+    //prepare the query to find the blog
+    let query: string = `SELECT blogid, username, title, content, titleimagepath FROM blogs WHERE ${searchBy} = $1`;
+
+    //prepare the values for the query
+    let values: string[] = [];
+    values.push(value);
+
     try {
-      //prepare the query to find the blog
-      let query: string = `SELECT blogid, username, title, content, titleimagepath FROM blogs WHERE ${searchBy} = $1`;
-
-      //prepare the values for the query
-      let values: string[] = [];
-      values.push(value);
-
       //execute the query
       let result = await this.pool.query(query, values);
 
+      // check if the result exists
       if (!result.rows.length) {
-        throw new Error("Not found")
+        // if no result return null
+        return null
       }
 
       //get the row from the result
@@ -109,7 +111,7 @@ export default class BlogPGSQLRepo implements IBlogRepository {
 
       return blog;
     } catch (e) {
-      throw new Error(e);
+      throw new Error(e)
     }
   }
 
