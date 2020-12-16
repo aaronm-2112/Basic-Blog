@@ -7,4 +7,10 @@ export class ForbiddenError extends CustomError {
     super(msg)
     Object.setPrototypeOf(this, ForbiddenError.prototype)
   }
+
+  serializeErrors() {
+    return [{
+      "message": this.message
+    }]
+  }
 }

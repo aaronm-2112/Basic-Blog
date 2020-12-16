@@ -22,6 +22,11 @@ var NotAcceptableError = /** @class */ (function (_super) {
         Object.setPrototypeOf(_this, NotAcceptableError.prototype);
         return _this;
     }
+    NotAcceptableError.prototype.serializeErrors = function () {
+        return [{
+                "message": this.message
+            }];
+    };
     return NotAcceptableError;
 }(CustomError_1.CustomError));
 exports.NotAcceptableError = NotAcceptableError;

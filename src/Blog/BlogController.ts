@@ -1,4 +1,5 @@
 import express, { Router, Request, Response } from "express";
+import { query, validationResult } from 'express-validator'
 import path from 'path';
 import IBlogRepository from "./Repositories/IBlogRepository";
 import IController from '../Controllers/IController';
@@ -10,7 +11,7 @@ import { BadRequestError } from "../Common/Errors/BadRequestError";
 import { NotAcceptableError } from '../Common/Errors/NotAcceptableError'
 import { NotFoundError } from "../Common/Errors/NotFoundError";
 import { ForbiddenError } from "../Common/Errors/ForbiddenError";
-
+import { validateRequest } from '../Middlewares/validate-request'
 export default class BlogController implements IController {
   private repo: IBlogRepository;
   private router: Router;
@@ -29,47 +30,61 @@ export default class BlogController implements IController {
     //Accept header: application/json
     //Content Type header: application/json 
     // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
-    this.router.get('/blogs', async (req: Request, res: Response) => {
-      if (req.accepts('application/json') === false) {
-        throw new NotAcceptableError()
-      }
+    this.router.get('/blogs', [
+      query("param")
+        .trim()
+        .custom(param => { return (param === searchParameters.Title || param === searchParameters.Username) })
+        .withMessage("You must supply a valid search parameter: title or username."), // smallest searchBy parameter is title
+      query("value")
+        .trim()
+        .isLength({ min: 1 })
+        .withMessage("You must supply a parameter value."),
+      query("key")
+        .trim()
+        .custom(key => parseInt(key) >= 0)
+        .withMessage("You must supply a number greater than or equal to 0 as the search key."),
+      query("keyCondition")
+        .trim()
+        .custom(keyCondition => { return (keyCondition == '>' || keyCondition == '<') })
+        .withMessage("You must supply > or < as the key's search condition.")
+    ], validateRequest,
+      async (req: Request, res: Response) => {
 
-      //grab the query string from the parameters
-      let searchBy: string = req.query.param as string;
-      let searchByValue: string = req.query.value as string;
-      let blogid: string = req.query.key as string;
-      let keyCondition: string = req.query.keyCondition as string; //should be > or < 
+        if (!req.accepts('application/json')) {
+          throw new NotAcceptableError()
+        }
 
-      //check if the query searchby value is undefined or an empty string
-      if (searchByValue === "" || !searchByValue) {
-        throw new BadRequestError() // TODO: Make InvalidParameter error
-      }
+        //grab the query string from the parameters
+        let searchBy: string = req.query.param as string;
+        let searchByValue: string = req.query.value as string;
+        let blogid: string = req.query.key as string;
+        let keyCondition: string = req.query.keyCondition as string; //should be > or < 
 
-      //decode the searchbyvalue passed in
-      searchByValue = decodeURIComponent(searchByValue);
+        //decode the searchbyvalue passed in
+        searchByValue = decodeURIComponent(searchByValue);
 
-      //create the blog collection
-      let blogs: IBlog[]
+        //create the blog collection
+        let blogs: IBlog[]
 
-      //check if parameter is valid
-      switch (searchBy) {
-        case searchParameters.Username:
-          //search the blog repo using the query parameter
-          blogs = await this.repo.findAll(searchParameters.Username, searchByValue, blogid, keyCondition);
-          break;
-        case searchParameters.Title:
-          //search the blog repo using the query parameter
-          blogs = await this.repo.findAll(searchParameters.Title, searchByValue, blogid, keyCondition);
-          break;
-        default:
-          //invalid search parameter -- result not found -- TODO: Make InvalidParameter error
-          throw new BadRequestError()
-      }
+        //check if parameter is valid
+        switch (searchBy) {
+          case searchParameters.Username:
+            //search the blog repo using the query parameter
+            blogs = await this.repo.findAll(searchParameters.Username, searchByValue, blogid, keyCondition);
+            break;
+          case searchParameters.Title:
+            //search the blog repo using the query parameter
+            blogs = await this.repo.findAll(searchParameters.Title, searchByValue, blogid, keyCondition);
+            break;
+          default:
+            //invalid search parameter -- result not found -- TODO: Make InvalidParameter error
+            throw new BadRequestError()
+        }
 
-      //return the results to the user 
-      res.status(200).send(blogs);
+        //return the results to the user 
+        res.status(200).send(blogs);
 
-    });
+      });
 
     //return a specific blog for viewing/editing or a list of blogs based off a query term
     //Query parameters: editPage - view the blog resorce in an editable html representation(not applicable to application/json)

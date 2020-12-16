@@ -40,12 +40,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
+var express_validator_1 = require("express-validator");
 var path_1 = __importDefault(require("path"));
 var Auth_1 = __importDefault(require("../Auth/Auth"));
 var Blog_1 = __importDefault(require("./Blog"));
 var BlogSearchCriteria_1 = require("./BlogSearchCriteria");
 var BadRequestError_1 = require("../Common/Errors/BadRequestError");
 var NotAcceptableError_1 = require("../Common/Errors/NotAcceptableError");
+var NotFoundError_1 = require("../Common/Errors/NotFoundError");
+var ForbiddenError_1 = require("../Common/Errors/ForbiddenError");
+var validate_request_1 = require("../Middlewares/validate-request");
 var BlogController = /** @class */ (function () {
     function BlogController(repo) {
         this.repo = repo;
@@ -58,24 +62,38 @@ var BlogController = /** @class */ (function () {
         //Query parameters: param = username || title, value, blogid, keyCondition
         //Accept header: application/json
         //Content Type header: application/json 
-        this.router.get('/blogs', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var searchBy, searchByValue, blogid, keyCondition, blogs, _a, e_1;
+        // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
+        this.router.get('/blogs', [
+            express_validator_1.query("param")
+                .trim()
+                .custom(function (param) { return (param === BlogSearchCriteria_1.searchParameters.Title || param === BlogSearchCriteria_1.searchParameters.Username); })
+                .withMessage("You must supply a valid search parameter: title or username."),
+            express_validator_1.query("value")
+                .trim()
+                .isLength({ min: 1 })
+                .withMessage("You must supply a parameter value."),
+            express_validator_1.query("key")
+                .trim()
+                .custom(function (key) { return parseInt(key) >= 0; })
+                .withMessage("You must supply a number greater than or equal to 0 as the search key."),
+            express_validator_1.query("keyCondition")
+                .trim()
+                .custom(function (keyCondition) { return (keyCondition == '>' || keyCondition == '<'); })
+                .withMessage("You must supply > or < as the key's search condition.")
+        ], validate_request_1.validateRequest, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var searchBy, searchByValue, blogid, keyCondition, blogs, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _b.trys.push([0, 8, , 9]);
-                        if (req.accepts('application/json') === false) {
-                            res.sendStatus(406);
-                            return [2 /*return*/];
+                        if (!req.accepts('application/json')) {
+                            throw new NotAcceptableError_1.NotAcceptableError();
                         }
                         searchBy = req.query.param;
                         searchByValue = req.query.value;
                         blogid = req.query.key;
                         keyCondition = req.query.keyCondition;
-                        if (!(searchByValue !== "" && searchByValue !== undefined)) return [3 /*break*/, 7];
                         //decode the searchbyvalue passed in
                         searchByValue = decodeURIComponent(searchByValue);
-                        blogs = void 0;
                         _a = searchBy;
                         switch (_a) {
                             case BlogSearchCriteria_1.searchParameters.Username: return [3 /*break*/, 1];
@@ -92,20 +110,13 @@ var BlogController = /** @class */ (function () {
                         //search the blog repo using the query parameter
                         blogs = _b.sent();
                         return [3 /*break*/, 6];
-                    case 5:
-                        //invalid search parameter -- result not found
-                        res.sendStatus(400);
-                        return [2 /*return*/];
+                    case 5: 
+                    //invalid search parameter -- result not found -- TODO: Make InvalidParameter error
+                    throw new BadRequestError_1.BadRequestError();
                     case 6:
                         //return the results to the user 
                         res.status(200).send(blogs);
-                        _b.label = 7;
-                    case 7: return [3 /*break*/, 9];
-                    case 8:
-                        e_1 = _b.sent();
-                        res.sendStatus(400);
-                        return [3 /*break*/, 9];
-                    case 9: return [2 /*return*/];
+                        return [2 /*return*/];
                 }
             });
         }); });
@@ -113,19 +124,21 @@ var BlogController = /** @class */ (function () {
         //Query parameters: editPage - view the blog resorce in an editable html representation(not applicable to application/json)
         //Accept options: text/html or application/json
         //Response Content Type: text/html or application/json
+        // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
         this.router.get('/blogs/:blogID', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var blogID, blog, BASE_URL, imagePath, edit, userID, e_2;
+            var blogID, blog, BASE_URL, imagePath, edit, userID;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
                         blogID = req.params.blogID;
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogID)];
                     case 1:
                         blog = _a.sent();
-                        console.log(blog);
+                        // check if the blog was not found
+                        if (!blog) {
+                            throw new NotFoundError_1.NotFoundError("Blog does not exist");
+                        }
                         BASE_URL = process.env.BASE_URL;
-                        imagePath = void 0;
                         if (blog.getTitleimagepath() !== null) {
                             //set path to the image from the Views directory [views are in /Views] using absolute paths
                             imagePath = BASE_URL + "/" + path_1.default.normalize(blog.getTitleimagepath());
@@ -133,7 +146,6 @@ var BlogController = /** @class */ (function () {
                         else {
                             imagePath = "";
                         }
-                        console.log(imagePath);
                         edit = req.query.editPage;
                         //check if client does not wants text/html
                         if (req.accepts('text/html') === 'text/html') {
@@ -144,8 +156,7 @@ var BlogController = /** @class */ (function () {
                                 //check if a userID was extracted from the incoming JWT
                                 if (!userID.id.length) {
                                     //if not return because there is no way to verify if the incoming user owns the blog they want to edit
-                                    res.sendStatus(403);
-                                    return [2 /*return*/];
+                                    throw new ForbiddenError_1.ForbiddenError("User does not have access to this blog resource");
                                 }
                                 //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
                                 if (userID.id === blog.getUsername()) {
@@ -161,8 +172,7 @@ var BlogController = /** @class */ (function () {
                                 }
                                 else {
                                     //user does not have access
-                                    res.sendStatus(403);
-                                    return [2 /*return*/];
+                                    throw new ForbiddenError_1.ForbiddenError("User does not have access to this blog resource");
                                 }
                             }
                             else {
@@ -187,14 +197,9 @@ var BlogController = /** @class */ (function () {
                             });
                         }
                         else { //no accepted representation
-                            res.sendStatus(406);
+                            throw new NotAcceptableError_1.NotAcceptableError();
                         }
-                        return [3 /*break*/, 3];
-                    case 2:
-                        e_2 = _a.sent();
-                        res.sendStatus(400);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        return [2 /*return*/];
                 }
             });
         }); });
@@ -218,7 +223,7 @@ var BlogController = /** @class */ (function () {
                         content = req.body.content;
                         title = req.body.title;
                         // validate the request properties
-                        if (username === undefined || content === undefined || title === undefined) {
+                        if (content === undefined || title === undefined) {
                             throw new BadRequestError_1.BadRequestError();
                         }
                         //set the username -- foreign key for the Blog entity that connects it to the User entity
@@ -241,16 +246,15 @@ var BlogController = /** @class */ (function () {
         //Body Parameters: content, titleImagePath, title
         //Accept: application/json
         //Response Content Type: application/json
+        // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
         this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var userID, blogid, title, content, titleimagepath, blog, blogidNumber, e_3;
+            var userID, blogid, title, content, titleimagepath, blog, blogidNumber;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 3, , 4]);
                         //ensure request accept header matches the response Content Type header
                         if (req.accepts('application/json') === false) {
-                            res.sendStatus(406);
-                            return [2 /*return*/];
+                            throw new NotAcceptableError_1.NotAcceptableError();
                         }
                         userID = res.locals.userId;
                         blogid = req.params.blogID;
@@ -260,11 +264,13 @@ var BlogController = /** @class */ (function () {
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogid)];
                     case 1:
                         blog = _a.sent();
+                        if (!blog) {
+                            throw new NotFoundError_1.NotFoundError("Blog does not exist");
+                        }
                         //check if the user was not the one that created the blog
                         if (!blog.creator(userID)) {
                             //the user does not have authorization to edit this blog
-                            res.sendStatus(403);
-                            return [2 /*return*/];
+                            throw new ForbiddenError_1.ForbiddenError("User does not have access to this blog resource for editing");
                         }
                         //determine which blog properties are being patched based off request body parameters
                         if (content !== undefined) {
@@ -281,8 +287,7 @@ var BlogController = /** @class */ (function () {
                         blogidNumber = parseInt(blogid);
                         //check if blogidNumber is NaN
                         if (isNaN(blogidNumber)) {
-                            res.sendStatus(400);
-                            return [2 /*return*/];
+                            throw new BadRequestError_1.BadRequestError(); // TODO: Make invalid input error
                         }
                         //set blog object's blogID using the incoming request parameter
                         blog.setBlogid(blogidNumber);
@@ -292,12 +297,7 @@ var BlogController = /** @class */ (function () {
                         blog = _a.sent();
                         //send no content success
                         res.status(200).send(blog);
-                        return [3 /*break*/, 4];
-                    case 3:
-                        e_3 = _a.sent();
-                        res.sendStatus(400);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [2 /*return*/];
                 }
             });
         }); });
