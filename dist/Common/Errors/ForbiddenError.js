@@ -14,19 +14,19 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var CustomError_1 = require("./CustomError");
-var BadRequestError = /** @class */ (function (_super) {
-    __extends(BadRequestError, _super);
-    function BadRequestError() {
-        var _this = _super.call(this, "Unable to process the request") || this;
-        _this.statusCode = 400;
-        Object.setPrototypeOf(_this, BadRequestError.prototype);
+var ForbiddenError = /** @class */ (function (_super) {
+    __extends(ForbiddenError, _super);
+    function ForbiddenError(msg) {
+        var _this = _super.call(this, msg) || this;
+        _this.statusCode = 403;
+        Object.setPrototypeOf(_this, ForbiddenError.prototype);
         return _this;
     }
-    BadRequestError.prototype.serializeErrors = function () {
+    ForbiddenError.prototype.serializeErrors = function () {
         return [{
                 "message": this.message
             }];
     };
-    return BadRequestError;
+    return ForbiddenError;
 }(CustomError_1.CustomError));
-exports.BadRequestError = BadRequestError;
+exports.ForbiddenError = ForbiddenError;

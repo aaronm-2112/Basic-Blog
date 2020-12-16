@@ -5,9 +5,8 @@ var CustomError_1 = require("../Common/Errors/CustomError");
 exports.handler = function (err, req, res, next) {
     // check if the incoming error is a custom error 
     if (err instanceof CustomError_1.CustomError) {
-        console.log(err);
         // send the user the error message
-        return res.status(err.statusCode).send(err.message);
+        return res.status(err.statusCode).send({ errors: err.serializeErrors() });
     }
     // log any errors that were unexpected
     console.log(err);

@@ -22,6 +22,11 @@ var NotAuthenticatedError = /** @class */ (function (_super) {
         Object.setPrototypeOf(_this, NotAuthenticatedError.prototype);
         return _this;
     }
+    NotAuthenticatedError.prototype.serializeErrors = function () {
+        return [{
+                "message": this.message
+            }];
+    };
     return NotAuthenticatedError;
 }(CustomError_1.CustomError));
 exports.NotAuthenticatedError = NotAuthenticatedError;

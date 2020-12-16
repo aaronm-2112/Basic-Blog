@@ -43,12 +43,11 @@ var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var fs_1 = __importDefault(require("fs"));
 var NotAuthenticatedError_1 = require("../Common/Errors/NotAuthenticatedError");
 var Auth = /** @class */ (function () {
-    //private PUBLIC_KEY: string;
     function Auth() {
-        //this.PUBLIC_KEY = fs.readFileSync('C:\\Users\\Aaron\\Desktop\\Typescript-Starter\\src\\Auth\\jwtRS256.key.pub', "utf8")
-        //console.log(this.PUBLIC_KEY);
     }
-    //TODO: Fix public key not being available in class bug. 
+    //TODO: Fix public key not being available in class bug.
+    // Acts as an authentication middleware that authenticates a user's JSON Webtoken
+    // If no web token exists it throws a NotAuthenticatedError 
     Auth.prototype.authenitcateJWT = function (req, res, next) {
         return __awaiter(this, void 0, void 0, function () {
             var token, PUBLIC_KEY;

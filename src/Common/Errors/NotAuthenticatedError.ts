@@ -7,4 +7,10 @@ export class NotAuthenticatedError extends CustomError {
     super("User is not logged in")
     Object.setPrototypeOf(this, NotAuthenticatedError.prototype)
   }
+
+  serializeErrors() {
+    return [{
+      "message": this.message
+    }]
+  }
 }

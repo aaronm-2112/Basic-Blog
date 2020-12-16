@@ -116,15 +116,19 @@ var BlogPGSQLRepo = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
                         query = "SELECT blogid, username, title, content, titleimagepath FROM blogs WHERE " + searchBy + " = $1";
                         values = [];
                         values.push(value);
-                        return [4 /*yield*/, this.pool.query(query, values)];
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.pool.query(query, values)];
+                    case 2:
                         result = _a.sent();
+                        // check if the result exists
                         if (!result.rows.length) {
-                            throw new Error("Not found");
+                            // if no result return null
+                            return [2 /*return*/, null];
                         }
                         row = result.rows[0];
                         blog = new Blog_1.default();
@@ -134,10 +138,10 @@ var BlogPGSQLRepo = /** @class */ (function () {
                         blog.setContent(row.content);
                         blog.setUsername(row.username);
                         return [2 /*return*/, blog];
-                    case 2:
+                    case 3:
                         e_2 = _a.sent();
                         throw new Error(e_2);
-                    case 3: return [2 /*return*/];
+                    case 4: return [2 /*return*/];
                 }
             });
         });

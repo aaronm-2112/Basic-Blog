@@ -154,6 +154,7 @@ describe("PGSQL Blog repository testing suite", function () {
                     return [4 /*yield*/, repo.find(BlogSearchCriteria_1.searchParameters.Username, "Second User")];
                 case 1:
                     mockBlog = _a.sent();
+                    expect(mockBlog).not.toBe(null);
                     expect(mockBlog.setBlogid(3));
                     expect(mockBlog.setUsername("Second User"));
                     expect(mockBlog.setContent("First blog"));
@@ -187,6 +188,7 @@ describe("PGSQL Blog repository testing suite", function () {
                     return [4 /*yield*/, repo.find(BlogSearchCriteria_1.searchParameters.Title, "Blog Two")];
                 case 1:
                     mockBlog = _a.sent();
+                    expect(mockBlog).not.toBe(null);
                     expect(mockBlog.setBlogid(2));
                     expect(mockBlog.setUsername("First User"));
                     expect(mockBlog.setContent("Blog Two"));

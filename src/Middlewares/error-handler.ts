@@ -8,7 +8,7 @@ export const handler = (err: Error, req: Request, res: Response, next: NextFunct
   // check if the incoming error is a custom error 
   if (err instanceof CustomError) {
     // send the user the error message
-    return res.status(err.statusCode).send(err.message)
+    return res.status(err.statusCode).send({ errors: err.serializeErrors() })
   }
 
   // log any errors that were unexpected

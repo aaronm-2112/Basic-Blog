@@ -5,6 +5,12 @@ export class BadRequestError extends CustomError {
 
   constructor() {
     super("Unable to process the request")
-    Object.setPrototypeOf(this, CustomError.prototype)
+    Object.setPrototypeOf(this, BadRequestError.prototype)
+  }
+
+  serializeErrors() {
+    return [{
+      "message": this.message
+    }]
   }
 }
