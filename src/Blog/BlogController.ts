@@ -1,5 +1,5 @@
 import express, { Router, Request, Response } from "express";
-import { query, validationResult } from 'express-validator'
+import { query, param } from 'express-validator'
 import path from 'path';
 import IBlogRepository from "./Repositories/IBlogRepository";
 import IController from '../Controllers/IController';
@@ -91,84 +91,95 @@ export default class BlogController implements IController {
     //Accept options: text/html or application/json
     //Response Content Type: text/html or application/json
     // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
-    this.router.get('/blogs/:blogID', async (req: Request, res: Response) => {
-      //retrieve the blogID from the request parameter
-      let blogID: string = req.params.blogID;
+    this.router.get('/blogs/:blogID',
+      [
+        param("blogID")
+          .custom(blogID => parseInt(blogID) >= 1)
+          .withMessage("The blogID needs to be greater than or equal to 1."),
+        query("editPage")
+          .trim()
+          .custom(editPage => { return (editPage === "true" || editPage === "false") })
+          .withMessage("Set editPage to true or false.")
+      ],
+      validateRequest,
+      async (req: Request, res: Response) => {
+        //retrieve the blogID from the request parameter
+        let blogID: string = req.params.blogID;
 
-      //retrieve the blog object with it's ID
-      let blog: IBlog | null = await this.repo.find(searchParameters.BlogID, blogID);
+        //retrieve the blog object with it's ID
+        let blog: IBlog | null = await this.repo.find(searchParameters.BlogID, blogID);
 
-      // check if the blog was not found
-      if (!blog) {
-        throw new NotFoundError("Blog does not exist")
-      }
+        // check if the blog was not found
+        if (!blog) {
+          throw new NotFoundError("Blog does not exist")
+        }
 
-      const BASE_URL = process.env.BASE_URL;
+        const BASE_URL = process.env.BASE_URL;
 
-      let imagePath: string;
-      if (blog.getTitleimagepath() !== null) {
-        //set path to the image from the Views directory [views are in /Views] using absolute paths
-        imagePath = `${BASE_URL}/` + path.normalize(blog.getTitleimagepath());
-      } else {
-        imagePath = "";
-      }
+        let imagePath: string;
+        if (blog.getTitleimagepath() !== null) {
+          //set path to the image from the Views directory [views are in /Views] using absolute paths
+          imagePath = `${BASE_URL}/` + path.normalize(blog.getTitleimagepath());
+        } else {
+          imagePath = "";
+        }
 
-      //get the edit query parameter
-      let edit: string = req.query.editPage as string;
+        //get the edit query parameter
+        let edit: string = req.query.editPage as string;
 
-      //check if client does not wants text/html
-      if (req.accepts('text/html') === 'text/html') {
-        //check the value of edit
-        if (edit !== undefined && edit !== "false") {
+        //check if client does not wants text/html
+        if (req.accepts('text/html') === 'text/html') {
+          //check the value of edit
+          if (edit !== undefined && edit !== "false") {
 
-          //get the userID from the cookie
-          let userID: { id: string } = { id: "" };
-          this.auth.setSubject(req.cookies["jwt"], userID);
+            //get the userID from the cookie
+            let userID: { id: string } = { id: "" };
+            this.auth.setSubject(req.cookies["jwt"], userID);
 
-          //check if a userID was extracted from the incoming JWT
-          if (!userID.id.length) {
-            //if not return because there is no way to verify if the incoming user owns the blog they want to edit
-            throw new ForbiddenError("User does not have access to this blog resource")
-          }
+            //check if a userID was extracted from the incoming JWT
+            if (!userID.id.length) {
+              //if not return because there is no way to verify if the incoming user owns the blog they want to edit
+              throw new ForbiddenError("User does not have access to this blog resource")
+            }
 
-          //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
-          if (userID.id === blog.getUsername()) {
-            //render the edit blog template
-            res.render('EditBlog', {
+            //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
+            if (userID.id === blog.getUsername()) {
+              //render the edit blog template
+              res.render('EditBlog', {
+                titleImagePath: imagePath,
+                title: blog.getTitle(),
+                username: blog.getUsername(),
+                content: blog.getContent(),
+                BASE_URL
+              });
+              return;
+            } else {
+              //user does not have access
+              throw new ForbiddenError("User does not have access to this blog resource")
+            }
+          } else {
+            //render the viewable blog template with the blog's properties
+            res.render('Blog', {
               titleImagePath: imagePath,
               title: blog.getTitle(),
               username: blog.getUsername(),
               content: blog.getContent(),
               BASE_URL
             });
-            return;
-          } else {
-            //user does not have access
-            throw new ForbiddenError("User does not have access to this blog resource")
           }
-        } else {
-          //render the viewable blog template with the blog's properties
-          res.render('Blog', {
+          //check if user wants to view the blog in a json representa
+        } else if (req.accepts('application/json') === 'application/json') {
+          //if so send json representation of their 
+          res.status(200).send({
             titleImagePath: imagePath,
             title: blog.getTitle(),
             username: blog.getUsername(),
-            content: blog.getContent(),
-            BASE_URL
+            content: blog.getContent()
           });
+        } else { //no accepted representation
+          throw new NotAcceptableError()
         }
-        //check if user wants to view the blog in a json representa
-      } else if (req.accepts('application/json') === 'application/json') {
-        //if so send json representation of their 
-        res.status(200).send({
-          titleImagePath: imagePath,
-          title: blog.getTitle(),
-          username: blog.getUsername(),
-          content: blog.getContent()
-        });
-      } else { //no accepted representation
-        throw new NotAcceptableError()
-      }
-    });
+      });
 
     //create a blog resource --return blogID 
     //A blog resource contains a path to the blog's title image if one was uploaded.
