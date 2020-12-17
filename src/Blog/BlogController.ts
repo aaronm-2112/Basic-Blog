@@ -1,5 +1,5 @@
 import express, { Router, Request, Response } from "express";
-import { query, param } from 'express-validator'
+import { query, param, body } from 'express-validator'
 import path from 'path';
 import IBlogRepository from "./Repositories/IBlogRepository";
 import IController from '../Controllers/IController';
@@ -130,7 +130,7 @@ export default class BlogController implements IController {
         //check if client does not wants text/html
         if (req.accepts('text/html') === 'text/html') {
           //check the value of edit
-          if (edit !== undefined && edit !== "false") {
+          if (edit === "true") {
 
             //get the userID from the cookie
             let userID: { id: string } = { id: "" };
@@ -145,14 +145,13 @@ export default class BlogController implements IController {
             //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
             if (userID.id === blog.getUsername()) {
               //render the edit blog template
-              res.render('EditBlog', {
+              return res.render('EditBlog', {
                 titleImagePath: imagePath,
                 title: blog.getTitle(),
                 username: blog.getUsername(),
                 content: blog.getContent(),
                 BASE_URL
               });
-              return;
             } else {
               //user does not have access
               throw new ForbiddenError("User does not have access to this blog resource")
@@ -187,108 +186,124 @@ export default class BlogController implements IController {
     //Accept: application/json
     //Response Content Type: Application/json
     // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
-    this.router.post('/blogs', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
-      //check if the request's Accept header matches the response Content Type header
-      if (!req.accepts("application/json")) {
-        throw new NotAcceptableError()
-      }
+    this.router.post('/blogs',
+      this.auth.authenitcateJWT,
+      [
+        body('content')
+          .not()
+          .isEmpty()
+          .withMessage("Your blog post needs to have content.")
+          .isString(),
+        body('title')
+          .trim()
+          .not()
+          .isEmpty()
+          .withMessage("Your blog post needs to have a title.")
+          .isString()
+      ],
+      validateRequest,
+      async (req: Request, res: Response) => {
+        //check if the request's Accept header matches the response Content Type header
+        if (!req.accepts("application/json")) {
+          throw new NotAcceptableError()
+        }
 
-      //create a blog resource
-      let blog: IBlog = new Blog();
-      let username: string = res.locals.userId; // we assume username is there b/c authenticateJWT sets it
-      let content: string = req.body.content;
-      let title: string = req.body.title;
+        //create a blog resource
+        let blog: IBlog = new Blog();
+        let username: string = res.locals.userId; // we assume username is there b/c authenticateJWT sets it
+        let content: string = req.body.content;
+        let title: string = req.body.title;
 
-      // validate the request properties
-      if (content === undefined || title === undefined) {
-        throw new BadRequestError()
-      }
 
-      //set the username -- foreign key for the Blog entity that connects it to the User entity
-      blog.setUsername(username);
+        //set the username -- foreign key for the Blog entity that connects it to the User entity
+        blog.setUsername(username);
 
-      //set the content of the blog
-      blog.setContent(content);
+        //set the content of the blog
+        blog.setContent(content);
 
-      //set the title of the blog
-      blog.setTitle(title);
+        //set the title of the blog
+        blog.setTitle(title);
 
-      //create the blog in the database 
-      let blogID: number = await this.repo.create(blog);
+        //create the blog in the database 
+        let blogID: number = await this.repo.create(blog);
 
-      const BASE_URL = process.env.BASE_URL;
+        const BASE_URL = process.env.BASE_URL;
 
-      //return the blog id to the user
-      res.status(201).location(`${BASE_URL}/blogs/${blogID}`).send({ blogID });
-    });
+        //return the blog id to the user
+        res.status(201).location(`${BASE_URL}/blogs/${blogID}`).send({ blogID });
+      });
 
     //patch a blog resource
     //Body Parameters: content, titleImagePath, title
     //Accept: application/json
     //Response Content Type: application/json
     // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
-    this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, async (req: Request, res: Response) => {
-      //ensure request accept header matches the response Content Type header
-      if (req.accepts('application/json') === false) {
-        throw new NotAcceptableError()
-      }
 
-      //get the userID
-      let userID: string = res.locals.userId;
+    this.router.patch('/blogs/:blogID',
+      this.auth.authenitcateJWT,
+      [
+        param("blogID")
+          .custom(blogID => parseInt(blogID) >= 1)
+          .withMessage("The blogID needs to be greater than or equal to 1."),
+      ],
+      validateRequest,
+      async (req: Request, res: Response) => {
+        //ensure request accept header matches the response Content Type header
+        if (req.accepts('application/json') === false) {
+          throw new NotAcceptableError()
+        }
 
-      //extract the request parameter
-      let blogid: string = req.params.blogID;
+        //get the userID
+        let userID: string = res.locals.userId;
 
-      //extract the body parameters
-      let title: string = req.body.title as string;
-      let content: string = req.body.content as string;
-      let titleimagepath: string = req.body.titleImagePath as string;
+        //extract the request parameter
+        let blogid: string = req.params.blogID;
 
-      //get the blog via the blogID
-      let blog: IBlog | null = await this.repo.find(searchParameters.BlogID, blogid);
+        //extract the body parameters
+        let title: string = req.body.title as string;
+        let content: string = req.body.content as string;
+        let titleimagepath: string = req.body.titleImagePath as string;
 
-      if (!blog) {
-        throw new NotFoundError("Blog does not exist")
-      }
+        //get the blog via the blogID
+        let blog: IBlog | null = await this.repo.find(searchParameters.BlogID, blogid);
 
-      //check if the user was not the one that created the blog
-      if (!blog.creator(userID)) {
-        //the user does not have authorization to edit this blog
-        throw new ForbiddenError("User does not have access to this blog resource for editing")
-      }
+        if (!blog) {
+          throw new NotFoundError("Blog does not exist")
+        }
 
-      //determine which blog properties are being patched based off request body parameters
-      if (content !== undefined) {
-        blog.setContent(content);
-      }
+        //check if the user was not the one that created the blog
+        if (!blog.creator(userID)) {
+          //the user does not have authorization to edit this blog
+          throw new ForbiddenError("User does not have access to this blog resource for editing")
+        }
 
-      //blog title
-      if (title !== undefined) {
-        blog.setTitle(title);
-      }
+        //determine which blog properties are being patched based off request body parameters
+        if (content) {
+          blog.setContent(content);
+        }
 
-      //blog's path to titleimage
-      if (titleimagepath !== undefined) {
-        blog.setTitleimagepath(titleimagepath);
-      }
+        //blog title
+        if (title) {
+          blog.setTitle(title);
+        }
 
-      //set the blogid to a number
-      let blogidNumber: number = parseInt(blogid);
+        //blog's path to titleimage
+        if (titleimagepath) {
+          blog.setTitleimagepath(titleimagepath);
+        }
 
-      //check if blogidNumber is NaN
-      if (isNaN(blogidNumber)) {
-        throw new BadRequestError() // TODO: Make invalid input error
-      }
+        //set the blogid to a number
+        let blogidNumber: number = parseInt(blogid);
 
-      //set blog object's blogID using the incoming request parameter
-      blog.setBlogid(blogidNumber);
+        //set blog object's blogID using the incoming request parameter
+        blog.setBlogid(blogidNumber);
 
-      //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
-      blog = await this.repo.update(blog);
+        //update the corresponding blog -- properties not being patched stay as Blog object constructor defaults
+        blog = await this.repo.update(blog);
 
-      //send no content success
-      res.status(200).send(blog);
-    });
+        //send no content success
+        res.status(200).send(blog);
+      });
 
     //register router with the app
     app.use(this.router);
