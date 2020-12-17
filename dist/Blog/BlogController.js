@@ -125,7 +125,15 @@ var BlogController = /** @class */ (function () {
         //Accept options: text/html or application/json
         //Response Content Type: text/html or application/json
         // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
-        this.router.get('/blogs/:blogID', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.get('/blogs/:blogID', [
+            express_validator_1.param("blogID")
+                .custom(function (blogID) { return parseInt(blogID) >= 1; })
+                .withMessage("The blogID needs to be greater than or equal to 1."),
+            express_validator_1.query("editPage")
+                .trim()
+                .custom(function (editPage) { return (editPage === "true" || editPage === "false"); })
+                .withMessage("Set editPage to true or false.")
+        ], validate_request_1.validateRequest, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blogID, blog, BASE_URL, imagePath, edit, userID;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -150,7 +158,7 @@ var BlogController = /** @class */ (function () {
                         //check if client does not wants text/html
                         if (req.accepts('text/html') === 'text/html') {
                             //check the value of edit
-                            if (edit !== undefined && edit !== "false") {
+                            if (edit === "true") {
                                 userID = { id: "" };
                                 this.auth.setSubject(req.cookies["jwt"], userID);
                                 //check if a userID was extracted from the incoming JWT
@@ -161,14 +169,13 @@ var BlogController = /** @class */ (function () {
                                 //check if the incoming userID matches the username of the blog's owner -- only owners can edit their blog
                                 if (userID.id === blog.getUsername()) {
                                     //render the edit blog template
-                                    res.render('EditBlog', {
-                                        titleImagePath: imagePath,
-                                        title: blog.getTitle(),
-                                        username: blog.getUsername(),
-                                        content: blog.getContent(),
-                                        BASE_URL: BASE_URL
-                                    });
-                                    return [2 /*return*/];
+                                    return [2 /*return*/, res.render('EditBlog', {
+                                            titleImagePath: imagePath,
+                                            title: blog.getTitle(),
+                                            username: blog.getUsername(),
+                                            content: blog.getContent(),
+                                            BASE_URL: BASE_URL
+                                        })];
                                 }
                                 else {
                                     //user does not have access
@@ -209,7 +216,19 @@ var BlogController = /** @class */ (function () {
         //Accept: application/json
         //Response Content Type: Application/json
         // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
-        this.router.post('/blogs', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.post('/blogs', this.auth.authenitcateJWT, [
+            express_validator_1.body('content')
+                .not()
+                .isEmpty()
+                .withMessage("Your blog post needs to have content.")
+                .isString(),
+            express_validator_1.body('title')
+                .trim()
+                .not()
+                .isEmpty()
+                .withMessage("Your blog post needs to have a title.")
+                .isString()
+        ], validate_request_1.validateRequest, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var blog, username, content, title, blogID, BASE_URL;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -222,10 +241,6 @@ var BlogController = /** @class */ (function () {
                         username = res.locals.userId;
                         content = req.body.content;
                         title = req.body.title;
-                        // validate the request properties
-                        if (content === undefined || title === undefined) {
-                            throw new BadRequestError_1.BadRequestError();
-                        }
                         //set the username -- foreign key for the Blog entity that connects it to the User entity
                         blog.setUsername(username);
                         //set the content of the blog
@@ -247,7 +262,11 @@ var BlogController = /** @class */ (function () {
         //Accept: application/json
         //Response Content Type: application/json
         // 12/15/20 New error handling middleware will catch and log errors + async routes in express-async-errors throws automatically so removed try catch block
-        this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        this.router.patch('/blogs/:blogID', this.auth.authenitcateJWT, [
+            express_validator_1.param("blogID")
+                .custom(function (blogID) { return parseInt(blogID) >= 1; })
+                .withMessage("The blogID needs to be greater than or equal to 1."),
+        ], validate_request_1.validateRequest, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
             var userID, blogid, title, content, titleimagepath, blog, blogidNumber;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -273,22 +292,18 @@ var BlogController = /** @class */ (function () {
                             throw new ForbiddenError_1.ForbiddenError("User does not have access to this blog resource for editing");
                         }
                         //determine which blog properties are being patched based off request body parameters
-                        if (content !== undefined) {
+                        if (content) {
                             blog.setContent(content);
                         }
                         //blog title
-                        if (title !== undefined) {
+                        if (title) {
                             blog.setTitle(title);
                         }
                         //blog's path to titleimage
-                        if (titleimagepath !== undefined) {
+                        if (titleimagepath) {
                             blog.setTitleimagepath(titleimagepath);
                         }
                         blogidNumber = parseInt(blogid);
-                        //check if blogidNumber is NaN
-                        if (isNaN(blogidNumber)) {
-                            throw new BadRequestError_1.BadRequestError(); // TODO: Make invalid input error
-                        }
                         //set blog object's blogID using the incoming request parameter
                         blog.setBlogid(blogidNumber);
                         return [4 /*yield*/, this.repo.update(blog)];
