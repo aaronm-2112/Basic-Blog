@@ -50,6 +50,9 @@ Goals for the backend, testing suites, and frontend
    code in the backend. The frontend was made primarily to reinforce that my backend design made "sense" and was usable by a frontend client. 
    
    
+Features/Refactors in Progress:
+   -An extensible error handler middleware that makes it easy to throw errors and send the correct http response to the user
+   -Input validator being added to the routes to eliminate repeated validation code
 
 After thoughts:
    -Using express-validator would make validating body and query parameters more secure and simple.
