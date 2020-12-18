@@ -7,14 +7,17 @@
     "tsc": "tsc",
     "prod": "tsc && node -r dotenv/config ./dist/index.js ../.env PROD",
     "dev": "tsc && node -r dotenv/config ./dist/index.js ../.env DEV",
-    "test": "npx jest --runInBand --detectOpenHandles"
+    "test": "npx jest --runInBand --detectOpenHandles --watchAll"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/supertest": "^2.0.10",
     "body-parser": "^1.19.0",
     "jest": "^25.5.3",
+    "supertest": "^6.0.1",
+    "ts-jest": "^26.4.4",
     "typescript": "^3.8.3"
   },
   "dependencies": {
@@ -43,7 +46,6 @@
     "multer": "^1.4.2",
     "pg": "^8.3.0",
     "sqlite": "^4.0.7",
-    "sqlite3": "^4.2.0",
-    "ts-jest": "^26.4.1"
+    "sqlite3": "^4.2.0"
   }
 }
