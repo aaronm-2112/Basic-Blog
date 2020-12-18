@@ -55,14 +55,26 @@ describe("PGSQL User repository testing suite", function () {
                 case 0:
                     mockConnectionObject = new PGConnection_1.default();
                     utils_1.mocked(User_1.default).mockClear();
-                    return [4 /*yield*/, dbinit_1.resetDB(mockConnectionObject)];
-                case 1:
-                    _a.sent();
+                    //await resetDB(mockConnectionObject)
                     return [4 /*yield*/, dbinit_1.createDB(mockConnectionObject)];
-                case 2:
+                case 1:
+                    //await resetDB(mockConnectionObject)
                     _a.sent();
                     return [4 /*yield*/, dbinit_1.populateDBWithTestData(mockConnectionObject)];
-                case 3:
+                case 2:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    afterEach(function () { return __awaiter(void 0, void 0, void 0, function () {
+        var mockConnectionObject;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    mockConnectionObject = new PGConnection_1.default();
+                    return [4 /*yield*/, dbinit_1.resetDB(mockConnectionObject)];
+                case 1:
                     _a.sent();
                     return [2 /*return*/];
             }

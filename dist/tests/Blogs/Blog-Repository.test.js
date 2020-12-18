@@ -67,6 +67,19 @@ describe("PGSQL Blog repository testing suite", function () {
             }
         });
     }); });
+    afterEach(function () { return __awaiter(void 0, void 0, void 0, function () {
+        var mockConnectionObject;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    mockConnectionObject = new PGConnection_1.default();
+                    return [4 /*yield*/, dbinit_1.resetDB(mockConnectionObject)];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    }); });
     test("Findall returns all of the expected blogs with expected property values when searching by username", function () { return __awaiter(void 0, void 0, void 0, function () {
         var mockConnectionObject, repo, blogs;
         return __generator(this, function (_a) {
@@ -164,16 +177,17 @@ describe("PGSQL Blog repository testing suite", function () {
             }
         });
     }); });
-    test("Find throws an error when searching for a blog that does not exist(searching by username)", function () { return __awaiter(void 0, void 0, void 0, function () {
-        var mockConnectionObject, repo;
+    test("Find returns null when searching for a blog that does not exist(searching by username)", function () { return __awaiter(void 0, void 0, void 0, function () {
+        var mockConnectionObject, repo, nullResponse;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     mockConnectionObject = new PGConnection_1.default();
                     repo = new BlogPGSQLRepo_1.default(mockConnectionObject);
-                    return [4 /*yield*/, expect(repo.find(BlogSearchCriteria_1.searchParameters.Username, "Not User")).rejects.toThrowError("Error: Not found")];
+                    return [4 /*yield*/, repo.find(BlogSearchCriteria_1.searchParameters.Username, "Not User")];
                 case 1:
-                    _a.sent();
+                    nullResponse = _a.sent();
+                    expect(nullResponse).toBe(null);
                     return [2 /*return*/];
             }
         });
@@ -198,16 +212,17 @@ describe("PGSQL Blog repository testing suite", function () {
             }
         });
     }); });
-    test("Find throws an error when searching for a blog that doesn't exist(searching by title)", function () { return __awaiter(void 0, void 0, void 0, function () {
-        var mockConnectionObject, repo;
+    test("Find returns null when searching for a blog that doesn't exist(searching by title)", function () { return __awaiter(void 0, void 0, void 0, function () {
+        var mockConnectionObject, repo, nullResponse;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     mockConnectionObject = new PGConnection_1.default();
                     repo = new BlogPGSQLRepo_1.default(mockConnectionObject);
-                    return [4 /*yield*/, expect(repo.find(BlogSearchCriteria_1.searchParameters.Title, "Not User")).rejects.toThrowError("Error: Not found")];
+                    return [4 /*yield*/, repo.find(BlogSearchCriteria_1.searchParameters.Title, "Not User")];
                 case 1:
-                    _a.sent();
+                    nullResponse = _a.sent();
+                    expect(nullResponse).toBe(null);
                     return [2 /*return*/];
             }
         });

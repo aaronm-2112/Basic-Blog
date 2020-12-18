@@ -139,6 +139,7 @@ var BlogController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         blogID = req.params.blogID;
+                        console.log("Before first repo call");
                         return [4 /*yield*/, this.repo.find(BlogSearchCriteria_1.searchParameters.BlogID, blogID)];
                     case 1:
                         blog = _a.sent();

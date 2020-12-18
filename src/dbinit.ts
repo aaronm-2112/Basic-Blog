@@ -97,9 +97,11 @@ export async function resetDB(connectionObj: PGConnection) {
     let pgRes;
 
     //drop the tables if they exist
-    pgRes = await client.query(`DROP TABLE users CASCADE`).catch((e) => console.log("OOps"));
-    pgRes = await client.query('DROP TABLE blogs CASCADE').catch((e) => console.log("OOps"));
-    pgRes = await client.query(`DROP TABLE comments CASCADE`).catch((e) => console.log("OOps"));
+    pgRes = await client.query(`DROP TABLE users CASCADE`).catch((e) => console.log("Error dropping users: " + e));
+    pgRes = await client.query('DROP TABLE blogs CASCADE').catch((e) => console.log("Error dropping blogs: " + e));
+    pgRes = await client.query(`DROP TABLE comments CASCADE`).catch((e) => console.log("Error dropping comments: " + e));
+
+    await client.end()
   } catch (e) {
     console.log(e)
   }

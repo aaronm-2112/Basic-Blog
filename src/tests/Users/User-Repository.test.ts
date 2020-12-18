@@ -15,9 +15,14 @@ describe("PGSQL User repository testing suite", () => {
   beforeEach(async () => {
     let mockConnectionObject = new PGConnection()
     mocked(User).mockClear()
-    await resetDB(mockConnectionObject)
+    //await resetDB(mockConnectionObject)
     await createDB(mockConnectionObject)
     await populateDBWithTestData(mockConnectionObject)
+  })
+
+  afterEach(async () => {
+    let mockConnectionObject = new PGConnection()
+    await resetDB(mockConnectionObject)
   })
 
   test("Find returns the user that matches the given username", async () => {
