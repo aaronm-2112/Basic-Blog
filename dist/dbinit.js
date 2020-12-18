@@ -119,7 +119,7 @@ function resetDB(connectionObj) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 5, , 6]);
+                    _a.trys.push([0, 6, , 7]);
                     client = new pg_1.Client({
                         user: connectionObj.getUser(),
                         host: connectionObj.getHost(),
@@ -131,22 +131,25 @@ function resetDB(connectionObj) {
                 case 1:
                     _a.sent();
                     pgRes = void 0;
-                    return [4 /*yield*/, client.query("DROP TABLE users CASCADE").catch(function (e) { return console.log("OOps"); })];
+                    return [4 /*yield*/, client.query("DROP TABLE users CASCADE").catch(function (e) { return console.log("Error dropping users: " + e); })];
                 case 2:
                     //drop the tables if they exist
                     pgRes = _a.sent();
-                    return [4 /*yield*/, client.query('DROP TABLE blogs CASCADE').catch(function (e) { return console.log("OOps"); })];
+                    return [4 /*yield*/, client.query('DROP TABLE blogs CASCADE').catch(function (e) { return console.log("Error dropping blogs: " + e); })];
                 case 3:
                     pgRes = _a.sent();
-                    return [4 /*yield*/, client.query("DROP TABLE comments CASCADE").catch(function (e) { return console.log("OOps"); })];
+                    return [4 /*yield*/, client.query("DROP TABLE comments CASCADE").catch(function (e) { return console.log("Error dropping comments: " + e); })];
                 case 4:
                     pgRes = _a.sent();
-                    return [3 /*break*/, 6];
+                    return [4 /*yield*/, client.end()];
                 case 5:
+                    _a.sent();
+                    return [3 /*break*/, 7];
+                case 6:
                     e_2 = _a.sent();
                     console.log(e_2);
-                    return [3 /*break*/, 6];
-                case 6: return [2 /*return*/];
+                    return [3 /*break*/, 7];
+                case 7: return [2 /*return*/];
             }
         });
     });

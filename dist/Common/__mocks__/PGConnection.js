@@ -10,8 +10,8 @@ var mock = jest.fn().mockImplementation(function () {
     return {
         user: process.env.DB_USER,
         host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        password: process.env.BD_PASSWORD,
+        database: process.env.DB_DATABASE_TEST,
+        password: process.env.DB_PASS,
         port: process.env.DB_PORT,
         getUser: mockGetUser,
         getHost: mockGetHost,

@@ -38,7 +38,12 @@ TODO:
      9. Refactor interfaces into base classes                                  [Done*]
 */
 //Set the node environment variable
+//console.log("Running app")
 var CURRENT_ENV = process.argv[process.argv.length - 1];
+// if env variable is undefined assume test environment
+if (CURRENT_ENV !== 'PROD' && CURRENT_ENV !== 'DEV') {
+    CURRENT_ENV = 'TEST';
+}
 //create the connection config object for PGSQL
 var connection = PGConfig_1.default(CURRENT_ENV);
 //Used for development database changes. 
@@ -46,9 +51,9 @@ if (CURRENT_ENV !== 'PROD') {
     dbinit_1.resetDB(connection).then(function () {
         dbinit_1.createDB(connection);
     }).then(function () {
-        console.log("DB Inited");
+        //console.log("DB Inited")
     }).catch(function (e) {
-        console.log(e);
+        // console.log(e);
     });
 }
 else { //production environment

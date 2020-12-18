@@ -27,10 +27,15 @@ describe("PGSQL Comment repository testing suite", () => {
   beforeEach(async () => {
     //the mock connection object connects to the testing database
     let mockConnectionObject = new PGConnection()
-    await resetDB(mockConnectionObject)
+    //await resetDB(mockConnectionObject)
     await createDB(mockConnectionObject)
     await populateDBWithTestData(mockConnectionObject)
   });
+
+  afterEach(async () => {
+    let mockConnectionObject = new PGConnection()
+    await resetDB(mockConnectionObject)
+  })
 
   test("A comment gets created and returns a valid commentid", async () => {
     let mockConnectionObject = new PGConnection()

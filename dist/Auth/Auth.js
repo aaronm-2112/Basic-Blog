@@ -52,6 +52,7 @@ var Auth = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             var token, PUBLIC_KEY;
             return __generator(this, function (_a) {
+                console.log(req.cookies);
                 token = req.cookies["jwt"];
                 if (!token) {
                     throw new NotAuthenticatedError_1.NotAuthenticatedError();

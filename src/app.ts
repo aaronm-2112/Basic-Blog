@@ -38,7 +38,7 @@ TODO:
 */
 
 //Set the node environment variable
-console.log("Running app")
+//console.log("Running app")
 let CURRENT_ENV = process.argv[process.argv.length - 1];
 
 // if env variable is undefined assume test environment
@@ -49,16 +49,18 @@ if (CURRENT_ENV !== 'PROD' && CURRENT_ENV !== 'DEV') {
 //create the connection config object for PGSQL
 let connection: PGConnection = config(CURRENT_ENV);
 
+console.log(connection)
+
 //Used for development database changes. 
-if (CURRENT_ENV !== 'PROD') {
+if (CURRENT_ENV === 'DEV') {
   resetDB(connection).then(() => {
     createDB(connection)
   }).then(() => {
-    console.log("DB Inited")
+    //console.log("DB Inited")
   }).catch(e => {
-    console.log(e);
+    // console.log(e);
   })
-} else { //production environment
+} else if (CURRENT_ENV === 'PROD') { //production environment
   createDB(connection).then(() => {
     console.log("Database Initialized");
   })

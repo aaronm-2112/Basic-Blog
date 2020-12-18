@@ -12,6 +12,7 @@ import { NotAcceptableError } from '../Common/Errors/NotAcceptableError'
 import { NotFoundError } from "../Common/Errors/NotFoundError";
 import { ForbiddenError } from "../Common/Errors/ForbiddenError";
 import { validateRequest } from '../Middlewares/validate-request'
+import { isCatchClause } from "typescript";
 export default class BlogController implements IController {
   private repo: IBlogRepository;
   private router: Router;
@@ -105,8 +106,6 @@ export default class BlogController implements IController {
       async (req: Request, res: Response) => {
         //retrieve the blogID from the request parameter
         let blogID: string = req.params.blogID;
-
-        console.log("Before first repo call")
 
         //retrieve the blog object with it's ID
         let blog: IBlog | null = await this.repo.find(searchParameters.BlogID, blogID);
@@ -205,34 +204,40 @@ export default class BlogController implements IController {
       ],
       validateRequest,
       async (req: Request, res: Response) => {
-        //check if the request's Accept header matches the response Content Type header
-        if (!req.accepts("application/json")) {
-          throw new NotAcceptableError()
+        try {
+          //check if the request's Accept header matches the response Content Type header
+          if (!req.accepts("application/json")) {
+            throw new NotAcceptableError()
+          }
+
+          //create a blog resource
+          let blog: IBlog = new Blog();
+          let username: string = res.locals.userId; // we assume username is there b/c authenticateJWT sets it
+          let content: string = req.body.content;
+          let title: string = req.body.title;
+
+
+          //set the username -- foreign key for the Blog entity that connects it to the User entity
+          blog.setUsername(username);
+
+          //set the content of the blog
+          blog.setContent(content);
+
+          //set the title of the blog
+          blog.setTitle(title);
+
+          //create the blog in the database 
+          let blogID: number = await this.repo.create(blog);
+
+          console.log(blogID)
+
+          const BASE_URL = process.env.BASE_URL;
+
+          //return the blog id to the user
+          res.status(201).location(`${BASE_URL}/blogs/${blogID}`).send({ blogID });
+        } catch (e) {
+          console.log(e)
         }
-
-        //create a blog resource
-        let blog: IBlog = new Blog();
-        let username: string = res.locals.userId; // we assume username is there b/c authenticateJWT sets it
-        let content: string = req.body.content;
-        let title: string = req.body.title;
-
-
-        //set the username -- foreign key for the Blog entity that connects it to the User entity
-        blog.setUsername(username);
-
-        //set the content of the blog
-        blog.setContent(content);
-
-        //set the title of the blog
-        blog.setTitle(title);
-
-        //create the blog in the database 
-        let blogID: number = await this.repo.create(blog);
-
-        const BASE_URL = process.env.BASE_URL;
-
-        //return the blog id to the user
-        res.status(201).location(`${BASE_URL}/blogs/${blogID}`).send({ blogID });
       });
 
     //patch a blog resource

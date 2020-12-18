@@ -17,6 +17,11 @@ describe("PGSQL Blog repository testing suite", () => {
     await populateDBWithTestData(mockConnectionObject)
   })
 
+  afterEach(async () => {
+    let mockConnectionObject = new PGConnection()
+    await resetDB(mockConnectionObject)
+  })
+
   test("Findall returns all of the expected blogs with expected property values when searching by username", async () => {
     let mockConnectionObject = new PGConnection()
     let repo = new BlogRepository(mockConnectionObject)
@@ -74,10 +79,11 @@ describe("PGSQL Blog repository testing suite", () => {
     expect(mockBlog!.setTitleimagepath("/uploads/1233"))
   })
 
-  test("Find throws an error when searching for a blog that does not exist(searching by username)", async () => {
+  test("Find returns null when searching for a blog that does not exist(searching by username)", async () => {
     let mockConnectionObject = new PGConnection()
     let repo = new BlogRepository(mockConnectionObject)
-    await expect(repo.find(searchParameters.Username, "Not User")).rejects.toThrowError("Error: Not found")
+    const nullResponse = await repo.find(searchParameters.Username, "Not User")
+    expect(nullResponse).toBe(null)
   })
 
   test("Find returns the expected blog when searching by title", async () => {
@@ -92,10 +98,11 @@ describe("PGSQL Blog repository testing suite", () => {
     expect(mockBlog!.setTitleimagepath("/uploads/1233"))
   })
 
-  test("Find throws an error when searching for a blog that doesn't exist(searching by title)", async () => {
+  test("Find returns null when searching for a blog that doesn't exist(searching by title)", async () => {
     let mockConnectionObject = new PGConnection()
     let repo = new BlogRepository(mockConnectionObject)
-    await expect(repo.find(searchParameters.Title, "Not User")).rejects.toThrowError("Error: Not found")
+    const nullResponse = await repo.find(searchParameters.Title, "Not User")
+    expect(nullResponse).toBe(null)
   })
 
   //I'm less happy with this test b/c the repo may not place one of the getProperty method values into the paramaterized statement, but,
