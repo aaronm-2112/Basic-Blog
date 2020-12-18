@@ -106,6 +106,8 @@ export default class BlogController implements IController {
         //retrieve the blogID from the request parameter
         let blogID: string = req.params.blogID;
 
+        console.log("Before first repo call")
+
         //retrieve the blog object with it's ID
         let blog: IBlog | null = await this.repo.find(searchParameters.BlogID, blogID);
 
