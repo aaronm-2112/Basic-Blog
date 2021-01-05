@@ -36,7 +36,7 @@ Goals for the backend, testing suites, and frontend
                    that are essential to keyset pagination of comments and blogs.
                    Notable elements for improvement: The amount of connection pools being used can likely be reworked. The keyset pagination queries for the comment models can 
                    be reworked to limit the amount of HTTP requests the client needs to make to the server.
-                   BIG PORBLEM: I didn't make a separate table for likes. If I had done that being able to add likes to both posts and comments would be supported in one table. It would also be more proper - in the context of this app - to say a post and comment have likes and to represent that relationship with foreign keys in a likes table.
+                   BIG PROBLEM: I didn't make a separate table for likes. If I had done that being able to add likes to both posts and comments would be supported in one table. It would also be more proper - in the context of this app - to say a post and comment have likes and to represent that relationship with foreign keys in a likes table.
 
 2. Testing Suites
    -Postman: In order to ensure the API endpoints functioned as expected each resource has a set of tests that are included in the Postman json file in the project.
